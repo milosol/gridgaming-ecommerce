@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
+    <data-source source="LOCAL" name="db" uuid="2bb30f6a-3474-4274-ac73-a518eed12334">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:C:\Users\atayl\Development\django-ecommerce\db.sqlite3</jdbc-url>
+      <libraries>
+        <library>
+          <url>file://$APPLICATION_CONFIG_DIR$/jdbc-drivers/Xerial SQLiteJDBC/3.25.1/license.txt</url>
+        </library>
+        <library>
+          <url>file://$APPLICATION_CONFIG_DIR$/jdbc-drivers/Xerial SQLiteJDBC/3.25.1/sqlite-jdbc-3.25.1.jar</url>
+        </library>
+      </libraries>
+    </data-source>
+    <data-source source="LOCAL" name="PostgreSQL (site1)  - postgres@ec2-54-165-36-134.compute-1.amazonaws.com" uuid="a0b51c55-c43c-4103-8138-9902ffd8b6c4">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgres:///iiibjqitxlfpbr:382d9fc7da957b5758ee6f9b416fe0c8eb26019f6d7f9d21a1d2264f10c0ab32@ec2-54-165-36-134.compute-1.amazonaws.com:5432/d81vagpvehtmh1</jdbc-url>
+    </data-source>
+    <data-source source="LOCAL" name="desqujcf1aj7pq@ec2-54-211-210-149.compute-1.amazonaws.com" uuid="7d236a6b-eba1-4196-beec-2e1cc6419298">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://ec2-54-211-210-149.compute-1.amazonaws.com:5432/desqujcf1aj7pq</jdbc-url>
+      <driver-properties>
+        <property name="ssl" value="true" />
+        <property name="sslmode" value="verify-ca" />
+        <property name="sslfactory" value="org.postgresql.ssl.NonValidatingFactory" />
+      </driver-properties>
+    </data-source>
+    <data-source source="LOCAL" name="postgres@localhost" uuid="a27e8dcd-bda8-44eb-94c4-186131d11506">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://localhost:5432/postgres</jdbc-url>
+    </data-source>
+    <data-source source="LOCAL" name="PostgreSQL (site2)  - gridgamingapp" uuid="ed9f55b4-8b73-41b0-8d7a-5304690425a8">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://ec2-18-210-214-86.compute-1.amazonaws.com/d3niaujlr8vpf1</jdbc-url>
+    </data-source>
+  </component>
+</project>

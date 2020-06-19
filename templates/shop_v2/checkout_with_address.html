@@ -1,0 +1,214 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load cart_template_tags %}
+{% load crispy_forms_tags %}
+
+{% block extra_css %}
+<link href="{% static 'assets/libs/bootstrap-material-datetimepicker/css/bootstrap-material-datetimepicker.css' %}"  rel="stylesheet">
+{% endblock extra_css %}
+
+
+
+
+{% block content %}
+
+<div class="container-fluid">
+      <h2 class="my-5 h2 text-center">Checkout form</h2>
+      <div class="row">
+        <div class="col-md-8 mb-4">
+          <div class="card">
+          <div class="card-body">
+          <h4 class="card-title">Enter Shipping</h4>
+          <h6 class="card-subtitle">Shipping and Billing are used for checkout only.</h6>
+            <form method="POST" class="form-material mt-4">
+              {% csrf_token %}
+
+              <h3>Shipping address</h3>
+
+              <div class='hideable_shipping_form'>
+
+                <div class="md-form mb-5">
+                  <input type='text' placeholder='1234 Main St' id='shipping_address' name='shipping_address' class='form-control' />
+                  <label for="shipping_address" class="form-control form-control-line">Address</label>
+                </div>
+
+                <div class="md-form mb-5">
+                  <input type='text' placeholder='Apartment or suite' id='shipping_address2' name='shipping_address2' class='form-control' />
+                  <label for="shipping_address2" class="">Address 2 (optional)</label>
+                </div>
+
+                <div class="row">
+                  <div class="col-lg-4 col-md-12 mb-4">
+                    <label for="country">Country</label>
+                    {{ form.shipping_country }}
+                    <div class="invalid-feedback">
+                      Please select a valid country.
+                    </div>
+                  </div>
+                  <div class="col-lg-4 col-md-6 mb-4">
+                    <label for="shipping_zip">Zip</label>
+                    <input type='text' placeholder='Zip code' id='shipping_zip' name='shipping_zip' class='form-control' />
+                    <div class="invalid-feedback">
+                      Zip code required.
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-check form-check-label">
+                  <input type="checkbox" class="form-check-input material-inputs" name="same_billing_address" id="same_billing_address">
+                  <label class="form-check-label" for="same_billing_address">Billing address is the same as my shipping address</label>
+                </div>
+                <div class="form-check form-check-label">
+                  <input type="checkbox" class="form-check-input material-inputs" name="set_default_shipping" id="set_default_shipping">
+                  <label class="form-check-label" for="set_default_shipping">Save as default shipping address</label>
+                </div>
+
+              </div>
+
+              {% if default_shipping_address %}
+              <div class="form-check form-check-label">
+                <input type="checkbox" class="form-check-input material-inputs" name="use_default_shipping" id="use_default_shipping">
+                <label class="form-check-label" for="use_default_shipping">Use default shipping address: {{ default_shipping_address.street_address|truncatechars:10 }}</label>
+              </div>
+              {% endif %}
+
+              <hr>
+
+              <h3>Billing address</h3>
+
+              <div class='hideable_billing_form'>
+                <div class="md-form mb-5">
+                  <input type='text' placeholder='1234 Main St' id='billing_address' name='billing_address' class='form-control' />
+                  <label for="billing_address" class="">Address</label>
+                </div>
+
+                <div class="md-form mb-5">
+                  <input type='text' placeholder='Apartment or suite' id='billing_address2' name='billing_address2' class='form-control' />
+                  <label for="billing_address2" class="">Address 2 (optional)</label>
+                </div>
+
+                <div class="row">
+                  <div class="col-lg-4 col-md-12 mb-4">
+                    <label for="country">Country</label>
+                    {{ form.billing_country }}
+                    <div class="invalid-feedback">
+                      Please select a valid country.
+                    </div>
+                  </div>
+
+                  <div class="col-lg-4 col-md-6 mb-4">
+                    <label for="billing_zip">Zip</label>
+                    <input type='text' placeholder='Zip code' id='billing_zip' name='billing_zip' class='form-control' />
+                    <div class="invalid-feedback">
+                      Zip code required.
+                    </div>
+                  </div>
+
+                </div>
+
+                <div class="form-check form-check-label">
+                  <input type="checkbox" class="form-check-input material-inputs" name="set_default_billing" id="set_default_billing">
+                  <label class="form-check-label" for="set_default_billing">Save as default billing address</label>
+                </div>
+
+              </div>
+
+              {% if default_billing_address %}
+              <div class="form-check form-check-label">
+                <input type="checkbox" class="form-check-input material-inputs" name="use_default_billing" id="use_default_billing">
+                <label class="form-check-label" for="use_default_billing">Use default billing address: {{ default_billing_address.street_address|truncatechars:10 }}</label>
+              </div>
+              {% endif %}
+              <hr>
+
+
+                <h5 class="card-title">Desired Launch Date - <b>Must be within next 7 days</b></h5>
+            <div class="form-group border-bottom pb-3">
+                 <input type="text" id="date-format" class="form-control" placeholder="Saturday 24 June 2017 - 21:44">
+            </div>
+
+              <h3>Payment option</h3>
+
+              <div class="d-block my-3">
+                {% for value, name in form.fields.payment_option.choices  %}
+                <div class="custom-control custom-radio">
+                  <input id="{{ name }}" name="payment_option" value="{{ value }}" type="radio" class="custom-control-input" required>
+                  <label class="custom-control-label" for="{{ name }}">{{ name }}</label>
+                </div>
+                {% endfor %}
+              </div>
+
+              <hr class="mb-4">
+              <button class="btn btn-primary btn-lg btn-block" type="submit">Continue to checkout</button>
+
+            </form>
+        </div>
+          </div>
+
+        </div>
+
+        <div class="col-md-4 mb-4">
+          {% include "shop/order_snippet.html" %}
+        </div>
+
+      </div>
+
+    </div>
+{% endblock content %}
+
+{% block extra_scripts %}
+    <script src="{% static 'assets/libs/moment/moment.js' %}"></script>
+    <script src="{% static 'assets/libs/bootstrap-material-datetimepicker/js/bootstrap-material-datetimepicker.js' %}"></script>
+    <script>
+    // MAterial Date picker
+    $('#mdate').bootstrapMaterialDatePicker({ weekStart: 0, time: false });
+    $('#timepicker').bootstrapMaterialDatePicker({ format: 'HH:mm', time: true, date: false });
+    $('#date-format').bootstrapMaterialDatePicker({ format: 'dddd DD MMMM YYYY - HH:mm' });
+
+    $('#min-date').bootstrapMaterialDatePicker({ format: 'DD/MM/YYYY HH:mm', minDate: new Date() });
+    $('#date-fr').bootstrapMaterialDatePicker({ format: 'DD/MM/YYYY HH:mm', lang: 'fr', weekStart: 1, cancelText: 'ANNULER' });
+    $('#date-end').bootstrapMaterialDatePicker({ weekStart: 0 });
+    $('#date-start').bootstrapMaterialDatePicker({ weekStart: 0 }).on('change', function(e, date) {
+        $('#date-end').bootstrapMaterialDatePicker('setMinDate', date);
+    });
+    </script>
+
+    <script>
+    $(document).ready(function(){
+        $('input[name=use_default_shipping]').click(function(){
+            if($(this).prop("checked") == true){
+                console.log("Checkbox is checked.");
+            }
+            else if($(this).prop("checked") == false){
+                console.log("Checkbox is unchecked.");
+            }
+        });
+    });
+
+</script>
+    <script>
+        var hideable_shipping_form = $('.hideable_shipping_form');
+        var hideable_billing_form = $('.hideable_billing_form');
+
+        var use_default_shipping = document.querySelector("input[name=use_default_shipping]");
+        var use_default_billing = document.querySelector("input[name=use_default_billing]");
+
+        use_default_shipping.addEventListener('change', function () {
+            if (this.checked) {
+                hideable_shipping_form.hide();
+            } else {
+                hideable_shipping_form.show();
+            }
+        })
+
+        use_default_billing.addEventListener('change', function () {
+            if (this.checked) {
+                hideable_billing_form.hide();
+            } else {
+                hideable_billing_form.show();
+            }
+        })
+
+    </script>
+
+{% endblock extra_scripts %}

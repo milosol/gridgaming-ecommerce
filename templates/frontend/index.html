@@ -1,0 +1,646 @@
+{% load static %}
+{% load account socialaccount %}
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-167140459-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-167140459-1');
+</script>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-5B62NKF');</script>
+<!-- Twitter universal website tag code -->
+<script>
+!function(e,t,n,s,u,a){e.twq||(s=e.twq=function(){s.exe?s.exe.apply(s,arguments):s.queue.push(arguments);
+},s.version='1.1',s.queue=[],u=t.createElement(n),u.async=!0,u.src='//static.ads-twitter.com/uwt.js',
+a=t.getElementsByTagName(n)[0],a.parentNode.insertBefore(u,a))}(window,document,'script');
+// Insert Twitter Pixel ID and Standard Event data below
+twq('init','o3wjq');
+twq('track','PageView');
+</script>
+<!-- End Twitter universal website tag code -->
+<!-- End Google Tag Manager -->
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <!-- Title and Meta Tags Begins -->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <meta charset="utf-8">
+        <!--[if IE]>
+        <meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+        <![endif]-->
+        <meta name="SKYPE_TOOLBAR" content="SKYPE_TOOLBAR_PARSER_COMPATIBLE" />
+        <title>GridGaming.io</title>
+        <link rel="shortcut icon" href="{% static 'landing/images/favicon.png' %}">
+        <!-- Title and Meta Tags Ends -->
+        <!-- Google Font Begins -->
+        <link href='https://fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic,500,500italic,700italic,700,900,900italic' rel='stylesheet' type='text/css'>
+        <link href='https://fonts.googleapis.com/css?family=Raleway:400,700,600,500,300,200,100,800,900' rel='stylesheet' type='text/css'>
+        <!-- Google Font Ends -->
+        <!-- CSS Begins-->
+        <link href='https://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css' rel='stylesheet' type='text/css'/>
+        <link href="{% static 'landing/css/flaticon.css' %}" rel="stylesheet" type="text/css" />
+        <link href="{% static 'landing/css/bootstrap.min.css' %}" rel="stylesheet" type="text/css" />
+        <link href="{% static 'landing/css/portfolio.css' %}" rel="stylesheet" type="text/css" />
+        <link href="{% static 'landing/css/animate.min.css' %}" rel="stylesheet" type="text/css"/>
+        <link href="{% static 'landing/css/flexslider.css' %}" rel="stylesheet" type="text/css" />
+
+        <!-- Main Style -->
+        <link href="{% static 'landing/css/style.css' %}" rel="stylesheet" type="text/css" />
+        <link href="{% static 'landing/css/responsive.css' %}" rel="stylesheet" type="text/css" />
+        <!-- Skin Colors -->
+        <link href="{% static 'landing/css/color-schemes/s-blue.css' %}" id="changeable-colors" rel="stylesheet" type="text/css" />
+    </head>
+    <body id="home">
+
+        <!-- Page Loader -->
+        <div id="pageloader">
+            <div class="loader-item fa fa-spin colored-border"></div>
+        </div>
+
+		<!-- YOUTUBE BACKGROUND VIDEO -->
+		<div id="bg-video">
+			<div class="player" data-property="{videoURL:'https://www.youtube.com/watch?v=DSLgAsrcpGQ',containment:'#header',startAt:0, mute:true, autoPlay:true, showControls:false}"></div>
+		</div>
+
+        <header id="header">
+            <div class="bg-overlay pattern"></div>
+            <div class="navbar navbar-fixed-top" id="navigation">
+                <div class="container">
+                    <!-- Navigation Bar -->
+                    <div class="navbar-header">
+                        <!-- Responsive Menu Button -->
+                        <button data-target=".bs-navbar-collapse" data-toggle="collapse" type="button" class="navbar-toggle">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        </button>
+                        <!-- Logo Image -->
+                        <!--<a href="index.html" class="navbar-brand"><img src="{% static 'landing/images/logo.png' %}" alt="Layer App Landing Page"></a>-->
+                    </div>
+                    <!-- End Navigation Bar -->
+                    <!-- Navigation Menu -->
+                    <nav id="topnav" role="navigation" class="collapse navbar-collapse bs-navbar-collapse">
+                        <ul class="nav navbar-nav navbar-right">
+                            <li><a href="#home" class="scroll">Home</a></li>
+                            <li><a href="#features" class="scroll">Process</a></li>
+                            <li><a href="#additional" class="scroll">About</a></li>
+                            <li><a href="{% url 'core:home' %}" class="scroll">Sponsor Giveaway</a></li>
+{#                            <li><a href="#team" class="scroll">Team</a></li>#}
+{#                            <li><a href="#news" class="scroll">News</a></li>#}
+                            {% if user.is_authenticated %}
+                            <li><a href="{% url 'account_logout' %}">Logout</a></li>
+                            {% else %}
+                            <li><a href="{% url 'core:home' %}">Login</a></li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    <!-- End Navigation Menu -->
+                </div>
+                <!-- End container -->
+            </div>
+            <!-- Intro Begins-->
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6 intro-text">
+                        <!-- TEXT -->
+                        <div class="main">
+                            <h1><span class="rotate text-color">Help</span> others and <span class="rotate text-color">grow</span> fast</h1>
+                        </div>
+                        <p class="medium_white_light">Go from zero-to-hero with a trademarked system. Sponsor a giveaway and tap into the grid. See why we're the fastest growing promotion brand on Twitter.
+                        </p>
+                            <!-- Link -->
+                            <span class="page-scroll">
+                            <a href="#features" class="btn slide-btn bg-inverse">Learn More</a>
+                            </span>
+                            <!-- Link -->
+                            <a href="{% url 'core:home' %}" class="btn slide-btn">BOOK NOW</a>
+{#                            <span class="page-scroll">#}
+{#                            <a href="#download-now" class="btn slide-btn">Book Now</a>#}
+{#                            </span>#}
+                    </div>
+                    <div class="col-md-6">
+                        <!--<i class="fa fa-twitter"></i>-->
+                        <a href="{% url 'core:home' %}">
+                                <img src="{% static 'assets/images/gallery/twitter_front.png' %}" alt="Login" class="img-responsive" />
+                                </a>
+
+                    </div>
+                </div>
+            </div>
+            <!-- Intro Ends-->
+        </header>
+
+
+        <!-- Welcome Section Begins -->
+{#        <section id="welcome" class="welcome-section">#}
+{#            <div class="container welcome-inner">#}
+{#                <!-- Title & Desc Row Begins -->#}
+{#                <div class="row">#}
+{#                    <div class="col-md-12 text-center">#}
+{#                        <!-- Title -->#}
+{#                        <div class="title">#}
+{#                            <h2>Welcome to <span>the grid</span></h2>#}
+{#                        </div>#}
+{#                        <!-- Description -->#}
+{#                        <p class="desc">Within minutes you can create your own giveaway on twitter. We'll handle everything for you.</p>#}
+{#                    </div>#}
+{#                </div>#}
+{#                <!-- Title & Desc Row Ends -->#}
+{#                <!-- First Row Begins -->#}
+{#                <div class="row">#}
+{#                    <div class="col-md-6 col-sm-6 text-center">#}
+{#                        <ul class="unlist">#}
+{#                            <li class="animated" data-animation="fadeInLeft" data-animation-delay="500">#}
+{#                                <i class="fa fa-desktop fa-3x pull-right"></i>#}
+{#                                <div class="welcome-content">#}
+{#                                    <h5>Select</h5>#}
+{#                                    <p>Select which giveaway works best for you based on your marketing needs and checkout.</p>#}
+{#                                </div>#}
+{#                            </li>#}
+{#                            <li class="animated" data-animation="fadeInLeft" data-animation-delay="700">#}
+{#                                <i class="fa fa-cogs fa-3x pull-right"></i>#}
+{#                                <div class="welcome-content">#}
+{#                                    <h5>Purchase</h5>#}
+{#                                    <p>Once payment is verified, your giveaway will kickoff for a specified time slot. You will be notified via e-mail. Soon... you'll be able to track your growth with each giveaway</p>#}
+{#                                </div>#}
+{#                            </li>#}
+{#                            <li class="animated" data-animation="fadeInLeft" data-animation-delay="900">#}
+{#                                <i class="fa fa-briefcase  fa-3x pull-right"></i>#}
+{#                                <div class="welcome-content">#}
+{#                                    <h5>Choose Winner</h5>#}
+{#                                    <p>Winners are chosen and presented on your contest site. Members can verify they were entered in the giveaway for full transparency. Winners are drawn, contacted and paid.</p>#}
+{#                                </div>#}
+{#                            </li>#}
+{#                        </ul>#}
+{#                    </div>#}
+{#                    <div class="col-md-6 col-sm-6 text-center animated" data-animation="fadeInUp" data-animation-delay="500">#}
+{#                        <!-- Welcome Box 1 Begins -->#}
+{#                        <img src="{% static 'landing/images/uparrow.jpg' %}" alt="" height="425px" />#}
+{#                    </div>#}
+{#                    <!-- Welcome Box 1 Ends -->#}
+{#                </div>#}
+{#                <!-- First Row Ends -->#}
+{#            </div>#}
+{#        </section>#}
+        <!-- Welcome Section Ends -->
+
+        <!-- Features Section Begins -->
+        <section id="features">
+            <div  class="features-section">
+                <div class="bg-overlay pattern"></div>
+                <div class="container features-inner">
+                    <!-- Title & Desc Row Begins -->
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <!-- Title -->
+                            <div class="title">
+                                <h2><span>FAST </span>& <span>Efficient</span></h2>
+                            </div>
+                            <!-- Description -->
+                            <p class="desc white">The only thing you have to worry about when you sponsor a giveaway is how many notifications you're going to get. The process is simple and efficient. GridGamingIO was founded for those who want to give back and grow and not pay tens of thousands (or even hundreds) of dollars. </p>
+                        </div>
+                    </div>
+                    <!-- Title & Desc Row Ends -->
+                    <div class="row">
+                        <!-- FEATURES LEFT -->
+                        <div class="col-md-4 col-sm-6">
+                            <ul class="features-list features-list-left">
+                                <li class="features-list-item animated" data-animation="fadeInLeft" data-animation-delay="500">
+									<!-- Icon -->
+                                    <i class="fa fa-twitter fa-3x"></i>
+                                    <div class="features-content">
+										<!-- Title -->
+                                        <h5>1) Sign-in With Twitter</h5>
+										<!-- Text -->
+                                        <p>Registration takes seconds. The account you sign in is the account the giveaway will launch with. </p>
+                                    </div>
+                                </li>
+                                <li class="features-list-item animated" data-animation="fadeInLeft" data-animation-delay="800">
+									<!-- Icon -->
+                                    <i class="fa fa-lightbulb-o fa-3x"></i>
+                                    <div class="features-content">
+										<!-- Title -->
+                                        <h5>2) Choose your package</h5>
+										<!-- Text -->
+                                        <p>Pick up a kit that works best for you. Bigger the better!</p>
+                                    </div>
+                                </li>
+                                <li class="features-list-item animated" data-animation="fadeInLeft" data-animation-delay="1100">
+									<!-- Icon -->
+                                    <i class="fa fa-check-circle fa-3x"></i>
+                                    <div class="features-content">
+										<!-- Title -->
+                                        <h5>3) Get Cleared Hot</h5>
+										<!-- Text -->
+                                        <p>An admin will move your status into "cleared-hot" which gives you the ability to launch giveaways on your own! </p>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                        <!-- FEATURES RIGHT -->
+                        <div class="col-md-4 col-md-push-4 col-sm-6">
+                            <ul class="features-list features-list-right">
+                                <li class="features-list-item animated" data-animation="fadeInRight" data-animation-delay="500">
+									<!-- Icon -->
+                                    <i class="fa  fa-rocket fa-3x"></i>
+                                    <div class="features-content">
+										<!-- Title -->
+                                        <h5>Launch Your Giveaway</h5>
+										<!-- Text -->
+                                        <p>4) Visit the launch pad and start your giveaway. You are in control! </p>
+                                    </div>
+                                </li>
+                                <li class="features-list-item animated" data-animation="fadeInRight" data-animation-delay="800">
+									<!-- Icon -->
+                                    <i class="fa fa-trophy fa-3x"></i>
+                                    <div class="features-content">
+										<!-- Title -->
+                                        <h5>5) Winner Selection</h5>
+										<!-- Text -->
+                                        <p>Our code automatically selects a winner and replies to the original tweet with the update!</p>
+                                    </div>
+                                </li>
+                                <li class="features-list-item animated" data-animation="fadeInRight" data-animation-delay="1100">
+									<!-- Icon -->
+                                    <i class="fa fa-money fa-3x"></i>
+                                    <div class="features-content">
+										<!-- Title -->
+                                        <h5>6) Winner Paid</h5>
+										<!-- Text -->
+                                        <p>Finally, the winner is paid and updated in your dashboard. Nothing left for you to do but enjoy your new friends!</p>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                        <!-- CLOSE UP PHONE IMAGE -->
+                        <div class="col-md-4 col-md-pull-4 app-image animated" data-animation="fadeInUp" data-animation-delay="800">
+                            <img src="{% static 'landing/images/features/notigang.gif' %}" alt="" >
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Features Section Ends -->
+{##}
+{#        <!-- How It Works Begins -->#}
+{#        <section id="how-it-works" class="how-it-works">#}
+{#            <div class="container how-it-works-inner">#}
+{#                <!-- Title & Desc Row Begins -->#}
+{#                <div class="row">#}
+{#                    <div class="col-md-12 text-center">#}
+{#                        <!-- Title -->#}
+{#                        <div class="title">#}
+{#                            <h2> How It  <span>Works</span></h2>#}
+{#                        </div>#}
+{#                        <!-- Description -->#}
+{#                        <p class="desc">We ensure quality & support. People love us & we love them. Here goes some simple dummy text.</p>#}
+{#                    </div>#}
+{#                </div>#}
+{#                <!-- Title & Desc Row Ends -->#}
+{#                <!-- How It Works Row Begins -->#}
+{#                <div class="row">#}
+{#                    <!-- Left Part Begins -->#}
+{#                    <div class="col-md-5 text-center">#}
+{#                        <div class="benefits">#}
+{#                            <img src="{% static 'landing/images/small-screen.png' %}"  alt="" class="relative animated" data-animation="fadeInLeft" data-animation-delay="500">#}
+{#                            <img src="{% static 'landing/images/big-screen.png' %}" alt="" class="phone-image-right relative animated" data-animation="fadeInLeft" data-animation-delay="1200">#}
+{#                        </div>#}
+{#                    </div>#}
+{#                    <!-- Left Part Ends -->#}
+{#                    <!-- Right Part Begins -->#}
+{#                    <div class="col-md-7">#}
+{#                        <div class="about-right text-left">#}
+{#                            <!-- Desc -->#}
+{#                            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore aliqua. Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore aliqua.Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore aliqua.</p>#}
+{#                            <!-- Title -->#}
+{#                            <h3>Benefits Of App</h3>#}
+{#                            <!-- Lists -->#}
+{#                            <ul>#}
+{#                                <li>#}
+{#									<!-- Icon -->#}
+{#                                    <i class="fa fa-bell-o"></i>#}
+{#									<!-- Text -->#}
+{#                                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore aliqua.</p>#}
+{#                                </li>#}
+{#                                <li>#}
+{#									<!-- Icon -->#}
+{#                                    <i class="fa fa-star-o"></i>#}
+{#									<!-- Text -->#}
+{#                                    <p> Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore aliqua.</p>#}
+{#                                </li>#}
+{#                                <li>#}
+{#									<!-- Icon -->#}
+{#                                    <i class="fa fa-comment-o"></i>#}
+{#									<!-- Text -->#}
+{#                                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore aliqua.</p>#}
+{#                                </li>#}
+{#                                <li>#}
+{#									<!-- Icon -->#}
+{#                                    <i class="fa  fa-heart-o"></i>#}
+{#									<!-- Text -->#}
+{#                                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore aliqua.</p>#}
+{#                                </li>#}
+{#                            </ul>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                    <!-- Right Part Ends -->#}
+{#                </div>#}
+{#                <!-- How It Works Row Ends -->#}
+{#            </div>#}
+{#            <!-- Container Ends -->#}
+{#        </section>#}
+{#        <!-- How It Works Ends -->#}
+
+        <!-- Additional features Section Begins -->
+        <section id="additional">
+            <div class="additional-section">
+                <div class="bg-overlay pattern"></div>
+                <div class="container additional-inner">
+                    <!-- Title & Desc Row Begins -->
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <!-- Title -->
+                            <div class="title">
+                                <h2> Give back & <span>grow</span></h2>
+                            </div>
+                            <!-- Description -->
+                            <p class="desc white">People spend thousands of dollars on advertising, but the most powerful way to influence is to give back to the community. GridGaming was founded with love for the community after DNP3 spent hundreds of thousands of dollars doing giveaways. His first giveaway was for $300 and earned 39 retweets. After nearly $200,000 spent he thought there has to be a better way, so he started a sponsor program to help up and coming content creators. GridGamingIO is the next evolution of that process. We take care of everything, so you can focus on content creation.</p>
+                        </div>
+                    </div>
+                    <!-- Title & Desc Row Ends -->
+                    <!-- Additional features Begins -->
+                    <div class="row features-border-top">
+                        <div class="col-md-3">
+                            <div class="additional-features animated" data-animation="fadeInLeft" data-animation-delay="300">
+                                <!-- Icon -->
+                                <i class="fa fa-twitter"></i>
+                                <!-- Content -->
+                                <div class="additional-content">
+                                    <h5>Retweet</h5>
+                                    <p>Easier than joining a lottery ticket and free. Follow tweet instructions & win cash. All from the convenience of your phone!</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="additional-features animated" data-animation="fadeInUp" data-animation-delay="200">
+                                <!-- Icon -->
+                                <i class="fa fa-money"></i>
+                                <!-- Content -->
+                                <div class="additional-content">
+                                    <h5>Free to enter</h5>
+                                    <p>All giveaways are free to enter. Sponsors pay for a time slot and participants enter for a chance to win cash while checking out the sponsor.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="additional-features animated" data-animation="fadeInRight" data-animation-delay="300">
+                                <!-- Icon -->
+                                <i class="fa fa-trophy"></i>
+                                <!-- Content -->
+                                <div class="additional-content">
+                                    <h5>Transparent</h5>
+                                    <p>Giveaways ran by GridGaming are 100% transparent with winners announced on Twitter. You pay the fee and we take care of the rest.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 right-border">
+                            <div class="additional-features animated" data-animation="fadeInRight" data-animation-delay="400">
+                                <!-- Icon -->
+                                <i class="fa fa-book"></i>
+                                <!-- Content -->
+                                <div class="additional-content">
+                                    <h5>Detailed stats</h5>
+                                    <p>Statistics are recorded within the grid. Sponsors can check growth and users can check participation!</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 additional-feature-image animated" data-animation="fadeInUp" data-animation-delay="600">
+                            <!--<img src="{% static 'landing/images/additional.png' %}" alt="" >-->
+                        </div>
+                    </div>
+
+                    <!-- Additional features Row Ends -->
+                </div>
+            </div>
+
+        </section>
+        <!-- Additional features Section Ends -->
+
+
+        <!-- Testimonials Section Begins -->
+{#        <section class="testimonials">#}
+{#            <div class="container testimonials-inner">#}
+{#                <div id="feedback">#}
+{#                    <!-- Testionial 1 -->#}
+{#                    <div class="row">#}
+{#                        <div class="col-md-9 animated" data-animation="fadeInUp" data-animation-delay="100">#}
+{#                            <div class="feedback">#}
+{#                                <div class="bg-text" data-bg-text="Happy Clients">#}
+{#                                    <p>Lorem ipsum dolor sit amet, consectetur , sed do eiusmod tempor incididunt ut labore et dolore aliqua.Lorem ipsum dolor sit amet,  adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore aliqua.</p>#}
+{#                                </div>#}
+{#                                <!-- Name -->#}
+{#                                <h5 class="italic"> - Masum Rana <span>of BiriOala.</span></h5>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                        <div class="col-md-3 text-center">#}
+{#                            <!-- Image -->#}
+{#                            <img src="{% static 'landing/images/testimonials/1.png' %}" alt="" />#}
+{#                        </div>#}
+{#                    </div>#}
+{#                    <!-- End Testionial 1 -->#}
+{#                    <!-- Testionial 2 -->#}
+{#                    <div class="row">#}
+{#                        <div class="col-md-9 animated" data-animation="fadeInLeft" data-animation-delay="100">#}
+{#                            <div class="feedback">#}
+{#                                <div class="bg-text" data-bg-text="Happy Clients">#}
+{#                                    <p>Lorem ipsum dolor sit amet, consectetur , sed do eiusmod tempor incididunt ut labore et dolore aliqua.Lorem ipsum dolor sit amet,  adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore aliqua.</p>#}
+{#                                </div>#}
+{#                                <!-- Name -->#}
+{#                                <h5 class="italic"> - Masum Rana <span>of BiriOala.</span></h5>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                        <div class="col-md-3 text-center">#}
+{#                            <!-- Image -->#}
+{#                            <img src="{% static 'landing/images/testimonials/2.png' %}" alt="" />#}
+{#                        </div>#}
+{#                    </div>#}
+{#                    <!-- End Testionial 2 -->#}
+{#                    <!-- Testionial 3 -->#}
+{#                    <div class="row">#}
+{#                        <div class="col-md-9 animated" data-animation="fadeInLeft" data-animation-delay="100">#}
+{#                            <div class="feedback">#}
+{#                                <div class="bg-text" data-bg-text="Happy Clients">#}
+{#                                    <p>Lorem ipsum dolor sit amet, consectetur , sed do eiusmod tempor incididunt ut labore et dolore aliqua.Lorem ipsum dolor sit amet,  adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore aliqua.</p>#}
+{#                                </div>#}
+{#                                <!-- Name -->#}
+{#                                <h5 class="italic"> - Masum Rana <span>of BiriOala.</span></h5>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                        <div class="col-md-3 text-center ">#}
+{#                            <!-- Image -->#}
+{#                            <img src="{% static 'landing/images/testimonials/3.png' %}" alt="" />#}
+{#                        </div>#}
+{#                    </div>#}
+{#                    <!-- End Testionial 3 -->#}
+{#                </div>#}
+{#                <!-- End Testimonials List-->#}
+{#            </div>#}
+{#            <!-- Container Ends -->#}
+{#        </section>#}
+        <!-- Testimonials Section Ends -->
+
+        <!-- Subscribe Section Begins -->
+{#        <section id="subscribe">#}
+{#            <div class="subscribe">#}
+{#                <div class="bg-overlay pattern"></div>#}
+{#                <div class="container subscribe-inner">#}
+{#                    <!-- Title & Desc Row Begins -->#}
+{#                    <div class="row">#}
+{#                        <div class="col-md-12 text-center">#}
+{#                            <!-- Title -->#}
+{#                            <div class="title">#}
+{#                                <h2> Subscribe to Our  <span>Updates</span></h2>#}
+{#                            </div>#}
+{#                            <!-- Description -->#}
+{#                            <p class="desc white">Subscribe to our email newsletter for useful tips and resources.</p>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                    <!-- Title & Desc Row Ends -->#}
+{#                    <!-- Subscribe Row Begins -->#}
+{#                    <div class="row">#}
+{#                        <div class="col-md-6 col-md-offset-3 animated" data-animation="fadeInUp" data-animation-delay="300">#}
+{#                            <p class="form-message1" style="display: none;"></p>#}
+{#                            <div class="contact-form">#}
+{#                                <!-- Form Begins -->#}
+{#                                <form id="contactform1" role="form" name="contactform1" class="form-horizontal" method="post" action="subscription.php">#}
+{#                                    <div class="form-group subscribe-form-input">#}
+{#                                        <input class="subscribe-form-email form-control form-control-lg" type="email" autocomplete="off" placeholder="Enter your email address" name="contact_email1">#}
+{#                                        <button type="submit" class="subscribe-form-submit btn bg-inverse btn-lg" data-loading-text="Loading...">Subscribe</button>#}
+{#                                    </div>#}
+{#                                </form>#}
+{#                                <!-- Form Ends -->#}
+{#                            </div>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                    <!-- Subscribe Row Ends -->#}
+{#                </div>#}
+{#            </div>#}
+{#        </section>#}
+        <!-- Subscribe Section Ends -->
+
+        <!-- Contact Section Begins -->
+{#        <section id="contact" class="contact">#}
+{#            <div class="container contact-inner">#}
+{#                <!-- Title & Desc Row Begins -->#}
+{#                <div class="row">#}
+{#                    <div class="col-md-12 text-center">#}
+{#                        <!-- Title -->#}
+{#                        <div class="title">#}
+{#                            <h2> Contact <span>Us</span></h2>#}
+{#                        </div>#}
+{#                        <!-- Description -->#}
+{#                        <p class="desc">Subscribe to our email newsletter for useful tips and resources.</p>#}
+{#                    </div>#}
+{#                </div>#}
+{#                <!-- Title & Desc Row Ends -->#}
+{#                <!-- Contact Row Begins -->#}
+{#                <div class="row">#}
+{#                    <div class="col-md-10 col-md-offset-1 animated" data-animation="fadeInUp" data-animation-delay="300">#}
+{#                        <p class="form-message" style="display: none;"></p>#}
+{#                        <div class="contact-form">#}
+{#                            <!-- Form Begins -->#}
+{#                            <form role="form" name="contactform" class="form-horizontal" id="contactform" method="post" action="process.php">#}
+{#                                <!-- Field 1 -->#}
+{#                                <div class="input-text form-group">#}
+{#                                    <input type="text" name="contact_name" class="input-name form-control" placeholder="Full Name" />#}
+{#                                </div>#}
+{#                                <!-- Field 2 -->#}
+{#                                <div class="input-email form-group">#}
+{#                                    <input type="email" name="contact_email" class="input-email form-control" placeholder="Email"/>#}
+{#                                </div>#}
+{#                                <!-- Field 3 -->#}
+{#                                <div class="textarea-message form-group">#}
+{#                                    <textarea name="contact_message" class="textarea-message form-control" placeholder="Message" rows="4" ></textarea>#}
+{#                                </div>#}
+{#                                <!-- Button -->#}
+{#                                <button class="btn btn-default" type="submit">Send Now<i class="fa fa-paper-plane-o"></i></button>#}
+{#                            </form>#}
+{#                            <!-- Form Ends -->#}
+{#                        </div>#}
+{#                    </div>#}
+{#                </div>#}
+{#                <!-- Contact Row Ends -->#}
+{#            </div>#}
+{#        </section>#}
+        <!-- Contact Section Ends -->
+
+
+        <!-- Copyright Section Begins -->
+        <section id="copyright" class="copyright">
+            <div class="container">
+
+                <!-- Social Media -->
+                <div class="row social-media animated" data-animation="fadeInUp" data-animation-delay="400">
+                    <div class="col-md-12">
+                        <!-- Icons -->
+{#                        <a href="#" target="_blank"><i class="fa fa-facebook"></i></a>#}
+                        <a href="{% url 'core:home' %}" class="btn slide-btn">BOOK NOW!!</a><br>
+                        <hr>
+                        <a href="https://www.twitter.com/gridgamingio" target="_blank"><i class="fa fa-twitter"></i></a>
+{#                        <a href="#" target="_blank"><i class="fa fa-google-plus"></i></a>#}
+{#                        <a href="#" target="_blank"><i class="fa fa-instagram"></i></a>#}
+{#                        <a href="#" target="_blank"><i class="fa fa-pinterest"></i></a>#}
+{#                        <a href="#" target="_blank"><i class="fa fa-envelope"></i></a>#}
+                    </div>
+                </div>
+                <div class="row">
+                    <!-- Copyright Title -->
+                    <div class="col-md-12 text-center">
+                        <p>Copyright 2020 GridGamingIO LLC. All Rights Reserved.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Copyright Section Ends -->
+
+
+        <!-- Script Begins -->
+        <script type="text/javascript" src="{% static 'landing/js/jquery-1.11.0.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'landing/js/bootstrap.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'landing/js/bootstrap-hover-dropdown.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'landing/js/bootstrapValidator.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'landing/js/jquery.sticky.js' %}"></script>
+        <!-- Slider and Features Canvas -->
+        <script type="text/javascript" src="{% static 'landing/js/jquery.flexslider-min.js' %}"></script>
+        <!-- Overlay -->
+        <script type="text/javascript" src="{% static 'landing/js/overlay/modernizr.js' %}"></script>
+        <!-- Screenshot -->
+        <script type="text/javascript" src="{% static 'landing/js/jquery.flexisel.js' %}"></script>
+        <!-- Portfolio -->
+
+        <script type="text/javascript" src="{% static 'landing/js/jquery.mixitup.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'landing/js/jquery.fitvids.js' %}"></script>
+        <script type="text/javascript" src="{% static 'landing/js/jquery.easing.1.3.js' %}"></script>
+        <!-- Counting Section -->
+        <script type="text/javascript" src="{% static 'landing/js/jquery.appear.js' %}"></script>
+        <!-- Expertise Circular Progress Bar -->
+        <script type="text/javascript" src="{% static 'landing/js/effect.js' %}"></script>
+
+{#        <!-- Video BG -->#}
+{#        <script src="{% static 'landing/js/jquery.mb.TPlayer.js' %}"></script>#}
+        <!-- Custom -->
+        <script type="text/javascript" src="{% static 'landing/js/custom.js' %}"></script>
+        <!-- Script Ends -->
+    </body>
+</html>

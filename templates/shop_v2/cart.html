@@ -1,0 +1,126 @@
+{% extends "core/base.html" %}
+{% load cart_template_tags %}
+{% load mathfilters %}
+{% load humanize %}
+
+{% block content %}
+    <div class="row">
+        <!-- Column -->
+        <div class="col-md-9 col-lg-9">
+            <h3> Order Summary</h3>
+        {% for social in social_boost %}
+        {{ social.title }}
+        {% endfor %}
+            <div class="card">
+                <div class="card-header bg-primary">
+                    <h5 class="mb-0 text-white float-md-left">Your Cart</h5>
+                    <h5 class="mb-0 text-white float-md-right">Item Count: <strong>{{ request.user|cart_item_count }}</strong></h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table product-overview">
+                            <thead>
+                            <tr>
+                                <th>Image</th>
+                                <th>Product info</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th style="text-align:center">Total</th>
+                                <th style="text-align:center">Action</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for order_item in object.items.all %}
+                                <tr>
+                                    <td width="150"><img src="{{ order_item.item.image.url }}" alt="" width="80">
+                                    </td>
+                                    <td width="550">
+                                        <h5 class="font-500">{{ order_item.item.title }}</h5>
+                                        <p>{{ order_item.item.description }}</p>
+
+                                    </td>
+
+                                    <td class="font-500">${{ order_item.item.giveaway_fee|mul:user.account_type.fee_quantifier|add:order_item.item.giveaway_value|floatformat:0 }}</td>
+                                    <td width="70" align="center" class="font-500">
+                                        <a href="{% url 'core:remove-single-item-from-cart' order_item.item.slug %}"><i
+                                                class="fas fa-minus mr-2"></i></a>
+                                        {{ order_item.quantity }}
+                                        <a href="{% url 'core:add-to-cart' order_item.item.slug %}"><i
+                                                class="fas fa-plus ml-2"></i></a>
+                                    </td>
+                                    <td width="150" align="center">
+                                        {% if order_item.item.discount_price %}
+                                            ${{ order_item.get_total_discount_item_price }}
+                                            <span class="badge badge-primary">Saving ${{ order_item.get_amount_saved }}</span>
+                                        {% else %}
+                                            ${{ order_item.get_total_item_price }}
+                                        {% endif %}
+                                    </td>
+
+
+                                    <td align="center"><a href="{% url 'core:remove-from-cart' order_item.item.slug %}"
+                                                          class="text-inverse" title=""
+                                                          data-toggle="tooltip" data-original-title="Delete"><i
+                                            class="ti-trash text-dark"></i></a></td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                        <hr>
+                        <div class="d-flex no-block align-items-center">
+                            <a href="{% url 'core:home' %}">
+                                <button class="btn btn-dark btn-outline"><i class="fas fa-arrow-left"></i> Continue
+                                    shopping
+                            </a>
+                            </button>
+                            <div class="ml-auto">
+                                <a href="{% url 'core:checkout' %}">
+                                    <button class="btn btn-danger"><i class="fa fa fa-shopping-cart"></i> Checkout
+                                    </button>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Column -->
+        <div class="col-md-3 col-lg-3">
+
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">CART SUMMARY</h5>
+                    {% if object.get_total %}
+                        <hr>
+                        <small>Total Price</small>
+                        <h2>${{ object.get_total }}</h2>
+                        <hr>
+                        <a href="{% url 'core:checkout' %}">
+                            <button class="btn btn-success">Checkout</button>
+                        </a>
+                        <!--<button class="btn btn-secondary btn-outline">Cancel</button>-->
+                    {% endif %}
+                </div>
+            </div>
+        {% if DISPLAY_COUPON_FORM %}
+        <form class="card p-2" action="{% url 'core:add-coupon' %}" method="POST">
+            {% csrf_token %}
+            <div class="input-group">
+                {{ couponform.code }}
+                <div class="input-group-append">
+                <button class="btn btn-secondary btn-md waves-effect m-0" type="submit">Redeem</button>
+                </div>
+            </div>
+        </form>
+        {% endif %}
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Need Assistance?</h5>
+                    <hr>
+                    <h6><a href="mailto:business@gridgaming.io?subject=testtest"><i class="ti-email"></i> business@gridgaming.io</a></h6> <small>Please contact with us if you have
+                    any questions. Please allow 24-48 hours for a response.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

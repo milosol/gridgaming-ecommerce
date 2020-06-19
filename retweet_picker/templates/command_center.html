@@ -1,0 +1,250 @@
+{% extends 'core/base.html' %}
+{% load mathfilters %}
+
+{% block content %}
+
+    <div class="container-fluid">
+        <!-- ============================================================== -->
+        <!-- Start Page Content -->
+        <!-- ============================================================== -->
+        <!-- basic table -->
+    {% if order_items %}
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title text-center">Giveaway Command Center</h4>
+
+                    <h6 class="text-center">Status:
+                        {% if request.user.cleared_hot %}
+                        <span class="badge badge-warning" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="You are cleared hot! Clicking Launch will start your giveaway on gridgaming.io's Twitter timeline!">CLEARED HOT</span>
+
+                        {% else %}
+                            <span class="badge badge-danger" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="Automated launch not available yet. An admin will review your account and update your status to cleared hot.">Pending Approval</span>
+                        {% endif %}
+                    </h6>
+
+{#                        <div class="row mt-5">#}
+{#                            <!-- Column -->#}
+{#                            <div class="col-md-6 col-lg-3 col-xlg-3">#}
+{#                                <div class="card card-hover">#}
+{#                                    <div class="p-2 rounded bg-info text-center">#}
+{#                                        <h1 class="font-light text-white">3</h1>#}
+{#                                        <h6 class="text-white">Sponsored Giveaways</h6>#}
+{#                                    </div>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                            <!-- Column -->#}
+{#                            <div class="col-md-6 col-lg-3 col-xlg-3">#}
+{#                                <div class="card card-hover">#}
+{#                                    <div class="p-2 rounded bg-primary text-center">#}
+{#                                        <h1 class="font-light text-white">1,738</h1>#}
+{#                                        <h6 class="text-white">New Followers</h6>#}
+{#                                    </div>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                            <!-- Column -->#}
+{#                            <div class="col-md-6 col-lg-3 col-xlg-3">#}
+{#                                <div class="card card-hover">#}
+{#                                    <div class="p-2 rounded bg-success text-center">#}
+{#                                        <h1 class="font-light text-white">$1,100</h1>#}
+{#                                        <h6 class="text-white">Given Back</h6>#}
+{#                                    </div>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                            <!-- Column -->#}
+{#                            <div class="col-md-6 col-lg-3 col-xlg-3">#}
+{#                                <div class="card card-hover">#}
+{#                                    <div class="p-2 rounded bg-dark text-center">#}
+{#                                        <h1 class="font-light text-white">4</h1>#}
+{#                                        <h6 class="text-white">Available Giveaways</h6>#}
+{#                                    </div>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                            <!-- Column -->#}
+{#                        </div>#}
+                        <div class="table-responsive">
+                            <table id="zero_config" class="table table-striped table-bordered">
+                                <thead>
+                                <tr>
+                                    <th>Available</th>
+                                    <th>Order ID</th>
+                                    <th>Package</th>
+                                    <th>Status</th>
+                                    <th>Results</th>
+
+
+                                    <th data-toggle="tooltip" data-placement="bottom" title="" data-original-title="Coordinated Universal Time (UTC). Map UTC to your timezone"><i class="far fa-question-circle text-info"></i> Expires On (UTC)</th>
+                                    <th>Duration</th>
+
+                                    {% if user.is_staff %}
+                                    <th>Choose Winner</th>
+                                    {% endif %}
+                                </tr>
+                                </thead>
+                                <tbody>
+
+                                {% for order in order_items %}
+                                    {% for item in order.items %}
+
+                                        <tr>
+                                            {% if item.available_to_run > 0 %}
+
+                                                <td name="launch">
+
+                                                    <button type="button" onclick="confirmLaunch({{ order.order.id }}, {{ item.id }})" class="btn btn-primary">
+
+
+
+                                                        Launch <span
+                                                            class="badge badge-light">{{ item.available_to_run }}</span>
+                                                        <span class="sr-only">Available Giveaways</span>
+                                                    </button>
+                                                </td>
+                                            <td>{{ order.order.expires_on }}</td>
+                                            {% else %}
+                                                <td>
+                                                    <button type="button" class="btn btn-outline-secondary">
+                                                        Completed
+                                                    </button>
+                                                </td>
+                                                <td> Redeemed</td>
+                                            {% endif %}
+                                        <!-- start status -->
+                                            {% if order.order.status == "P" %}
+                                                <td><span
+                                                        class="badge badge-success">{{ order.order.get_status_display }}</span>
+                                                </td>
+                                            {% elif order.order.status == "L" %}
+                                                <td><span
+                                                        class="badge badge-danger">{{ order.order.get_status_display }}</span>
+                                                </td>
+                                            {% elif order.order.status == "T" %}
+                                                <td><span
+                                                        class="badge badge-purple">{{ order.order.get_status_display }}</span>
+                                                </td>
+                                            {% elif order.order.status == "C" %}
+                                                <td><span
+                                                        class="badge badge-info">{{ order.order.get_status_display }}</span>
+                                                </td>
+                                            {% elif order.order.status == "D" %}
+                                                <td><span
+                                                        class="badge badge-primary">{{ order.order.get_status_display }}</span>
+                                                </td>
+                                            {% else %}
+                                                <td><span
+                                                        class="badge badge-primary">{{ order.order.get_status_display }}</span>
+                                                </td>
+                                            <!-- end status -->
+                                            {% endif %}
+
+
+                                            <!-- TODO add different status mapped to displays here -->
+                                            <td id="package"><a href="{{ item.item.get_absolute_url }}"
+                                                   class="font-medium link">{{ item.item.title }}</a></td><!--{{ order.order.ref_code }}-->
+
+
+                  <!-- results start -->
+                                            <td id="results">
+                                            {% if order.order.status == "P" %}
+                                                <button type="button" class="btn btn-outline-primary btn-circle-lg" data-toggle="tooltip" data-placement="right" title="" data-original-title="Results will appear giveaway completes"><i class="fas fa-clock"></i></button>
+                                            {% elif order.order.status == "L" %}
+                                                <button type="button" class="btn btn-danger btn-circle-lg" data-toggle="tooltip" data-placement="right" title="" data-original-title="Giveaway is live!"><i class="fas fa-cog fa-spin"></i></button>
+                                            {% elif order.order.status == "S" %}
+                                                <button type="button" class="btn btn-outline-warning btn-circle-lg" data-toggle="tooltip" data-placement="right" title="" data-original-title="Scheduled">
+                                                <i class="fa fa-calendar"></i>
+                                                </button>
+                                            {% elif order.order.status == "T" %}
+                                                <a href="{% url "retweet_picker:contest_results" order.order.id %}"><button type="button" class="btn btn-info btn-circle-lg" data-toggle="tooltip" data-placement="right" title="" data-original-title="Winner Selected!">
+                                                <i class="fa fa-trophy"></i>
+                                                </button></a>
+                                            {% elif order.order.status == "C" %}
+                                                <a href="{% url "retweet_picker:contest_results" order.order.id %}"><button type="button" class="btn btn-outline-success btn-circle-lg" data-toggle="tooltip" data-placement="right" title="" data-original-title="Winner Contacted">
+                                                <i class="fas fa-mobile-alt"></i>
+                                                </button></a>
+                                            {% elif order.order.status == "D" %}
+                                                <a href="{% url "retweet_picker:contest_results" order.order.id %}"><button type="button" class="btn btn-outline-success btn-add-todo" data-toggle="tooltip" data-placement="right" title="" data-original-title="Winner Paid">
+                                                <i class="fas fa-dollar-sign"></i>
+                                                </button></a>
+                                            {% endif %}
+
+
+                                            </td>
+                                        <!-- end results -->
+
+                                        <td><a href="#" class="font-bold link">{{ order.order.ordered_date }}</a></td>
+
+
+
+                                        <td id="duration">{{ item.item.duration_to_run|mul:user.account_type.time_quantifier|floatformat:0 }} min</td>
+                                        {% if user.is_staff %}
+                                        <td id="choose_winner">
+                                              {% if order.order.status == "L" %}
+                                                <button type="button" class="btn btn-warning btn-circle-lg" data-toggle="tooltip" data-placement="right" title="" data-original-title="Choose Winner Manually"><i class="fas fa-user-plus"></i></button>
+                                              {% elif order.order.status == "C" %}
+                                              <button type="button" class="btn btn-outline-success btn-circle-lg" data-toggle="tooltip" data-placement="right" title="" data-original-title=""><i class="fas fa-book"></i></button>
+                                                  {% else %}
+                                          <button type="button" class="btn btn-outline-success btn-circle-lg" data-toggle="tooltip" data-placement="right" title="" data-original-title=""><i class="fas fa-book "></i></button>
+                                            {% endif %}
+
+                                        </td>
+                                        {% endif %}
+                                        </tr>
+                                    {% endfor %}
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                            {#                                    <ul class="pagination float-right">#}
+                            {#                                        <li class="page-item disabled">#}
+                            {#                                            <a class="page-link" href="#" tabindex="-1">Previous</a>#}
+                            {#                                        </li>#}
+                            {#                                        <li class="page-item active"><a class="page-link" href="#">1</a></li>#}
+                            {#                                        <li class="page-item">#}
+                            {#                                            <a class="page-link" href="#">2 <span class="sr-only">(current)</span></a>#}
+                            {#                                        </li>#}
+                            {#                                        <li class="page-item"><a class="page-link" href="#">3</a></li>#}
+                            {#                                        <li class="page-item">#}
+                            {#                                            <a class="page-link" href="#">Next</a>#}
+                            {#                                        </li>#}
+                            {#                                    </ul>#}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+    <div class="row">
+        <h2>Available after first sponsored giveaway!</h2>
+    </div>
+    {% endif %}
+    </div>
+
+<script>
+
+function confirmLaunch(order_id, item_id) {
+    swal.fire({
+        title: 'Are you sure?',
+        text: "This will start your giveaway for @{{ request.user.username }}!",
+        icon: 'warning',
+        showCancelButton: true,
+        background: '#e9ecef',
+        confirmButtonColor: '#21c1d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, send it!'
+    }).then((result) => {
+        if (result.value) {
+            window.location.href = "/contests/launch/" + order_id + "/" + item_id;
+        } else if (
+            /* Read more about handling dismissals below */
+            result.dismiss === Swal.DismissReason.cancel
+        ) {
+            swal.fire(
+                'Cancelled',
+                'Launch aborted!',
+                'error'
+            )
+        }
+    })
+}
+    </script>
+{% endblock %}

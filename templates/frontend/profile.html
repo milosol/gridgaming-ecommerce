@@ -1,0 +1,67 @@
+{% extends "core/base.html" %}
+{% load account %}
+{% block content %}
+                <div class="row">
+                    <!-- Column -->
+                    <div class="col-lg-4 col-xlg-3 col-md-5">
+                        <div class="card">
+                            <div class="card-body">
+                                <center class="mt-4"> <img src="{{ user.socialaccount_set.all.0.get_avatar_url }}" class="rounded-circle" width="150">
+                                    <h4 class="card-title mt-2">{{ user.username }}</h4>
+                                    <h6 class="card-subtitle">{{ user.socialaccount_set.all.0.extra_data.description }}</h6>
+                                    <div class="row text-center justify-content-md-center">
+                                        <div class="col-4"><a href="javascript:void(0)" class="link" alt="Twitter Followers" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="Current Followers"><i class="icon-user-follow"></i> <font class="font-medium">{{ user.socialaccount_set.all.0.extra_data.followers_count }}</font></a></div>
+                                        <div class="col-4"><a href="javascript:void(0)" class="link" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="Following"><i class="icon-user-following" ></i> <font class="font-medium">{{ user.socialaccount_set.all.0.extra_data.friends_count }}</font></a></div>
+                                    </div>
+                                                                    <a href="https://www.twitter.com/{% user_display user %}"><button class="btn btn-circle btn-twitter" _target="blank"><i class="fab fa-twitter"></i></button></a>
+                                </center>
+                            </div>
+                            <div>
+                                <hr> </div>
+                            <div class="card-body text-center"> <small class="text-muted">Last Seen </small>
+                                <h6>{{ user.last_login }}</h6>
+                                </div>
+                                <br>
+
+
+
+
+                        </div>
+                    </div>
+                    <!-- Column -->
+                    <!-- Column -->
+                    <div class="col-lg-8 col-xlg-9 col-md-7">
+                        <div class="card">
+                            <!-- Tabs -->
+                            <ul class="nav nav-pills custom-pills" id="pills-tab" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" id="pills-setting-tab" data-toggle="pill" href="#previous-month" role="tab" aria-controls="pills-setting" aria-selected="true">Setting</a>
+                                </li>
+                            </ul>
+                            <!-- Tabs -->
+                            <div class="tab-content" id="pills-tabContent">
+                                <div class="tab-pane fade active show" id="previous-month" role="tabpanel" aria-labelledby="pills-setting-tab">
+                                    <div class="card-body">
+                                        <form class="form-horizontal form-material">
+                                            <div class="form-group">
+                                                <label class="col-md-12">Connected Accounts</label>
+                                                
+{#                                                <div class="col-md-12">#}
+{#                                                    <input type="text" placeholder="Johnathan Doe" class="form-control form-control-line">#}
+{#                                                </div>#}
+                                            </div>
+{#                                            <div class="form-group">#}
+{#                                                <label for="example-email" class="col-md-12">Email</label>#}
+{#                                                <div class="col-md-12">#}
+{#                                                    <input type="email" placeholder="johnathan@admin.com" class="form-control form-control-line" name="example-email" id="example-email">#}
+{#                                                </div>#}
+{#                                            </div>#}
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Column -->
+                </div>
+{% endblock %}

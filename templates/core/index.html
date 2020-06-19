@@ -1,0 +1,86 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load humanize %}
+{% load mathfilters %}
+
+{% block content %}
+<!-- ============================================================== -->
+<!-- Start Page Content -->
+<!-- ============================================================== -->
+
+<div class="row el-element-overlay">
+    {% for item in object_list %}
+        {% if item.available and item.category ==  'GW'%}
+    <div class="col-lg-3 col-md-6">
+        <div class="card">
+            <div class="el-card-item pb-3">
+                <div class="el-card-avatar mb-3 el-overlay-1 w-100 overflow-hidden position-relative text-center"> <img src="{{ item.image.url }}" class="d-block position-relative w-100" alt="user" />
+                    <div class="el-overlay w-100 overflow-hidden">
+                        <ul class="list-style-none el-info text-white text-uppercase d-inline-block p-0">
+                            <!--<li class="el-item d-inline-block my-0  mx-1"><a class="btn default btn-outline image-popup-vertical-fit el-link text-white border-white" href="{{ item.image.url }}"><i class="icon-magnifier"></i></a></li>-->
+                            <li class="el-item d-inline-block my-0  mx-1"><a class="btn default btn-outline el-link text-white border-white" href="{{ item.get_absolute_url }}"><i class="icon-plus"></i></a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="d-flex no-block align-items-center">
+                    <div class="ml-3">
+                        <h4 class="mb-0">{{ item.get_category_display }}</h4>
+                        <span class="text-muted">{{ item.title }}</span>
+                    </div>
+                    <div class="ml-auto mr-3">
+                    <a href="{{ item.get_absolute_url }}">
+                        <button type="button" class="btn btn-{{ item.get_label_display }} btn-square">
+                      {% if item.discount_price %}
+                      ${{ item.discount_price|intcomma }}
+                      {% else %}
+                      ${{ item.giveaway_fee|mul:user.account_type.fee_quantifier|add:item.giveaway_value|intcomma }}
+
+                      {% endif %}
+                        </button>
+                         </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+        {% endif %}
+{% endfor %}
+
+
+      <!--Pagination-->
+
+      {% if is_paginated %}
+      <nav class="d-flex justify-content-center wow fadeIn">
+        <ul class="pagination pg-blue">
+
+          {% if page_obj.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+              <span aria-hidden="true">&laquo;</span>
+              <span class="sr-only">Previous</span>
+            </a>
+          </li>
+          {% endif %}
+
+          <li class="page-item active">
+            <a class="page-link" href="?page={{ page_obj.number }}">{{ page_obj.number }}
+              <span class="sr-only">(current)</span>
+            </a>
+          </li>
+
+          {% if page_obj.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+              <span aria-hidden="true">&raquo;</span>
+              <span class="sr-only">Next</span>
+            </a>
+          </li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+</div>
+<!-- ============================================================== -->
+<!-- End Page Content -->
+<!-- ============================================================== -->
+{% endblock %}

@@ -1,0 +1,42 @@
+{%  extends 'core/base.html' %}
+
+
+{%  block content %}
+
+<form method='POST'>
+    {%  csrf_token %}
+{{ form.as_p }}
+    <input type="submit" value="Choose Winner">
+</form>
+
+{{ context }}
+    <br>
+    {% if winner %}
+    <a href="https://www.twitter.com/{{  winner }}" target="_blank">{{ winner }}</a>
+    {% else %} No Winner Announced {% endif %}
+
+    <br>
+    {{ status }}
+
+{% if latest_winners %}
+<table>
+    <tr>
+        <th>Winner</th>
+        <th>Tweet URL</th>
+        <th>Giveaway ID</th>
+        <th>Created</th>
+    </tr>
+    {% for item in latest_winners %}
+    <tr>
+        <td><a href="https://www.twitter.com/{{  item.winner }}" target="_blank">{{ item.winner }}</a></td>
+        <td><a href="{{ item.tweet_url }}">{{ item.tweet_url }}</a></td>
+        <td>{{ item.giveaway_id }}</td>
+        <td>{{  item.created_at }}</td>
+
+
+    </tr>
+    {% endfor %}
+</table>
+    {% endif %}
+{% endblock %}
+

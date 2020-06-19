@@ -1,0 +1,80 @@
+{% extends "account/base.html" %}
+{% load index %}
+
+{{ color_choices|index:x }}
+
+{% block content %}
+{% if not request.user.account_type %}
+
+<!-- Modal -->
+<div id="multiple-one" class="modal fade" tabindex="-1" role="dialog"
+     aria-labelledby="multiple-oneModalLabel" style="display: none;" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modal-colored-header bg-primary">
+                <h4 class="modal-title text-white" id="multiple-oneModalLabel">Welcome to the Grid!</h4>
+                <!--<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                </button>-->
+            </div>
+            <div class="modal-body">
+                <h5 class="mt-0">Getting to know you...</h5>
+                <p>To better serve you, Clu needs to understand what your goals are for sponsoring a giveaway...</p>
+                <p>This information will be used to provide a tailored experience to help you achieve your goals.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-target="#multiple-two"
+                        data-toggle="modal" data-dismiss="modal">Next
+                </button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<!-- Modal -->
+<div id="multiple-two" class="modal fade" tabindex="-1" role="dialog"
+     aria-labelledby="multiple-twoModalLabel" style="display: none;" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modal-colored-header bg-primary">
+                <h4 class="modal-title text-white" id="multiple-oneModalLabel">Welcome to the Grid!</h4>
+                </button>
+            </div>
+            <div class="card">
+
+            <div class="modal-body">
+        <form method="POST" class="post-form">
+            {% csrf_token %}
+                <h5 class="mt-0">How would you best describe your Twitter account?</h5>
+
+                {% for choice in form.user_roles.field.choices %}
+
+                    <div class="row mt-3">
+                            <div class="col-md-12">
+                                <input name="user_roles" type="radio" id="radio_{{ forloop.counter0 }}" value="{{ choice.0 }}" class="with-gap material-inputs material-inputs radio-col-{{ color_choices|index:forloop.counter0 }}" checked="">
+                                <label for="radio_{{ forloop.counter0 }}">{{ choice.1 }}</label>
+                            </div>
+                    </div>
+                {% endfor %}
+
+            <div class="modal-footer">
+                <button type="submit" class="save btn btn-primary" value="submit" >Save</button>
+            </div>
+        </form>
+                </div><!-- /.modal-content -->
+
+            </div>
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+</div>
+
+{% endif %}
+{% endblock content %}
+
+
+{% block extra_scripts %}
+    <script>
+        $(document).ready(function () {
+            $("#multiple-one").modal('show');
+        });
+    </script>
+{% endblock extra_scripts %}

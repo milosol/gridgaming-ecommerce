@@ -1,0 +1,34 @@
+{% extends "core/base.html" %}
+{% load crispy_forms_filters %}
+{% load i18n %}
+{% load account socialaccount %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+
+    <main>
+        <div class="container">
+            <section class="mb-4">
+                <div class="row wow fadeIn">
+                    <div class='col-6 offset-3 text-center'>
+                        <h1>{% trans "Sign In" %}</h1>
+
+                        {% load socialaccount %}
+
+                        {% get_providers as socialaccount_providers %}
+
+                        {% for provider in socialaccount_providers %}
+                                <a title="{{ provider.name }}" class="socialaccount_provider {{ provider.id }}"
+                                   href="{% provider_login_url provider.id process=process scope=scope auth_params=auth_params %}">
+                                <button type="button" class="btn waves-effect waves-light btn-lg btn-rounded btn-twitter"><i class="fab fa-twitter"></i> Connect Twitter</button></span>
+                                </a>
+                        {% endfor %}
+
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+{% endblock %}

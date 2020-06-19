@@ -1,0 +1,44 @@
+- model: users.userroles
+  pk: 1
+  fields:
+    role_name: "Big Sponsor Provider"
+    role_description: "GIVEAWAY HOST: Over 50k followers and allow others to sponsor giveaways"
+    fee_quantifier: 1.5
+    time_quantifier: 1
+- model: users.userroles
+  pk: 2
+  fields:
+    role_name: "Medium Sponsor Provider"
+    role_description: "GIVEAWAY HOST: Less than 50k followers and allow others to sponsor giveaways"
+    fee_quantifier: 1.25
+    time_quantifier: 1
+- model: users.userroles
+  pk: 3
+  fields:
+    role_name: "Content Creator"
+    role_description: "CREATOR: I stream and want to grow my following to share my content with a larger audience"
+    fee_quantifier: 1
+    time_quantifier: 3
+- model: users.userroles
+  pk: 4
+  fields:
+    role_name: "Casual User"
+    role_description: "CASUAL: I want to give back to the world by sponsoring a giveaway."
+    fee_quantifier: 1
+    time_quantifier: 3
+- model: users.userroles
+  pk: 5
+  fields:
+    role_name: "Company Promotion"
+    role_description: "COMPANY: I have a service/product and want to like to promote it"
+    fee_quantifier: 1
+    time_quantifier: 3
+
+
+#- model: users.userroles
+#  pk: 6
+#  fields:
+#    role_name: "New User"
+#    role_description: ""
+#    fee_quantifier: 1
+#    time_quantifier: 1

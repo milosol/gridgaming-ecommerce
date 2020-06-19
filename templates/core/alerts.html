@@ -1,0 +1,71 @@
+{% if messages %}
+    {% for message in messages %}
+        {% if message.level_tag == "warning" %}
+            <script>Swal.fire({
+                title:'Warning!',
+                text:'{{ message }}',
+                buttons:"false",
+                type:'{{ message.level_tag }}',
+                showConfirmButton: true,
+                timerProgressBar: true,
+                timer:5000})</script>
+        {% elif message.level_tag == "success" and "order_complete" in message.extra_tags %}
+            <script>
+                Swal.fire({
+                title:'Order Complete!',
+                text:'{{ message }}',
+                buttons:"false",
+                type:'{{ message.level_tag }}',
+                timerProgressBar: true,
+                showConfirmButton: true
+            })</script>
+        {% elif message.level_tag == "success" %}
+            <script>
+                Swal.fire({
+                title:'SUCCESS!',
+                text:'{{ message }}',
+                buttons:"false",
+                position: 'top-end',
+                toast:true,
+                type:'{{ message.level_tag }}',
+                timerProgressBar: true,
+                showConfirmButton: false,
+                timer:3000
+            })</script>
+        {% elif message.level_tag == "error" and "html" in message.extra_tags%}
+            <script>Swal.fire({
+                type:'{{ message.level_tag }}',
+                title:'Oh, No!!',
+                html:'{{ message }}',
+                buttons:"true",
+                showConfirmButton: true,
+                timerProgressBar: true,
+                timer:4000
+            })</script>
+        {% elif message.level_tag == "error" %}
+            <script>Swal.fire({
+                type:'{{ message.level_tag }}',
+                title:'Oh, No!!',
+                text:'{{ message }}',
+                buttons:"true",
+                showConfirmButton: false,
+                timerProgressBar: true,
+                timer:3000
+            })</script>
+
+        {% else %}
+            <script>Swal.fire({
+                type:'{{ message.level_tag }}',
+                title:'{{ message }}',
+                //text:'{{ message }} ',
+                buttons:"false",
+                position: 'top-end',
+                toast:true,
+                showConfirmButton: false,
+                timerProgressBar: true,
+                timer:2000})
+            </script>
+        {% endif %}
+    {% endfor %}
+
+{% endif %}

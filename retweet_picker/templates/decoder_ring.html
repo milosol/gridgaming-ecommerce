@@ -1,0 +1,73 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block content %}
+
+<script>
+Swal.fire({
+  title: 'Enter Secret Code',
+  html: '<b>HINT:</b> All 8 codes (no spaces). <br>Level <b>200</b> required. <br><i style="font-size:14px;">Example: 2f3fdb809b7407a4ff1b363d05f9a0a496f41337</i>',
+  input: 'text',
+  imageUrl: '{% static 'img/PinkBubble.png' %}',
+  imageWidth: 100,
+  imageHeight: 100,
+  //background: '#fff url({% static "/img/PinkBubble.png" %}) no-repeat',
+  inputAttributes: {
+    autocapitalize: 'on'
+  },
+  showCancelButton: false,
+  confirmButtonText: 'Check Code',
+  showLoaderOnConfirm: false,
+ allowOutsideClick: false,
+  preConfirm: (secret_code) => {
+    return fetch(`/contests/bubble_rescue/decoder_ring/${secret_code}`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(response.statusText)
+        }
+        return response.json()
+      })
+      .catch(error => {
+        Swal.showValidationMessage(
+          `Request failed: ${error}`
+        )
+      })
+  },
+
+}).then((result) => {
+    if (result.value.winner) {
+        Swal.fire({
+          title: 'CONGRATULATIONS!',
+          html: `<br>Paste following phrase into gleam..<br>
+                        <b>${result.value.msg}</b>`,
+          width: 400,
+          padding: '1em',
+          allowOutsideClick: false,
+          confirmButtonText: "Back to gleam",
+          imageUrl: '{% static 'img/GreenBubble.png' %}',
+          imageWidth: 100,
+          imageHeight: 100,
+          backdrop: `
+            rgba(0,0,123,0.4)
+            url("https://sweetalert2.github.io/images/nyan-cat.gif")
+            left top
+            no-repeat
+          `
+        }).then((result) => {
+            location.href='https://gleam.io/competitions/pSzPy-bubble-rescue-5000-giveaway';
+        });
+    } else {
+        Swal.fire({
+          title: 'Invalid Code!',
+          text: 'Please try again!',
+          imageUrl: '{% static 'img/BrownBubble_Hit.png' %}',
+          imageWidth: 150,
+          imageHeight: 150,
+          allowOutsideClick: false,
+          imageAlt: 'Sad'
+            }).then((result) => {
+            location.reload();
+        })
+    }
+})
+</script>
+{% endblock %}

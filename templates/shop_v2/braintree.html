@@ -1,0 +1,256 @@
+{% extends "core/base.html" %}
+{% block extra_head %}
+    <style>
+
+        #stripeBtnLabel {
+            font-family: "Helvetica Neue", Helvetica, sans-serif;
+            font-size: 16px;
+            font-variant: normal;
+            padding: 0;
+            margin: 0;
+            -webkit-font-smoothing: antialiased;
+            font-weight: 500;
+            display: block;
+        }
+
+        #stripeBtn {
+            border: none;
+            border-radius: 4px;
+            outline: none;
+            text-decoration: none;
+            color: #fff;
+            background: #32325d;
+            white-space: nowrap;
+            display: inline-block;
+            height: 40px;
+            line-height: 40px;
+            box-shadow: 0 4px 6px rgba(50, 50, 93, .11), 0 1px 3px rgba(0, 0, 0, .08);
+            border-radius: 4px;
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: 0.025em;
+            text-decoration: none;
+            -webkit-transition: all 150ms ease;
+            transition: all 150ms ease;
+            float: left;
+            width: 100%
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 7px 14px rgba(50, 50, 93, .10), 0 3px 6px rgba(0, 0, 0, .08);
+            background-color: #43458b;
+        }
+
+        .stripe-form {
+            padding: 5px 30px;
+        }
+
+        #card-errors {
+            height: 20px;
+            padding: 4px 0;
+            color: #fa755a;
+        }
+
+        .stripe-form-row {
+            width: 100%;
+            float: left;
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+
+        /**
+         * The CSS shown here will not be introduced in the Quickstart guide, but shows
+         * how you can use CSS to style your Element's container.
+         */
+        .StripeElement {
+            box-sizing: border-box;
+
+            height: 40px;
+
+            padding: 10px 12px;
+
+            border: 1px solid transparent;
+            border-radius: 4px;
+            background-color: white;
+
+            box-shadow: 0 1px 3px 0 #e6ebf1;
+            -webkit-transition: box-shadow 150ms ease;
+            transition: box-shadow 150ms ease;
+        }
+
+        .StripeElement--focus {
+            box-shadow: 0 1px 3px 0 #cfd7df;
+        }
+
+        .StripeElement--invalid {
+            border-color: #fa755a;
+        }
+
+        .StripeElement--webkit-autofill {
+            background-color: #fefde5 !important;
+        }
+
+        .current-card-form {
+            display: none;
+        }
+
+    </style>
+{% endblock extra_head %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    {% if card %}
+                        <row>
+                            <h5 class="card-title text-cyan">Stored Payment Methods</h5>
+                            <div class="col-md-6 mb-4">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input material-inputs"
+                                           name="use_default_card"
+                                           id="use_default_card">
+                                    <label class="form-check-label" for="use_default_card">Use default card:
+                                        **** **** **** {{ card.last4 }}
+                                        <span>Exp: {{ card.exp_month }}/{{ card.exp_year }}</span></label>
+                                </div>
+                            </div>
+                            <div class="current-card-form">
+                                <form action="." method="post" class="stripe-form">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="use_default" value="true">
+                                    <div class="stripe-form-row current-card-button" style="display: none;">
+                                        <button id="stripeBtn-previous" class="btn btn-megna">Submit Payment</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </row>
+                        <hr>
+                    {% endif %}
+
+                    <row class="new-card-form">
+                        <h5 class="card-title text-cyan">Enter New Card</h5>
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="nav-item">
+                                <a href="#iprofile" class="nav-link active" aria-controls="home" role="tab"
+                                   data-toggle="tab" aria-expanded="true">
+                                    <span class="visible-xs"><i class="ti-home"></i></span><span class="hidden-xs"> Credit/Debit</span>
+                                </a>
+                            </li>
+                            <!--
+                            <li role="presentation" class="nav-item">
+                                <a href="#ihome" class="nav-link" aria-controls="profile" role="tab" data-toggle="tab" aria-expanded="false">
+                                <span class="visible-xs"><i class="ti-user"></i></span>
+                                <span class="hidden-xs">Paypal</span>
+                            </a>
+                            </li>-->
+                        </ul>
+                        <div class="tab-content">
+                            <div role="tabpanel" class="tab-pane" id="ihome">
+                                <br> You can pay your money through paypal, for more info <a href="">click here</a>
+                                <br>
+                                <br>
+                                <button class="btn btn-info"><i class="fab fa-cc-paypal"></i> Pay with Paypal</button>
+                            </div>
+                            <div role="tabpanel" class="tab-pane active" id="iprofile">
+                                <div class="row">
+                                    <div class="col-md-7">
+                                    <!-- braintree form start -->
+                                        <form action="." method="post" class="braintree-form" id="braintree-form" autocomplete="off">
+                                          {% csrf_token %}
+
+                                          {% if braintree_error %}
+                                            <div class="alert alert-danger fade in">
+                                                <button class="close" data-dismiss="alert">&times;</button>
+                                                {{ braintree_error|safe }}
+                                            </div>
+                                          {% endif %}
+                                          <div class="braintree-notifications"></div>
+                                          <div id="braintree-dropin"></div>
+                                          <input style="background-color: #0783ca" id="submit-button" class="btn btn-success btn-lg btn-block" type="button" value="Pay now!" />
+                                    <!-- braintree form end -->
+                                            <div id="card-errors" role="alert"></div>
+                                            <div class="row form-inline col-5 mt-3">
+                                                <button id="stripeBtn" class="btn btn-primary">Submit Payment</button>
+                                                <div class="form-check mt-3">
+                                                    <input type="checkbox" class="form-check-input material-inputs checkbox-inline" name="save"
+                                                           id="save_card_info">
+                                                    <label style="font-size:12px" for="save_card_info">
+                                                        Save for future purchases</label>
+                                                </div>
+                                            </div>
+                                            <div id="card-errors" role="alert"></div>
+                                        </form>
+                                    <!-- end braintree form -->
+                                    </div>
+                                    <div class="col-md-4 ml-auto">
+                                        <h4 class="card-title mt-4">Accepted Payments</h4>
+                                        <h2><i class="fab fa-cc-visa text-info"></i> <i
+                                                class="fab fa-cc-mastercard text-danger"></i> <i
+                                                class="fab fa-cc-discover text-success"></i> <i
+                                                class="fab fa-cc-amex text-warning"></i></h2>
+                                        <p>Currently accept Visa, MasterCard, Maestro, American Express, JCB, Discover, Diners Club, Union Pay, Google Pay, Apple Pay.</p>
+                                        <p>Australian, Canadian, European, Hong Kongese, Japanese, and Singaporean businesses can accept Visa, MasterCard, Maestro, American Express, Google Pay, Apple Pay.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </row>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}
+
+{% block extra_scripts %}
+    <script src="https://js.braintreegateway.com/web/dropin/1.18.0/js/dropin.min.js"></script>
+    <script>
+
+    var currentCardForm = $('.current-card-form');
+    var newCardForm = $('.new-card-form');
+    var cardButton = $('.current-card-button');
+    var use_default_card = document.querySelector("input[name=use_default_card]");
+    use_default_card.addEventListener('change', function () {
+        if (this.checked) {
+            newCardForm.hide();
+            currentCardForm.show();
+            cardButton.show()
+        } else {
+            newCardForm.show();
+            currentCardForm.hide();
+            cardButton.hide()
+        }
+    })
+
+    </script>
+
+    <script>
+    var braintree_client_token = "{{ braintree_client_token }}";
+    var button = document.querySelector('#submit-button');
+
+    braintree.dropin.create({
+      authorization: braintree_client_token,
+      container: '#braintree-dropin',
+      card: {
+        cardholderName: {
+            required: false
+        }
+      }
+    }, function (createErr, instance) {
+        button.addEventListener('click', function () {
+            instance.requestPaymentMethod(function (err, payload) {
+                $.ajax({
+                    type: 'POST',
+                    url: '{% url "payment" %}',
+                    data: {'paymentMethodNonce': payload.nonce,
+                            'csrfmiddlewaretoken': '{{ csrf_token }}'}
+                }).done(function (result) {
+                   //do accordingly
+                });
+            });
+        });
+    });
+</script>
+{% endblock extra_scripts %}
