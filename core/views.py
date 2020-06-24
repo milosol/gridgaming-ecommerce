@@ -141,7 +141,7 @@ class CheckoutViewV2(View):
                 if payment_option == 'S':
                     return redirect('core:payment')
                 elif payment_option == 'P':
-                    return redirect('core:payment')
+                    return redirect('core:process')
                 else:
                     messages.warning(
                         self.request, "Invalid payment option selected")
@@ -183,7 +183,6 @@ class PaymentView(View):
                     'DISPLAY_COUPON_FORM': False,
                     'STRIPE_PUBLIC_KEY': settings.STRIPE_PUBLIC_KEY,
                     'client_token': client_token,
-
                 }
                 userprofile = self.request.user.user_profile
                 if userprofile.one_click_purchasing:
@@ -386,7 +385,7 @@ def add_to_cart(request, slug):
     if order_qs.exists():
         order = order_qs[0]
         # check if the order item is in the order
-        if order.items.filter(item__slug=item.slug).exists():
+        if order.items.filter(kind=0, item__slug=item.slug).exists():
             order_item.quantity += 1
             order_item.available_to_run += 1
             order_item.save()
@@ -561,18 +560,18 @@ class PaypalPaymentProcess(View):
         # order = get_object_or_404(Order, id=order_id)
         order = Order.objects.get(user=self.request.user, ordered=False)
         host = request.get_host()
-
+        # print("--------------------", 'http://{}{}'.format(host, reverse('core:paypal-ipn')))
         paypal_dict = {
             'business': settings.PAYPAL_RECEIVER_EMAIL,
             'amount': order.get_total(),
             'item_name': 'Order {}'.format(order.id),
             'invoice': str(order.id),
             'currency_code': 'USD',
-            'notify_url': 'http://{}{}'.format(host, reverse('paypal-ipn')),
+            # 'notify_url': 'http://{}{}'.format(host, reverse('core:paypal-ipn')),
             'return_url': 'http://{}{}'.format(host, reverse('core:done')),
             'cancel_return': 'http://{}{}'.format(host, reverse('core:canceled')),
         }
-        form = PayPalPaymentsForm(initial=paypal_dict)
+        form = PayPalPaymentsForm(initial=paypal_dict)  
         return render(request, 'shop_v2/process.html', {'order': order,
                                                         'form': form})
 

@@ -14,6 +14,7 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),
     path('shop/', include('core.urls', namespace='shop')),
     path('contests/', include('retweet_picker.urls', namespace='contests')),
+    path('slot/', include('slotapp.urls', namespace='slot')),
     path('django-rq/', include('django_rq.urls')),
     path('bubble5000/', bubble5000, name='bubble5000'),
     path('', include('frontend.urls', namespace='frontend'))

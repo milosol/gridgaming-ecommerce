@@ -8,7 +8,9 @@ from .models import (
     Coupon,
     Refund,
     Address,
-    UserProfile
+    UserProfile,
+    Slotitem,
+    Checktime
 )
 
 
@@ -85,3 +87,5 @@ admin.site.register(Coupon)
 admin.site.register(Refund)
 admin.site.register(Address, AddressAdmin)
 admin.site.register(UserProfile)
+admin.site.register(Slotitem)
+admin.site.register(Checktime)

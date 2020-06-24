@@ -1,0 +1,56 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Load File</title>
+    <link href="{% static 'slotapp/css/main.css' %}" rel="stylesheet">
+
+    <link rel="stylesheet" href="{% static 'slotapp/css/bootstrap.min.css' %}">
+    <script src="{% static 'slotapp/js/jquery.min.js' %}"></script>
+    <script src="{% static 'slotapp/js/popper.min.js' %}"></script>
+    <script src="{% static 'slotapp/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'slotapp/js/main.js' %}"></script>
+
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-2"></div>
+            <div class="col-sm-8 text-center pt-5">
+                <div class="form-group">
+                    <label for="username">User Name:</label>
+                    <select class="form-control" id="username">
+                        {% for user in data %}
+                        <option value="{{user.id}}">{{user.username}}</option>
+                        {% endfor %}
+                    </select>
+                    <button id="btn_login" type="button" class="btn btn-outline-primary mt-3">Next</button>
+                </div>
+            </div>
+            <div class="col-sm-2"></div>
+        </div>
+    </div>
+</body>
+<script>
+    $(function(){
+        $(btn_login).click(function(){
+            var sel_user = $("#username").val(); 
+            $.ajax({ 
+                type:"POST",
+                url: "./index",
+                data: {'user_id': sel_user},
+                success: function(data){
+                    if(data.success == true){
+                        window.location = "./first-page";
+                    }else{
+                        
+                    }
+                }
+            })
+        })
+    })
+</script>
+</html>

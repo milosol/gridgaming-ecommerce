@@ -33,7 +33,8 @@ INSTALLED_APPS = [
     'django_rq',
     'scheduler',
     'frontend',
-    'mathfilters'
+    'mathfilters',
+    'slotapp'
 ]
 
 MIDDLEWARE = [

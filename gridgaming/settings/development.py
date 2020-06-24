@@ -66,7 +66,7 @@ BRAINTREE_ENVIRONMENT='sandbox'
 
 
 #PAYPAL_RECEIVER_EMAIL = 'sb-nckcy2223315@business.example.com'
-PAYPAL_RECEIVER_EMAIL = 'sb-nckcy2223315@business.example.com'
+PAYPAL_RECEIVER_EMAIL = 'sb-ufygx2384593@business.example.com'
 PAYPAL_TEST = True
 
 SITE_ID = 2

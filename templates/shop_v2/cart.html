@@ -31,6 +31,7 @@
                             </thead>
                             <tbody>
                             {% for order_item in object.items.all %}
+                            {% if order_item.kind == 0 %}
                                 <tr>
                                     <td width="150"><img src="{{ order_item.item.image.url }}" alt="" width="80">
                                     </td>
@@ -63,6 +64,7 @@
                                                           data-toggle="tooltip" data-original-title="Delete"><i
                                             class="ti-trash text-dark"></i></a></td>
                                 </tr>
+                            {% endif %}
                             {% endfor %}
                             </tbody>
                         </table>

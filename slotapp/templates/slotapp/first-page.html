@@ -1,0 +1,444 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block extra_css %}
+    <style>
+        .td-action{
+            display: flex;
+            justify-content: start;
+            max-width: 120px;
+        }
+        .td-action a{
+            font-size: 16px;
+            color: white;
+        }
+        .td-action a:hover{
+            color: red;
+        }
+        .td-action a:nth-child(2){
+            margin-left: 20px;
+        }
+        .logo-img{
+            width: 100px;
+            height: 100px;
+            border: 1px solid black;
+        }
+        label.error{
+            display: none;
+        }
+    </style>
+    <link href="{% static 'slotapp/css/main.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+
+    <!-- <link rel="stylesheet" href="{% static 'slotapp/css/bootstrap.min.css' %}">
+    <script src="{% static 'slotapp/js/jquery.min.js' %}"></script>
+    <script src="{% static 'slotapp/js/popper.min.js' %}"></script>
+    <script src="{% static 'slotapp/js/bootstrap.min.js' %}"></script> -->
+{% endblock extra_css %}
+
+{% block content %}
+        <div id="slot_container" class="slot-container">
+            <div class="row">
+                {% for s in data.slots %}
+                <div class="col-sm-6 py-4 px-2 border-bottom">
+                    <div class="d-flex justify-content-between text-white bg-secondary rounded shadow-lg">
+                        <div>
+                            <img src="{{s.image.url}}" class="rounded logo-img" alt="Cinque Terre"> 
+                            <!-- <img src="{% static 'slotapp/img/' %}{{s.image}}" class="rounded logo-img" alt="Cinque Terre">  -->
+                        </div>
+                        <div>
+                        </div>  
+                        <div class="px-3 pt-2 flex-fill" style="max-height: 100px; overflow: hidden;">
+                            <h4>{{s.title}}</h4>
+                            <p class="d-inline-flex">Here is description if it has...</p>
+                        </div>
+                        <div class="px-3 pt-3">
+                            <div class="d-flex flex-column">
+                                <button onclick="toCart({{s.id}})" type="button" style="width:110px;" class="btn btn-primary px-4 rounded-pill">To Cart</button>
+                                <h4 id="slot_{{s.id}}" class="align-self-center pt-2">{{s.available}} / {{s.total}}</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div id="div_timing" class="bg-success px-4 py-1 text-white" style="display: none;">
+            Remain Time: <span id="span_timing"></span>
+        </div>
+        <div id="cart_container" class="cart-container pt-5">
+            <h2 class="">Your Cart</h2>
+            <div class="table-container pt-3">
+                <table class="table table-dark table-hover">
+                    <thead>
+                      <tr>
+                        <th>Slot</th>
+                        <th>Points</th>
+                        <th>Sub Total ($)</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody id="cart_tbody">
+                      
+                    </tbody>
+                  </table>
+            </div>
+            
+        </div>
+        <div class="d-flex py-3 justify-content-center">
+            <button onclick="showCheckout()" type="button" class="btn btn-success px-4 mx-3 rounded-pill">Check out</button>
+            <button onclick="checkout(2)" type="button" class="btn btn-danger px-4 mx-3 rounded-pill">Empty cart</button>
+        </div>
+        <div id="ordered_container" class="cart-container pt-5">
+            <h2 class="">Ordered Slots</h2>
+            <div class="table-container pt-3">
+                <table class="table table-dark table-hover">
+                    <thead>
+                      <tr>
+                        <th>Slot</th>
+                        <th>Points</th>
+                        <th>Sub Total ($)</th>
+                        <th>username</th>
+                      </tr>
+                    </thead>
+                    <tbody id="ordered_tbody">
+                      
+                    </tbody>
+                  </table>
+            </div>
+            
+        </div>
+    <div class="modal fade" id="myModal">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+          
+            <!-- Modal Header -->
+            <div class="modal-header">
+              <h4 class="modal-title">Enter username</h4>
+              <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            
+            <!-- Modal body -->
+            <div class="modal-body">
+                <form id="form_usernames" class="was-validated" onsubmit="return check_submit(event)" id="form_username">
+                    <div id="username_container">
+
+                    </div>
+                    <!-- <div class="form-group d-flex align-items-center">
+                      <label for="uname" style="min-width: 100px; text-align: center;">Twitter:</label>
+                      <input type="text" class="form-control ml-3" id="uname" placeholder="Enter username" name="uname" required>
+                      <div class="valid-feedback" hidden>Valid.</div>
+                      <div class="invalid-feedback" hidden>Please fill out this field.</div>
+                    </div>
+                    -->
+
+                    <div style="height: 40px; padding-left: calc(50% - 100px);">
+                        <button type='submit' class="btn btn-primary mr-3" style="width: 200px;position: absolute;">Check out</button>
+                        <div id="paypal_btn" style="width: 200px; margin: auto; position: absolute; display: none; opacity:0" ></div>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Modal footer -->
+            <!-- <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div> -->
+          </div>
+        </div>
+      </div>
+
+      <template id="username_row">
+        <div class="form-group d-flex align-items-center username-div" id="ur_id">
+            <label for="label_id" style="min-width: 100px; text-align: center;">label_text</label>
+            <input type="text" class="form-control ml-3" id="label_id" placeholder="Enter username" name="label_id" required>
+        </div>
+      </template> 
+
+{% endblock %}
+{% block extra_scripts %}
+<script src="https://www.paypalobjects.com/api/checkout.js"></script>
+<script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>
+<script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/additional-methods.min.js"></script>
+
+<script>
+    var user_id = {{data.user.id}};
+    var remain_time = {{data.time}} - 1;
+    var timer_handle = 0;
+
+    var base_url = window.location.origin;
+    var CREATE_PAYMENT_URL = base_url + "/slot/payment";
+    var EXECUTE_PAYMENT_URL = base_url + "/slot/payment_execute";
+    var RETURN_URL = base_url + "/slot/first-page";
+    var CANCEL_URL = base_url + "/slot/first-page";
+            
+    $(function(){
+        getCart();
+        setInterval(() => {
+            getAvailable();
+        }, 2000);
+        $("#myModal").on("hidden.bs.modal", function () {
+            setPause(0);
+        });
+        start_timing();
+
+        paypal.Button.render({
+            style: {
+                color: 'blue',
+                size: 'responsive',
+                label: 'paypal'
+            },
+            env: 'sandbox',  //production, sandbox
+            commit: true,
+            payment: function () {
+                return paypal.request.post(CREATE_PAYMENT_URL, {
+                    user_id: user_id,
+                    return_url: RETURN_URL,
+                    cancel_url: CANCEL_URL
+                }).then(function (data) {
+                    return data.paymentID;
+                });
+            },
+            onAuthorize: function (data) {
+                usernames = getusernames();
+                return paypal.request.post(EXECUTE_PAYMENT_URL, {
+                    paymentID: data.paymentID,
+                    payerID: data.payerID,
+                    user_id: user_id,
+                    usernames: JSON.stringify(usernames)
+                }).then(function (res) {
+                    console.log(res);
+                    if (res.success == true) {
+                        location.reload();
+                    }
+                });
+            },
+            onError: function (err) {
+                //console.log(err);
+                // Show an error page here, when an error occurs
+            }
+        }, '#paypal_btn')
+    })
+    function start_timing(){
+        
+        if(remain_time > 0){
+            var mm = parseInt(remain_time / 20);
+            var ss = remain_time % 20;
+            $("#span_timing").html(mm +" min " + ss + " sec");
+
+            timer_handle = setInterval(()=>{
+                if(remain_time > 0){
+                    remain_time -= 1;
+                    var mm = parseInt(remain_time / 20);
+                    var ss = remain_time % 20;
+                    $("#span_timing").html(mm +" min " + ss + " sec");
+                }else{
+                    $("#div_timing").hide();
+                    clearInterval(timer_handle);
+                }
+            }, 1000)
+            $("#div_timing").show();
+        }
+    }
+    function stop_timing(kind=0){
+        if(timer_handle){
+            clearInterval(timer_handle);
+        }
+        if(kind == 1){
+            $("#div_timing").hide();
+            remain_time = 0;
+        }
+    }
+    function check_submit(event){
+        event.preventDefault();
+        // checkout(1);
+        return false;
+    }
+    function showCheckout(){
+       if($("#cart_tbody tr").length == 0) return;
+       setPause(1);
+       $("#myModal").modal();
+    }
+    function setPause(kind){
+        $.ajax({
+            type:"POST",
+            url: "./setpause",
+            data: {'user_id': user_id, "kind": kind},
+            success: function(data){
+                if(data.success == true){
+                    if(kind == 0){
+                        remain_time = data.time;
+                        start_timing();
+                    }else{
+                        stop_timing();
+                    }
+                }else{
+                }
+            }
+        })
+    }
+    function toCart(slot_id){
+        $.ajax({
+            type:"POST",
+            url: "./tocart",
+            data: {'user_id': user_id, "slot_id": slot_id},
+            success: function(data){
+                if(data.success == true){
+                    if(data.kind == 0){
+                        setAvailable(slot_id, data.available + " / " + data.total)
+                    }
+                    getCart();
+                    if(data.time_set == 1){
+                        remain_time = data.time;
+                        start_timing();
+                    }
+                }else{
+                    setAvailable(slot_id, data.available + " / " + data.total)
+                    alert(data.msg)
+                }
+            }
+        })
+    }
+    function setAvailable(slot_id, txt){
+        $("#slot_" + slot_id).html(txt);
+    }
+    function getCart(){
+        $.ajax({
+            type:"POST",
+            url: "./getcart",
+            data: {'user_id': user_id},
+            success: function(data){
+                if(data.success == true){
+                    $("#cart_tbody").html("");
+                    var html_str = "";
+                    for(i=0;i<data.order_list.length;i++){
+                        var d = data.order_list[i]
+                        html_str += "<tr id='tr_" + d.id + "'><td>" + d.slot + "</td><td>" 
+                            + d.points + "</td><td>" + d.sub_total + "</td><td class='td-action'>" + 
+                            '<a href="#" onclick="cart_minus(' + d.id +')"><span class="fas fa-minus"></span></a>' + 
+                            '<a href="#" onclick="cart_trash(' + d.id +')"><span class="fas fa-trash"></span></a>' + 
+                            "</td></tr>"
+                            
+                    }
+                    $("#cart_tbody").html(html_str);
+                    $("#ordered_tbody").html("");
+                    var html_str = "";
+                    for(i=0;i<data.ordered_list.length;i++){
+                        var d = data.ordered_list[i]
+                        html_str += "<tr id='tr_" + d.id + "'><td>" + d.slot + "</td><td>" 
+                            + d.points + "</td><td>" + d.sub_total + "</td><td>" + d.username +
+                            "</td></tr>"
+                    }
+                    $("#ordered_tbody").html(html_str);
+
+                    setUserForm(data.order_list);
+                }else{
+                    
+                }
+            }
+        })
+    }
+    function cart_minus(slot_id, kind = 0){
+        $.ajax({
+            type:"POST",
+            url: "./cartminus",
+            data: {'user_id': user_id, 'slot_id': slot_id, 'kind': kind},
+            success: function(data){
+                if(data.success == true){
+                    getCart();
+                    if(data.end_timing == true){
+                        stop_timing(1)
+                    }
+                    var s = data.av_data;
+                    setAvailable(s.slot_id, s.available + " / " + s.total);
+                }else{
+                    alert(data.msg);
+                }
+            }
+        })
+    }
+    function cart_trash(slot_id){
+        cart_minus(slot_id, 1);
+    }
+    function setUserForm(data){
+        $("#username_container").html('');
+        var templ = $("#username_row").html()
+        var html_str = "";
+        for(i=0;i<data.length;i++){
+            var d = data[i]
+            var temp = templ;
+            temp = templ.replace(/label_id/g, 'label_' + d.id)
+            temp = temp.replace(/label_text/g, d.slot)
+            temp = temp.replace(/ur_id/g, 'ur_' + d.id)
+            html_str += temp;
+        }
+        $("#username_container").html(html_str);
+
+        $("#username_container input").keyup(function(){
+            $("#form_usernames").validate();
+            valid = $("#form_usernames").valid();
+            if(valid == true){
+                $("#paypal_btn").show();
+            }else{
+                $("#paypal_btn").hide();
+            }
+            console.log(valid);
+        })
+        
+    }
+    function getusernames(){
+        var usernames = []
+        var items = $("#username_container .username-div");
+        for(i=0;i<items.length;i++){
+            var temp = {}
+            temp.id = items[i].id.replace('ur_', '');
+            temp.name = $("#label_" + temp.id).val();
+            usernames.push(temp);
+        }
+        return usernames;
+    }
+    function checkout(kind){
+        var usernames = []
+        if(kind == 1){
+            usernames = getusernames();
+        }
+        $.ajax({
+            type:"POST",
+            url: "./checkout",
+            data: {'user_id': user_id, 'kind': kind, 'usernames': JSON.stringify(usernames)},
+            success: function(data){
+                if(data.success == true){
+                    getCart();
+                    if(kind == 2){
+                        for(i=0;i<data.slots.length;i++){
+                            var s = data.slots[i]
+                            setAvailable(s.slot_id, s.available);
+                        }
+                    }else{
+                        $('#myModal').modal('toggle');
+                    }
+                    stop_timing(1);
+                }else{
+                    
+                }
+            }
+        })
+    }
+    function getAvailable(){
+        $.ajax({ 
+            type:"POST",
+            url: "./get_available",
+            data: {'user_id': user_id},
+            success: function(data){
+                if(data.success == true){
+                    for(i=0;i<data.slots.length;i++){
+                        var s = data.slots[i]
+                        setAvailable(s.slot_id, s.available + " / " + s.total);
+                    }
+                    if(data.cart_refresh == true){
+                        getCart();
+                    }
+                }
+            }
+        })
+    }
+</script>
+{% endblock extra_scripts %}

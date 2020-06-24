@@ -116,30 +116,48 @@ class OrderItem(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE)
     ordered = models.BooleanField(default=False)
-    item = models.ForeignKey("Item", on_delete=models.CASCADE)
+    item = models.ForeignKey("Item", on_delete=models.CASCADE, null=True)
     quantity = models.IntegerField(default=1)
     available_to_run = models.IntegerField(default=1)
-
+    kind = models.IntegerField(default=0)
+    slot = models.ForeignKey("Slotitem", on_delete=models.CASCADE, null=True)
+    username = models.CharField(max_length=200, default='')
+    
     def __str__(self):
-        return f"{self.quantity} of {self.item.title}"
+        if self.kind == 0:
+            return f"{self.quantity} of {self.item.title}"
+        else:
+            return f"{self.quantity} of {self.slot.title}"
 
     def get_total_item_price(self):
         # self.user.related_field
         # self.user.account_type
-        price = (self.user.account_type.fee_quantifier * self.item.giveaway_fee) + self.item.giveaway_value
-        # return self.quantity * self.item.get_price()
-        return self.quantity * price
+        if self.kind == 0:
+            price = (self.user.account_type.fee_quantifier * self.item.giveaway_fee) + self.item.giveaway_value
+            # return self.quantity * self.item.get_price()
+            return self.quantity * price
+        else:
+            return 0
 
     def get_total_discount_item_price(self):
-        return self.quantity * self.item.discount_price
+        if self.kind == 0:
+            return self.quantity * self.item.discount_price
+        else:
+            return 0
 
     def get_amount_saved(self):
-        return self.get_total_item_price() - self.get_total_discount_item_price()
+        if kind == 0:
+            return self.get_total_item_price() - self.get_total_discount_item_price()
+        else:
+            return 0
 
     def get_final_price(self):
-        if self.item.discount_price:
-            return self.get_total_discount_item_price()
-        return self.get_total_item_price()
+        if self.kind == 0:
+            if self.item.discount_price:
+                return self.get_total_discount_item_price()
+            return self.get_total_item_price()
+        else:
+            return 0
 
     def decrease_available(self):
         self.available_to_run -= 1
@@ -197,19 +215,24 @@ class Order(models.Model):
     def get_total(self):
         total = 0
         for order_item in self.items.all():
+            if order_item.kind == 1:
+                continue
             total += order_item.get_final_price()
         if self.coupon:
             total -= self.coupon.amount
         return total
 
     def get_available_runs(self):
-        return ', '.join([x.item.title for x in self.items.all()])
+        # return ', '.join([x.item.title for x in self.items.all()])
+        return ', '.join([x.item.title for x in self.items.filter(kind=0)])
 
     def get_purchased_items(self):
-        return ', '.join([x.item.title for x in self.items.all()])
+        # return ', '.join([x.item.title for x in self.items.all()])
+        return ', '.join([x.item.title for x in self.items.filter(kind=0)])
 
     def get_items_sum(self):
-        return sum([y.quantity for y in self.items.all()])
+        # return sum([y.quantity for y in self.items.all()])
+        return sum([y.quantity for y in self.items.filter(kind=0)])
 
 
 class Address(models.Model):
@@ -281,3 +304,20 @@ def userprofile_receiver(sender, instance, created, *args, **kwargs):
 
 
 post_save.connect(userprofile_receiver, sender=settings.AUTH_USER_MODEL)
+
+# Create your models here.
+class Slotitem(models.Model):
+    title = models.CharField(max_length=200)
+    available = models.IntegerField(default=20)
+    total = models.IntegerField(default=20)
+    points = models.IntegerField(default=100)
+    value = models.IntegerField(default=25)
+    image = models.ImageField()
+        
+    def __str__(self):
+        return self.title
+
+class Checktime(models.Model):
+    time = models.IntegerField(default=5)
+    def __str__(self):
+        return str(self.time)
