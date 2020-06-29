@@ -50,7 +50,7 @@ class CheckoutViewV2(View):
         # generate all other required data that you may need on the #checkout page and add them to context.
 
         try:
-            order = Order.objects.get(user=self.request.user, ordered=False)
+            order = Order.objects.get(user=self.request.user, ordered=False, kind=0)
             form = CheckoutFormv2()
             context = {
                 'form': form,
@@ -81,7 +81,7 @@ class CheckoutViewV2(View):
     def post(self, *args, **kwargs):
         form = CheckoutFormv2(self.request.POST or None)
         try:
-            order = Order.objects.get(user=self.request.user, ordered=False)
+            order = Order.objects.get(user=self.request.user, ordered=False, kind=0)
             if form.is_valid():
 
                 use_default_billing = form.cleaned_data.get(
@@ -161,7 +161,7 @@ class CheckoutViewV2(View):
 def get_user_pending_order(request):
     # get order for the correct user
     user_profile = get_object_or_404(UserProfile, user=request.user)
-    order = Order.objects.filter(user=user_profile.user, ordered=False)
+    order = Order.objects.filter(user=user_profile.user, ordered=False, kind=0)
     if order.exists():
         # get the only order in the list of filtered orders
         return order[0]
@@ -354,7 +354,7 @@ class HomeView(ListView):
 class OrderSummaryView(LoginRequiredMixin, View):
     def get(self, *args, **kwargs):
         try:
-            order = Order.objects.get(user=self.request.user, ordered=False)
+            order = Order.objects.get(user=self.request.user, ordered=False, kind=0)
             socials = Item.objects.filter(category='SB')
             context = {
                 'object': order,
@@ -381,7 +381,7 @@ def add_to_cart(request, slug):
         user=request.user,
         ordered=False
     )
-    order_qs = Order.objects.filter(user=request.user, ordered=False)
+    order_qs = Order.objects.filter(user=request.user, ordered=False, kind=0)
     if order_qs.exists():
         order = order_qs[0]
         # check if the order item is in the order
@@ -410,7 +410,8 @@ def remove_from_cart(request, slug):
     item = get_object_or_404(Item, slug=slug)
     order_qs = Order.objects.filter(
         user=request.user,
-        ordered=False
+        ordered=False,
+        kind=0
     )
     if order_qs.exists():
         order = order_qs[0]
@@ -442,7 +443,8 @@ def remove_single_item_from_cart(request, slug):
     item = get_object_or_404(Item, slug=slug)
     order_qs = Order.objects.filter(
         user=request.user,
-        ordered=False
+        ordered=False,
+        kind=0
     )
     if order_qs.exists():
         order = order_qs[0]
@@ -494,7 +496,7 @@ class AddCouponView(View):
             try:
                 code = form.cleaned_data.get('code')
                 order = Order.objects.get(
-                    user=self.request.user, ordered=False)
+                    user=self.request.user, ordered=False, kind=0)
                 try:
                     order.coupon = get_coupon(self.request, code)
                     order.save()
@@ -558,16 +560,15 @@ class PaypalPaymentProcess(View):
         print("in process")
         # order_id = request.GET['order_id']
         # order = get_object_or_404(Order, id=order_id)
-        order = Order.objects.get(user=self.request.user, ordered=False)
+        order = Order.objects.get(user=self.request.user, ordered=False, kind=0)
         host = request.get_host()
-        # print("--------------------", 'http://{}{}'.format(host, reverse('core:paypal-ipn')))
         paypal_dict = {
             'business': settings.PAYPAL_RECEIVER_EMAIL,
             'amount': order.get_total(),
             'item_name': 'Order {}'.format(order.id),
-            'invoice': str(order.id),
+            'invoice': str(order.id) + "_0",
             'currency_code': 'USD',
-            # 'notify_url': 'http://{}{}'.format(host, reverse('core:paypal-ipn')),
+            'notify_url': 'http://{}{}'.format(host, reverse('core:paypal-ipn')),
             'return_url': 'http://{}{}'.format(host, reverse('core:done')),
             'cancel_return': 'http://{}{}'.format(host, reverse('core:canceled')),
         }
@@ -582,10 +583,14 @@ class OrderView(View):
     def get(self, *args, **kwargs):
         try:
             orders = Order.objects.filter(user=self.request.user, ordered=True)
+            # slot_orders = Order.objects.filter(user=self.request.user, ordered=True, kind=1)
+            slot_items = OrderItem.objects.filter(user=self.request.user, ordered=True, kind=1)
             context = {
                 'orders': orders,
+                # 'slot_orders': slot_orders,
+                'slot_items': slot_items,
             }
-
+            
             billing_address_qs = Address.objects.filter(
                 user=self.request.user,
                 address_type='B',
@@ -596,6 +601,67 @@ class OrderView(View):
                     {'default_billing_address': billing_address_qs[0]})
 
             return render(self.request, "shop_v2/orders.html", context)
+        except ObjectDoesNotExist:
+            messages.info(self.request, "You do not have an active order")
+            return redirect("core:home")
+
+
+
+
+@method_decorator(account_type_check, name='dispatch')
+class AllOrderView(View):
+
+    def get(self, *args, **kwargs):
+        try:
+            orders = Order.objects.filter(user=self.request.user, ordered=True, kind=1)
+            slot_items = OrderItem.objects.filter(user=self.request.user, ordered=True, kind=1)
+            data = []
+            for item in slot_items:
+                temp = {}
+                temp['username'] = item.user.username 
+                temp['email'] = item.user.email
+                temp['slot_user'] = item.username
+                temp['title'] = item.slot.title
+                temp['points'] = item.quantity * item.slot.points
+                temp['amount'] = item.quantity * item.slot.value
+                data.append(temp)
+            sort_data = sorted(data, key = lambda i: (i['username'], i['title'], i['slot_user'], i['points']))  
+            context = {
+                'orders': sort_data,
+            }
+
+            return render(self.request, "shop_v2/allorders.html", context)
+        except ObjectDoesNotExist:
+            messages.info(self.request, "You do not have an active order")
+            return redirect("core:home")
+        
+@method_decorator(account_type_check, name='dispatch')
+class AccountView(View):
+
+    def get(self, *args, **kwargs):
+        try:
+            orders = Order.objects.filter(ordered=True, kind=1)
+            accounts = []
+            ids = []
+            for order in orders:
+                if order.items.all().count() == 0:
+                    continue
+                if order.user.id in ids:
+                    continue
+                else:
+                    ids.append(order.user.id)
+                    temp = {}
+                    temp['username'] = order.user.username
+                    temp['email'] = order.user.email
+                    temp['name'] = order.user.first_name + " " + order.user.last_name
+                    temp['date'] = order.user.date_joined
+                    accounts.append(temp)
+            print(accounts)
+            context = {
+                'accounts': accounts,
+            }
+
+            return render(self.request, "shop_v2/accounts.html", context)
         except ObjectDoesNotExist:
             messages.info(self.request, "You do not have an active order")
             return redirect("core:home")

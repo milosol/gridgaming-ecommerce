@@ -5,11 +5,11 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
-from core.models import UserProfile, Order, OrderItem, Slotitem, Checktime
-
+from core.models import UserProfile, Order, OrderItem, Slotitem, Checktime, Payment
+from core.views import create_ref_code
 import paypalrestsdk
 from paypalrestsdk import Payout, ResourceNotFound
-
+from background_task import background
 import threading
 import time
 import json
@@ -100,8 +100,14 @@ def first_page(request):
         if  item['user_id'] == str(user_id):
             data['time'] = item['remain_time']
             break
-        
-        
+    launched = False
+    launch_time = 24
+    rows = Checktime.objects.all()
+    if rows.count() > 0:
+        launched = rows[0].launched
+        launch_time = rows[0].launch_time
+    data['launched'] = launched    
+    data['launch_time'] = launch_time  
     return render(request, 'slotapp/first-page.html', {'data': data})
 
 @csrf_exempt
@@ -132,13 +138,13 @@ def tocart(request):
             order_item.save()
             res['kind'] = 1     # not first adding slot to cart
         else:
-            order_qs = Order.objects.filter(user=request.user, ordered=False)
+            order_qs = Order.objects.filter(user=request.user, ordered=False, kind=1)
             if order_qs.exists():
                 order = order_qs[0]
             else:
                 ordered_date = timezone.now()
                 order = Order.objects.create(
-                    user=request.user, ordered_date=ordered_date)
+                    user=request.user, ordered_date=ordered_date, kind=1)
             order.items.add(order_item)     # first adding to cart
             item.available = item.available - 1
             item.save()
@@ -165,7 +171,7 @@ def getcart(request):
     ordered_list = []
     order_list = []
     
-    order_qs = Order.objects.filter(user=request.user)
+    order_qs = Order.objects.filter(user=request.user, ordered=False, kind=1)
     if order_qs.exists():
         order = order_qs[0]
         order_items = order.items.filter(kind=1)
@@ -198,7 +204,7 @@ def cartminus(request):
     slot_id = request.POST['slot_id']
     kind = request.POST['kind'] # 1: trash 0: minus
     
-    order_qs = Order.objects.filter(user=request.user, ordered=False)
+    order_qs = Order.objects.filter(user=request.user, ordered=False, kind=1)
     if order_qs.exists():
         order = order_qs[0]
         order_items = order.items.filter(kind=1, slot__id=slot_id, ordered=False)
@@ -289,7 +295,7 @@ def docheck(user_id, kind, usernames = []):
             break
     
     user = User.objects.get(id=user_id)
-    order_qs = Order.objects.filter(user=user, ordered=False)
+    order_qs = Order.objects.filter(user=user, ordered=False, kind=1)
     if not order_qs.exists():
         res['success'] = False
         res['msg'] = "You have no order information."     
@@ -299,6 +305,18 @@ def docheck(user_id, kind, usernames = []):
     if kind == '1':
         for u in usernames:
             order.items.filter(kind=1, slot__id=u['id'], ordered=False, user=user).update(ordered=True, username=u['name'])
+        
+        payment = Payment()
+        payment.payment_method = 'P'
+        payment.user = order.user
+        payment.amount = order.get_total()
+        payment.save()
+        
+        order.ordered = True
+        order.status = 'P'
+        order.payment = payment
+        order.ref_code = create_ref_code()
+        order.save()
     else:
         data_list = []
         order_items = order.items.filter(kind=1, ordered=False, user=user)
@@ -318,13 +336,14 @@ def docheck(user_id, kind, usernames = []):
         res['slots'] = data_list
     return res
 
+
 @csrf_exempt
 def slot_payment(request):
     user_id = request.POST['user_id']
     return_url = request.POST['return_url']
     cancel_url = request.POST['cancel_url']
     user = User.objects.get(id=user_id)
-    order_qs = Order.objects.filter(user=user, ordered=False)
+    order_qs = Order.objects.filter(user=user, ordered=False, kind=1)
     order = order_qs[0]
     order_items = order.items.filter(kind=1, ordered=False)
     amount = 0
@@ -352,7 +371,7 @@ def slot_payment(request):
                     "currency": "USD"},
                 "description": "This is the payment transaction description."}]})  
         if payment.create():
-            print("----------------- payment success")
+            print("- - - - - - payment success")
         else:
             print(payment.error)
     except Exception as e:
@@ -371,7 +390,7 @@ def slot_payment_execute(request):
         print("Execute success")
         amount = float(payment.transactions[0].amount.total)
         fee = float(payment.transactions[0].related_resources[0].sale.transaction_fee.value)
-        print("------payment result--amount: ", amount, fee)
+        print(" - - - - payment amount: ", amount, fee)
         resp['amount'] = round(amount, 2)
         docheck(user_id, '1', usernames)
     else:
@@ -379,3 +398,24 @@ def slot_payment_execute(request):
         resp['msg'] = payment.error
         print(payment.error)
     return JsonResponse(resp)
+
+@login_required
+def launch(request):
+    value = request.GET.get('value', 0)
+    setLaunch(True if value == '1' else False)
+    if value == '1':
+        launch_time = 24
+        rows = Checktime.objects.all()
+        if rows.count() > 0:
+            launch_time = rows[0].launch_time
+        print("======= launch _time :", launch_time)
+        launch_back(schedule=50)
+    return redirect('./first-page')
+
+def setLaunch(value):
+    Checktime.objects.all().update(launched=value)
+    
+@background(schedule=50)
+def launch_back():
+    print("=============Bacgkrond launched===")
+    setLaunch(False)

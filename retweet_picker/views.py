@@ -78,7 +78,7 @@ def new_retweet_contest(request):
 
 
 def order_items_prefetch_related_efficient(user_id):
-    queryset = Order.objects.filter(ordered=True, user=user_id).prefetch_related(Prefetch("items",
+    queryset = Order.objects.filter(ordered=True, user=user_id, kind=1).prefetch_related(Prefetch("items",
                                                                                           queryset=OrderItem.
                                                                                           objects.select_related(
                                                                                               "item"),
@@ -170,7 +170,7 @@ def launch_giveaway(request, order_id, item_id):
 
 def prelaunch_validator(request, order_id, item_id):
     queryset = Order.objects.filter(ordered=True,
-                                    id=request.user.id).prefetch_related(Prefetch("items", queryset=OrderItem.
+                                    id=request.user.id, kind=1).prefetch_related(Prefetch("items", queryset=OrderItem.
                                                                                   objects.filter(
         item_id=item_id).select_related(
         "item"),

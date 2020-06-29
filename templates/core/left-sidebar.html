@@ -12,10 +12,12 @@
                 <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark" href="{% url 'core:home' %}" aria-expanded="false"><i class="mdi mdi-cart-outline"></i><span class="hide-menu">Shop</span></a>
                 <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark" href="{% url 'retweet_picker:giveaway-list' %}" aria-expanded="false"><i class="mdi mdi-rocket"></i><span class="hide-menu">Launch Pad</span></a>
                 <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark" href="{% url 'slotapp:first_page' %}" aria-expanded="false"><i class="mdi mdi-cart-outline"></i><span class="hide-menu">Community Giveaway</span></a>
+                    <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark" href="{% url 'core:user-orders' %}" aria-expanded="false"><i class="mdi zmdi-money-box"></i><span class="hide-menu">Orders</span></a> 
                     {#                <li class="sidebar-item"> <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false"><i class="mdi mdi-gauge"></i><span class="hide-menu">Dashboard </span></a>#}
                         {% if request.user.is_staff %}
                             <!-- <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark" href="https://www.gridgaming.io/gridadmin/core/order/" aria-expanded="false"><i class="mdi zmdi-money-box"></i><span class="hide-menu">Orders</span></a> -->
-                            <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark" href="http://localhost:8000/gridadmin/core/order/" aria-expanded="false"><i class="mdi zmdi-money-box"></i><span class="hide-menu">Orders</span></a>
+                            <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark" href="{% url 'core:all-orders' %}" aria-expanded="false"><i class="mdi zmdi-money-box"></i><span class="hide-menu">All Community Orders</span></a>
+                            <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark" href="{% url 'core:accounts' %}" aria-expanded="false"><i class="mdi zmdi-money-box"></i><span class="hide-menu">Accounts</span></a>
                         {% endif %}
         
                         <!--<li class="nav-small-cap"><i class="mdi mdi-dots-horizontal"></i> <span class="hide-menu">Personal</span></li>-->

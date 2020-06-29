@@ -15,6 +15,8 @@ from .views import (
     AddCouponView,
     RequestRefundView,
     OrderView,
+    AllOrderView,
+    AccountView,
     PaypalPaymentProcess,
     payment_done,
     payment_canceled
@@ -27,6 +29,8 @@ urlpatterns = [
     path('checkout/', login_required(CheckoutViewV2.as_view()), name='checkout'),
     path('order-summary/', login_required(OrderSummaryView.as_view()), name='order-summary'),
     path('orders/', login_required(OrderView.as_view()), name='user-orders'),
+    path('all-orders/', login_required(AllOrderView.as_view()), name='all-orders'),
+    path('accounts/', login_required(AccountView.as_view()), name='accounts'),
     path('product/<slug>/', login_required(ItemDetailView.as_view()), name='product'),
     path('add-to-cart/<slug>/', add_to_cart, name='add-to-cart'),
     path('add-coupon/', login_required(AddCouponView.as_view()), name='add-coupon'),

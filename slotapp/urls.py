@@ -11,6 +11,7 @@ urlpatterns = [
     path('createusers', views.create_users, name='create_users'),
     path('first-page', views.first_page, name='first_page'),
     path('tocart', views.tocart, name='tocart'),
+    path('launch', views.launch, name='launch'),
     path('getcart', views.getcart, name='getcart'),
     path('setpause', views.setpause, name='setpause'),
     path('cartminus', views.cartminus, name='cartminus'),

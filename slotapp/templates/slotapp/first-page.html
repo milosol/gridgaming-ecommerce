@@ -36,11 +36,26 @@
 {% endblock extra_css %}
 
 {% block content %}
+        {% if data.launched == False %}
+        <div>
+            {% if request.user.is_staff %}
+            <a href='./launch?value=1' class='btn btn-primary'>Launch Community Giveaway</a>
+            {% else %}
+            <h3>Registration Closed</h3>
+            {% endif %}
+        </div>
+        {% else %}
+        <div>
+            {% if request.user.is_staff %}
+            <a href='./launch?value=0' class='btn btn-secondary'>Close Community Giveaway</a>
+            {% endif %}
+        </div>
+        
         <div id="slot_container" class="slot-container">
             <div class="row">
                 {% for s in data.slots %}
                 <div class="col-sm-6 py-4 px-2 border-bottom">
-                    <div class="d-flex justify-content-between text-white bg-secondary rounded shadow-lg">
+                    <div class="d-flex justify-content-between text-white rounded shadow-lg">
                         <div>
                             <img src="{{s.image.url}}" class="rounded logo-img" alt="Cinque Terre"> 
                             <!-- <img src="{% static 'slotapp/img/' %}{{s.image}}" class="rounded logo-img" alt="Cinque Terre">  -->
@@ -49,7 +64,7 @@
                         </div>  
                         <div class="px-3 pt-2 flex-fill" style="max-height: 100px; overflow: hidden;">
                             <h4>{{s.title}}</h4>
-                            <p class="d-inline-flex">Here is description if it has...</p>
+                            <p class="d-inline-flex">{{s.description}}</p>
                         </div>
                         <div class="px-3 pt-3">
                             <div class="d-flex flex-column">
@@ -88,7 +103,7 @@
             <button onclick="showCheckout()" type="button" class="btn btn-success px-4 mx-3 rounded-pill">Check out</button>
             <button onclick="checkout(2)" type="button" class="btn btn-danger px-4 mx-3 rounded-pill">Empty cart</button>
         </div>
-        <div id="ordered_container" class="cart-container pt-5">
+        <div id="ordered_container" class="cart-container pt-5" hidden>
             <h2 class="">Ordered Slots</h2>
             <div class="table-container pt-3">
                 <table class="table table-dark table-hover">
@@ -152,9 +167,10 @@
             <input type="text" class="form-control ml-3" id="label_id" placeholder="Enter username" name="label_id" required>
         </div>
       </template> 
-
+      {% endif %}
 {% endblock %}
 {% block extra_scripts %}
+{% if data.launched == True %}
 <script src="https://www.paypalobjects.com/api/checkout.js"></script>
 <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>
 <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/additional-methods.min.js"></script>
@@ -319,15 +335,15 @@
                             
                     }
                     $("#cart_tbody").html(html_str);
-                    $("#ordered_tbody").html("");
-                    var html_str = "";
-                    for(i=0;i<data.ordered_list.length;i++){
-                        var d = data.ordered_list[i]
-                        html_str += "<tr id='tr_" + d.id + "'><td>" + d.slot + "</td><td>" 
-                            + d.points + "</td><td>" + d.sub_total + "</td><td>" + d.username +
-                            "</td></tr>"
-                    }
-                    $("#ordered_tbody").html(html_str);
+                    // $("#ordered_tbody").html("");
+                    // var html_str = "";
+                    // for(i=0;i<data.ordered_list.length;i++){
+                    //     var d = data.ordered_list[i]
+                    //     html_str += "<tr id='tr_" + d.id + "'><td>" + d.slot + "</td><td>" 
+                    //         + d.points + "</td><td>" + d.sub_total + "</td><td>" + d.username +
+                    //         "</td></tr>"
+                    // }
+                    // $("#ordered_tbody").html(html_str);
 
                     setUserForm(data.order_list);
                 }else{
@@ -441,4 +457,5 @@
         })
     }
 </script>
+{% endif %}
 {% endblock extra_scripts %}

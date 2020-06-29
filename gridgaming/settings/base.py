@@ -34,7 +34,8 @@ INSTALLED_APPS = [
     'scheduler',
     'frontend',
     'mathfilters',
-    'slotapp'
+    'slotapp',
+    'background_task'
 ]
 
 MIDDLEWARE = [

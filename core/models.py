@@ -45,7 +45,8 @@ SCHEDULER_QUEUE = (
 
 PAYMENT_METHOD = (
     ('S', 'Stripe'),
-    ('B', 'Braintree')
+    ('B', 'Braintree'),
+    ('P', 'Paypal')
 )
 
 
@@ -157,7 +158,7 @@ class OrderItem(models.Model):
                 return self.get_total_discount_item_price()
             return self.get_total_item_price()
         else:
-            return 0
+            return self.quantity * self.slot.value
 
     def decrease_available(self):
         self.available_to_run -= 1
@@ -180,6 +181,7 @@ class Order(models.Model):
     desired_giveaway_date = models.DateTimeField(default=timezone.now, blank=True)
     ordered_date = models.DateTimeField(auto_now_add=True)
     ordered = models.BooleanField(default=False)
+    kind = models.IntegerField(default=0)
     status = models.CharField(max_length=20, choices=GIVEAWAY_STATUS_CHOICES, default='I', blank=True, null=True)
     notes = models.TextField(blank=True, max_length=500)
     shipping_address = models.ForeignKey(
@@ -215,8 +217,6 @@ class Order(models.Model):
     def get_total(self):
         total = 0
         for order_item in self.items.all():
-            if order_item.kind == 1:
-                continue
             total += order_item.get_final_price()
         if self.coupon:
             total -= self.coupon.amount
@@ -228,11 +228,18 @@ class Order(models.Model):
 
     def get_purchased_items(self):
         # return ', '.join([x.item.title for x in self.items.all()])
-        return ', '.join([x.item.title for x in self.items.filter(kind=0)])
+        if self.kind == 0:
+            return ', '.join([x.item.title for x in self.items.filter(kind=0)])
+        else:
+            return ', '.join([x.slot.title for x in self.items.filter(kind=1)])
 
     def get_items_sum(self):
         # return sum([y.quantity for y in self.items.all()])
-        return sum([y.quantity for y in self.items.filter(kind=0)])
+        if self.kind == 0:
+            return sum([y.quantity for y in self.items.filter(kind=0)])
+        else:
+            return sum([y.quantity for y in self.items.filter(kind=1)])
+        
 
 
 class Address(models.Model):
@@ -313,11 +320,14 @@ class Slotitem(models.Model):
     points = models.IntegerField(default=100)
     value = models.IntegerField(default=25)
     image = models.ImageField()
-        
+    description = models.TextField(blank=True)
     def __str__(self):
         return self.title
 
 class Checktime(models.Model):
     time = models.IntegerField(default=5)
+    launch_time = models.IntegerField(default=24)
+    launched = models.BooleanField(default=False)
+    status = models.IntegerField(default=0)
     def __str__(self):
         return str(self.time)
