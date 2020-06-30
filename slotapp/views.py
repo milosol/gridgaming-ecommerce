@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from core.models import UserProfile, Order, OrderItem, Slotitem, Checktime, Payment
 from core.views import create_ref_code
+from django.contrib import messages
 import paypalrestsdk
 from paypalrestsdk import Payout, ResourceNotFound
 import threading
@@ -393,6 +394,7 @@ def slot_payment_execute(request):
         print(" - - - - payment amount: ", amount, fee)
         resp['amount'] = round(amount, 2)
         docheck(user_id, '1', usernames)
+        messages.success(request, "Order complete!")
     else:
         resp['success'] = False
         resp['msg'] = payment.error

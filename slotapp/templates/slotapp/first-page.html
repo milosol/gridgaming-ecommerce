@@ -25,6 +25,27 @@
         label.error{
             display: none;
         }
+        .btn_cart{
+            background-color:rgb(192,5,248);
+            color: white;
+        }
+        .btn_cart:hover{
+            background-color:rgb(111, 1, 145);
+            border-color: none;
+            box-shadow: 0 8px 15px rgba(219, 102, 255, 0.295);
+            color: white;
+        }
+        .btn_addpoints{
+            background-color: rgb(255, 112, 0);
+            padding-left: 0!important;
+            padding-right: 0!important;
+        }
+        .btn_addpoints:hover{
+            background-color: rgb(172, 77, 4);
+            border-color: none;
+            box-shadow: 0 8px 15px rgba(248, 154, 82, 0.329);
+            color: white;
+        }
     </style>
     <link href="{% static 'slotapp/css/main.css' %}" rel="stylesheet">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
@@ -68,7 +89,7 @@
                         </div>
                         <div class="px-3 pt-3">
                             <div class="d-flex flex-column">
-                                <button onclick="toCart({{s.id}})" type="button" style="width:110px;" class="btn btn-primary px-4 rounded-pill">To Cart</button>
+                                <button id="cartbtn_{{s.id}}" onclick="toCart({{s.id}})" type="button" style="width:110px;" class="btn px-4 rounded-pill btn_cart">To Cart</button>
                                 <h4 id="slot_{{s.id}}" class="align-self-center pt-2">{{s.available}} / {{s.total}}</h4>
                             </div>
                         </div>
@@ -183,7 +204,7 @@
     var base_url = window.location.origin;
     var CREATE_PAYMENT_URL = base_url + "/slot/payment";
     var EXECUTE_PAYMENT_URL = base_url + "/slot/payment_execute";
-    var RETURN_URL = base_url + "/slot/first-page";
+    var RETURN_URL = base_url + "/shop/orders";
     var CANCEL_URL = base_url + "/slot/first-page";
             
     $(function(){
@@ -223,7 +244,7 @@
                 }).then(function (res) {
                     console.log(res);
                     if (res.success == true) {
-                        location.reload();
+                        window.location.href = "/shop/orders";
                     }
                 });
             },
@@ -323,10 +344,15 @@
             data: {'user_id': user_id},
             success: function(data){
                 if(data.success == true){
+                    $(".btn_cart").removeClass('btn_addpoints')
+                    $(".btn_cart").html('To Cart')
+                    
                     $("#cart_tbody").html("");
                     var html_str = "";
                     for(i=0;i<data.order_list.length;i++){
                         var d = data.order_list[i]
+                        $("#cartbtn_" + d.id).html('Add points')
+                        $("#cartbtn_" + d.id).addClass('btn_addpoints')
                         html_str += "<tr id='tr_" + d.id + "'><td>" + d.slot + "</td><td>" 
                             + d.points + "</td><td>" + d.sub_total + "</td><td class='td-action'>" + 
                             '<a href="#" onclick="cart_minus(' + d.id +')"><span class="fas fa-minus"></span></a>' + 
