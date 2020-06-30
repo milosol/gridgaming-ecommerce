@@ -617,7 +617,8 @@ class AllOrderView(View):
             slot_items = OrderItem.objects.filter(user=self.request.user, ordered=True, kind=1)
             data = []
             for item in slot_items:
-                temp = {}
+                temp = {} 
+                temp['launch_code'] = item.launch_code
                 temp['username'] = item.user.username 
                 temp['email'] = item.user.email
                 temp['slot_user'] = item.username
@@ -625,7 +626,7 @@ class AllOrderView(View):
                 temp['points'] = item.quantity * item.slot.points
                 temp['amount'] = item.quantity * item.slot.value
                 data.append(temp)
-            sort_data = sorted(data, key = lambda i: (i['username'], i['title'], i['slot_user'], i['points']))  
+            sort_data = sorted(data, key = lambda i: (i['launch_code'], i['username'], i['title'], i['slot_user'], i['points']))  
             context = {
                 'orders': sort_data,
             }

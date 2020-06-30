@@ -303,8 +303,9 @@ def docheck(user_id, kind, usernames = []):
     
     order = order_qs[0]
     if kind == '1':
+        launch_code = Checktime.objects.all()[0].launch_code
         for u in usernames:
-            order.items.filter(kind=1, slot__id=u['id'], ordered=False, user=user).update(ordered=True, username=u['name'])
+            order.items.filter(kind=1, slot__id=u['id'], ordered=False, user=user).update(ordered=True, username=u['name'], launch_code=launch_code)
         
         payment = Payment()
         payment.payment_method = 'P'
@@ -408,14 +409,16 @@ def launch(request):
         rows = Checktime.objects.all()
         if rows.count() > 0:
             launch_time = rows[0].launch_time
-        print("======= launch _time :", launch_time)
-        launch_back(schedule=50)
+        else:
+            Checktime.objects.create(launch_time=launch_time)
+        launch_back(schedule=3600*5+100)
+        # launch_back()
     return redirect('./first-page')
 
 def setLaunch(value):
-    Checktime.objects.all().update(launched=value)
+    Checktime.objects.all().update(launched=value, launch_code=create_ref_code())
     
-@background(schedule=50)
+@background(schedule=10)
 def launch_back():
     print("=============Bacgkrond launched===")
     setLaunch(False)

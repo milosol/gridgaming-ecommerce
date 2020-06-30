@@ -37,6 +37,10 @@
                                                 <tr role="row">
                                                     <th class="sorting" tabindex="0" aria-controls="zero_config" rowspan="1"
                                                         colspan="1" aria-label="Order ID: activate to sort column ascending"
+                                                        style="width: 0px;">OrderID
+                                                    </th>
+                                                    <th class="sorting" tabindex="0" aria-controls="zero_config" rowspan="1"
+                                                        colspan="1" aria-label="Order ID: activate to sort column ascending"
                                                         style="width: 0px;">User
                                                     </th>
                                                     <th class="sorting" tabindex="0" aria-controls="zero_config" rowspan="1"
@@ -61,6 +65,7 @@
 
                                                 {% for value in orders %}
                                                 <tr role="row">
+                                                    <td>{{ value.launch_code }}</td>
                                                     <td>{{ value.username }}</td>
                                                     <td>{{ value.slot_user}}</td>
                                                     <td>{{ value.title}}</td>

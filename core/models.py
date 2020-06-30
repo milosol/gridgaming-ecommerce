@@ -123,6 +123,7 @@ class OrderItem(models.Model):
     kind = models.IntegerField(default=0)
     slot = models.ForeignKey("Slotitem", on_delete=models.CASCADE, null=True)
     username = models.CharField(max_length=200, default='')
+    launch_code = models.CharField(max_length=200, blank=True, null=True)
     
     def __str__(self):
         if self.kind == 0:
@@ -329,5 +330,6 @@ class Checktime(models.Model):
     launch_time = models.IntegerField(default=24)
     launched = models.BooleanField(default=False)
     status = models.IntegerField(default=0)
+    launch_code = models.CharField(max_length=200, blank=True, null=True)
     def __str__(self):
         return str(self.time)
