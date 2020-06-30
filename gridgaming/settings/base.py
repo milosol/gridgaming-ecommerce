@@ -35,7 +35,6 @@ INSTALLED_APPS = [
     'frontend',
     'mathfilters',
     'slotapp',
-    'background_task'
 ]
 
 MIDDLEWARE = [

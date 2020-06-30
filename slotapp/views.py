@@ -9,7 +9,6 @@ from core.models import UserProfile, Order, OrderItem, Slotitem, Checktime, Paym
 from core.views import create_ref_code
 import paypalrestsdk
 from paypalrestsdk import Payout, ResourceNotFound
-from background_task import background
 import threading
 import time
 import json
@@ -411,14 +410,11 @@ def launch(request):
             launch_time = rows[0].launch_time
         else:
             Checktime.objects.create(launch_time=launch_time)
-        launch_back(schedule=3600*5+100)
-        # launch_back()
     return redirect('./first-page')
 
 def setLaunch(value):
     Checktime.objects.all().update(launched=value, launch_code=create_ref_code())
     
-@background(schedule=10)
 def launch_back():
     print("=============Bacgkrond launched===")
     setLaunch(False)
