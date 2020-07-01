@@ -21,8 +21,8 @@ DATABASES['default'] = dj_database_url.config(conn_max_age=600,
 STRIPE_PUBLIC_KEY = config('STRIPE_LIVE_PUBLIC_KEY')
 STRIPE_SECRET_KEY = config('STRIPE_LIVE_SECRET_KEY')
 
-PAYPAL_RECEIVER_EMAIL = 'sb-9i1ce126079@business.example.com'
-PAYPAL_TEST = True
+PAYPAL_RECEIVER_EMAIL = config('PAYPAL_RECEIVER_EMAIL')
+PAYPAL_TEST = False
 
 
 # Store files in Amazon S3

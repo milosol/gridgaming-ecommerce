@@ -584,6 +584,7 @@ class OrderView(View):
         try:
             orders = Order.objects.filter(user=self.request.user, ordered=True)
             # slot_orders = Order.objects.filter(user=self.request.user, ordered=True, kind=1)
+            # TODO Set slot item to 1
             slot_items = OrderItem.objects.filter(user=self.request.user, ordered=True, kind=1)
             context = {
                 'orders': orders,
