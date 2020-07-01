@@ -78,7 +78,7 @@ class Item(models.Model):
     giveaway_value = models.FloatField(verbose_name="Amount to giveaway")  # Split value and fee to show amount given
     giveaway_fee = models.FloatField(verbose_name="Amount to charge buyer")
     duration_to_run = models.IntegerField(blank=True, null=True)
-    #promote_socials = models.
+    # promote_socials = models.
     category = models.CharField(choices=CATEGORY_CHOICES, max_length=2)
     label = models.CharField(choices=LABEL_CHOICES, max_length=1)
     slug = models.SlugField()
@@ -124,7 +124,7 @@ class OrderItem(models.Model):
     slot = models.ForeignKey("Slotitem", on_delete=models.CASCADE, null=True)
     username = models.CharField(max_length=200, default='')
     launch_code = models.CharField(max_length=200, blank=True, null=True)
-    
+
     def __str__(self):
         if self.kind == 0:
             return f"{self.quantity} of {self.item.title}"
@@ -154,7 +154,7 @@ class OrderItem(models.Model):
             return 0
 
     def get_amount_saved(self):
-        if kind == 0:
+        if self.kind == 0:
             return self.get_total_item_price() - self.get_total_discount_item_price()
         else:
             return 0
@@ -246,7 +246,6 @@ class Order(models.Model):
             return sum([y.quantity for y in self.items.filter(kind=0)])
         else:
             return sum([y.quantity for y in self.items.filter(kind=1)])
-        
 
 
 class Address(models.Model):
@@ -312,12 +311,14 @@ class Transaction(models.Model):
     class Meta:
         ordering = ['-timestamp']
 
+
 def userprofile_receiver(sender, instance, created, *args, **kwargs):
     if created:
         userprofile = UserProfile.objects.create(user=instance)
 
 
 post_save.connect(userprofile_receiver, sender=settings.AUTH_USER_MODEL)
+
 
 # Create your models here.
 class Slotitem(models.Model):
@@ -328,8 +329,10 @@ class Slotitem(models.Model):
     value = models.IntegerField(default=25)
     image = models.ImageField()
     description = models.TextField(blank=True)
+
     def __str__(self):
         return self.title
+
 
 class Checktime(models.Model):
     time = models.IntegerField(default=5)
@@ -337,5 +340,6 @@ class Checktime(models.Model):
     launched = models.BooleanField(default=False)
     status = models.IntegerField(default=0)
     launch_code = models.CharField(max_length=200, blank=True, null=True)
+
     def __str__(self):
         return str(self.time)

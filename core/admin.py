@@ -88,6 +88,24 @@ class AddressAdmin(admin.ModelAdmin):
     search_fields = ['user', 'street_address', 'apartment_address', 'zip']
 
 
+class OrderItemAdmin(admin.ModelAdmin):
+    list_display = [
+        'user',
+        'ordered',
+        #'item__item_title',
+        'quantity',
+        'kind',
+        #'slot__slotitem_title',
+    ]
+    #list_filter = ['ordered', 'slot__slotitem_title']
+    #search_fields = ['user', 'street_address', 'apartment_address', 'zip']
+
+    def get_cleared_hot(self, obj):
+        return obj.user.cleared_hot
+    get_cleared_hot.boolean = True
+    get_cleared_hot.short_description = 'Cleared Hot'
+    get_cleared_hot.admin_order_field = 'user__cleared_hot'
+
 
 admin.site.register(Item)
 admin.site.register(OrderItem, OrderItemAdmin)
