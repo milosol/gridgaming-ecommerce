@@ -105,7 +105,8 @@ def first_page(request):
         launch_thread()
     data['launched'] = launched    
     data['launch_timer'] = launch_timer
-    return render(request, 'slotapp/first-page.html', {'data': data})
+    paypal_status = config("PAYPAL_STATUS_COMMUNITY")
+    return render(request, 'slotapp/first-page.html', {'data': data, 'paypal_status':paypal_status})
 
 @csrf_exempt
 def tocart(request):
