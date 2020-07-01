@@ -78,7 +78,7 @@ def new_retweet_contest(request):
 
 
 def order_items_prefetch_related_efficient(user_id):
-    queryset = Order.objects.filter(ordered=True, user=user_id, kind=1).prefetch_related(Prefetch("items",
+    queryset = Order.objects.filter(ordered=True, user=user_id, kind=0).prefetch_related(Prefetch("items",
                                                                                           queryset=OrderItem.
                                                                                           objects.select_related(
                                                                                               "item"),

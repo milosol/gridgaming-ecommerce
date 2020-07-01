@@ -44,8 +44,8 @@
 
         .btn_addpoints {
             background-color: #21c1d6;
-            padding-left: 0 !important;
-            padding-right: 0 !important;
+            /* padding-left: 0 !important;
+            padding-right: 0 !important; */
         }
 
         .btn_addpoints:hover {
@@ -79,6 +79,7 @@
             {% if request.user.is_staff %}
                 <a href='./launch?value=0' class='btn btn-secondary'>Close Community Giveaway</a>
             {% endif %}
+            <div class="d-inline-block mx-md-5"><h5 class="text-danger">Remaining launch time: <span id="launch_time"></span></h5></div>
         </div>
 
 
@@ -254,8 +255,10 @@
         <script>
             var user_id = {{data.user.id}};
             var remain_time = {{data.time}} -1;
+            var launched = true;
+            var launch_timer = {{data.launch_timer}};
             var timer_handle = 0;
-
+            var mini_count = 0
             var base_url = window.location.origin;
             var CREATE_PAYMENT_URL = base_url + "/slot/payment";
             var EXECUTE_PAYMENT_URL = base_url + "/slot/payment_execute";
@@ -264,9 +267,23 @@
 
             $(function () {
                 getCart();
-                setInterval(() => {
-                    getAvailable();
-                }, 2000);
+                if(launched == true){
+                    setInterval(() => {
+                        var hh = parseInt(launch_timer / 3600);
+                        var mm = parseInt((launch_timer % 3600) / 60)
+                        var ss = launch_timer % 60;
+                        $("#launch_time").html(hh + " hs " + mm + " min " + ss + " sec");
+                        launch_timer -= 1
+                        if(launch_timer < 0){
+                            location.reload()
+                        }
+                        mini_count = (mini_count + 1) % 2
+                        if(mini_count == 0){
+                            getAvailable();
+                        }
+                    }, 1000);
+                }
+                
                 $("#myModal").on("hidden.bs.modal", function () {
                     setPause(0);
                 });
@@ -414,7 +431,7 @@
                             var html_str = "";
                             for (i = 0; i < data.order_list.length; i++) {
                                 var d = data.order_list[i]
-                                $("#cartbtn_" + d.id).html('Add Points')
+                                $("#cartbtn_" + d.id).html(' + ' + d.points)
                                 $("#cartbtn_" + d.id).addClass('btn_addpoints')
                                 html_str += "<tr id='tr_" + d.id + "'><td>" + d.slot + "</td><td>"
                                     + d.points + "</td><td>" + d.sub_total + "</td><td class='td-action'>" +

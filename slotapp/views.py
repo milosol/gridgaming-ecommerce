@@ -20,27 +20,13 @@ count_data = []
 cart_get = []
 thread_id = 1
 brun = 0
+blaunch_timer = 1
+launch_timer = 0
 
 paypalrestsdk.configure({
   "mode": config("PAYPAL_MODE"), # sandbox or live
   "client_id": config("PAYPAL_CLIENT_ID"),
   "client_secret": config("PAYPAL_CLIENT_SECRET") })
-
-
-def create_users(request):
-    user1 = User.objects.create_user('user1', 'user1@test.com', 'test')
-    user2 = User.objects.create_user('user2', 'user2@test.com', 'test')
-    user3 = User.objects.create_user('user3', 'user3@test.com', 'test')
-    user1.save()
-    user2.save()
-    user3.save()
-    up1 = UserProfile(user=user1)
-    up2 = UserProfile(user=user2)
-    up3 = UserProfile(user=user2)
-    up1.save()
-    up2.save()
-    up3.save()
-    return HttpResponse('<h1>Successfully created</h1>') 
 
 def count_handle(name):
     global count_data, brun
@@ -65,7 +51,20 @@ def new_counter():
         x = threading.Thread(target=count_handle, args=(thread_id,))
         x.start()
         thread_id += 1
-        
+
+def count_launch(name):
+    global blaunch_timer, launch_timer
+    while(1):
+        if blaunch_timer == 1:
+            print("======== running   b reak")
+            break
+        launch_timer -= 1
+        if launch_timer <= 0:
+            setLaunch(False)
+            blaunch_timer = 1
+            break
+        time.sleep(1)
+             
 def index(request):
     if request.method == "GET":
         if request.user.is_authenticated:
@@ -85,11 +84,7 @@ def user_logout(request):
 
 @login_required
 def first_page(request):
-    global cart_get, count_data
-    # if not request.user.is_authenticated:
-    #     return redirect(index)
-    # user = User.objects.get(id=1)
-    # login(request, user)
+    global cart_get, count_data, launch_timer
     user_id = request.user.id
     u = User.objects.get(id=user_id)
     slots = Slotitem.objects.all()
@@ -103,13 +98,13 @@ def first_page(request):
             data['time'] = item['remain_time']
             break
     launched = False
-    launch_time = 24
     rows = Checktime.objects.all()
     if rows.count() > 0:
         launched = rows[0].launched
-        launch_time = rows[0].launch_time
+    if launched == True and blaunch_timer == 1:
+        launch_thread()
     data['launched'] = launched    
-    data['launch_time'] = launch_time  
+    data['launch_timer'] = launch_timer
     return render(request, 'slotapp/first-page.html', {'data': data})
 
 @csrf_exempt
@@ -405,20 +400,30 @@ def slot_payment_execute(request):
 
 @login_required
 def launch(request):
+    global blaunch_timer, launch_timer
     value = request.GET.get('value', 0)
     setLaunch(True if value == '1' else False)
     if value == '1':
-        launch_time = 24
-        rows = Checktime.objects.all()
-        if rows.count() > 0:
-            launch_time = rows[0].launch_time
-        else:
-            Checktime.objects.create(launch_time=launch_time)
+        launch_thread()
+    else:
+        blaunch_timer = 1
+        launch_timer = 0
     return redirect('./first-page')
+
+def launch_thread():
+    global blaunch_timer, launch_timer, thread_id
+    launch_time = 24
+    rows = Checktime.objects.all()
+    if rows.count() > 0:
+        launch_time = rows[0].launch_time
+    else:
+        Checktime.objects.create(launch_time=launch_time)
+    blaunch_timer = 0
+    launch_timer = launch_time
+    x = threading.Thread(target=count_launch, args=(thread_id,))
+    x.start()
+    thread_id += 1
 
 def setLaunch(value):
     Checktime.objects.all().update(launched=value, launch_code=create_ref_code())
     
-def launch_back():
-    print("=============Background launched===")
-    setLaunch(False)

@@ -8,7 +8,6 @@ app_name = 'slotapp'
 urlpatterns = [
     path('', views.index, name='index'),
     path('index', views.index, name='index'),
-    path('createusers', views.create_users, name='create_users'),
     path('first-page', views.first_page, name='first_page'),
     path('tocart', views.tocart, name='tocart'),
     path('launch', views.launch, name='launch'),
