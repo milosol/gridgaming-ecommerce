@@ -176,14 +176,15 @@ class PaymentView(View):
 
     def get(self, *args, **kwargs):
         order = get_user_pending_order(self.request)
-        client_token = generate_client_token()
+        #client_token = generate_client_token()
         if order != 0:
             if order.billing_address:
                 context = {
                     'order': order,
                     'DISPLAY_COUPON_FORM': False,
                     'STRIPE_PUBLIC_KEY': settings.STRIPE_PUBLIC_KEY,
-                    'client_token': client_token,
+                    #'client_token': client_token,
+                    'client_token':create_ref_code(),
                 }
                 userprofile = self.request.user.user_profile
                 if userprofile.one_click_purchasing:
@@ -273,22 +274,22 @@ class PaymentView(View):
                     return redirect("core:home")
 
                 messages.info(self.request, "Your card has been declined.")
-            else:
+            # else:
 
-                result = transact({
-                    'amount': amount,
-                    'payment_method_nonce': self.request.POST['payment_method_nonce'],
-                    'options': {
-                        "submit_for_settlement": True
-                    }
-                })
+                # result = transact({
+                #     'amount': amount,
+                #     'payment_method_nonce': self.request.POST['payment_method_nonce'],
+                #     'options': {
+                #         "submit_for_settlement": True
+                #     }
+                # })
 
-                if result.is_success or result.transaction:
-                    braintree_id = result.transaction.id
-                else:
-                    for x in result.errors.deep_errors:
-                        messages.info(self.request, x)
-                    return redirect(reverse('core:checkout'))
+                # if result.is_success or result.transaction:
+                #     braintree_id = result.transaction.id
+                # else:
+                #     for x in result.errors.deep_errors:
+                #         messages.info(self.request, x)
+                #     return redirect(reverse('core:checkout'))
 
                 # if use_default or save:
                 #     # charge the customer because we cannot charge the token more than once
