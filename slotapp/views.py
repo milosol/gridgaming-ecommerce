@@ -1,18 +1,20 @@
-from django.shortcuts import render, redirect
-from django.http import HttpResponse, JsonResponse
-from users.models import User, UserRoles
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
-from django.utils import timezone
-from django.views.decorators.csrf import csrf_exempt
-from core.models import UserProfile, Order, OrderItem, Slotitem, Checktime, Payment
-from core.views import create_ref_code
-from django.contrib import messages
-import paypalrestsdk
-from paypalrestsdk import Payout, ResourceNotFound
+import json
 import threading
 import time
-import json
+
+import paypalrestsdk
+from decouple import config
+from django.contrib import messages
+from django.contrib.auth import login, logout
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render, redirect
+from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+
+from core.models import UserProfile, Order, OrderItem, Slotitem, Checktime, Payment
+from core.views import create_ref_code
+from users.models import User
 
 count_data = []
 cart_get = []
@@ -20,9 +22,9 @@ thread_id = 1
 brun = 0
 
 paypalrestsdk.configure({
-  "mode": "sandbox", # sandbox or live
-  "client_id": "ASCtaHgzeskcV4tEI9k3fzwI30wEHoiL7T4MNEUyJd6Z6wyvmieCLqVHMhwcWjXv8h_f1URMTDm8nDwl",
-  "client_secret": "ECmhqDxOtaOh6hWHnB35QXI0IHTKkg20RuFbN8g-4oyTA-c1oez35x_NtCzIpnsJJu8P8Ikg5HFGOkqp" })
+  "mode": config("PAYPAL_MODE"), # sandbox or live
+  "client_id": config("PAYPAL_CLIENT_ID"),
+  "client_secret": config("PAYPAL_CLIENT_SECRET") })
 
 
 def create_users(request):
