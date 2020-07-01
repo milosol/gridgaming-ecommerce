@@ -109,8 +109,9 @@ def first_page(request):
         launched = rows[0].launched
         launch_time = rows[0].launch_time
     data['launched'] = launched    
-    data['launch_time'] = launch_time  
-    return render(request, 'slotapp/first-page.html', {'data': data})
+    data['launch_time'] = launch_time
+    paypal_status = config("PAYPAL_STATUS_COMMUNITY")
+    return render(request, 'slotapp/first-page.html', {'data': data, 'paypal_status':paypal_status})
 
 @csrf_exempt
 def tocart(request):

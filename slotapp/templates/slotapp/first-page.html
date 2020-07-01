@@ -278,7 +278,7 @@
                         size: 'responsive',
                         label: 'paypal'
                     },
-                    env: 'sandbox',  //production, sandbox
+                    env: '{{ paypal_status }}',  //production, sandbox
                     commit: true,
                     payment: function () {
                         return paypal.request.post(CREATE_PAYMENT_URL, {
