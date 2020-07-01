@@ -20,7 +20,9 @@ import random
 import string
 import stripe
 from stripe import error
-from core.extras import transact, generate_client_token
+#from core.extras import transact, \
+
+from core.extras import generate_client_token
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
