@@ -64,6 +64,16 @@ class OrderAdmin(admin.ModelAdmin):
     get_cleared_hot.short_description = 'Cleared Hot'
     get_cleared_hot.admin_order_field = 'user__cleared_hot'
 
+class OrderItemAdmin(admin.ModelAdmin):
+    list_display = ['user',
+                    'get_title',
+                    'quantity',
+                    'kind',
+                    'ordered',
+                    'username',
+                    'launch_code'
+                    ]
+    
 class AddressAdmin(admin.ModelAdmin):
     list_display = [
         'user',
@@ -80,7 +90,7 @@ class AddressAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Item)
-admin.site.register(OrderItem)
+admin.site.register(OrderItem, OrderItemAdmin)
 admin.site.register(Order, OrderAdmin)
 admin.site.register(Payment)
 admin.site.register(Coupon)

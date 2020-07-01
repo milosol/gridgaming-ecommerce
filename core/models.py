@@ -131,6 +131,12 @@ class OrderItem(models.Model):
         else:
             return f"{self.quantity} of {self.slot.title}"
 
+    def get_title(self):
+        if self.kind == 0:
+            return self.item.title
+        else:
+            return self.slot.title
+        
     def get_total_item_price(self):
         # self.user.related_field
         # self.user.account_type
