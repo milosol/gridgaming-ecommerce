@@ -264,7 +264,7 @@
             var EXECUTE_PAYMENT_URL = base_url + "/slot/payment_execute";
             var RETURN_URL = base_url + "/shop/orders";
             var CANCEL_URL = base_url + "/slot/first-page";
-
+            console.log("remain_time" , remain_time)
             $(function () {
                 getCart();
                 if(launched == true){
@@ -431,6 +431,7 @@
                             var html_str = "";
                             for (i = 0; i < data.order_list.length; i++) {
                                 var d = data.order_list[i]
+                                console.log(d.slot)
                                 $("#cartbtn_" + d.id).html(' + ' + d.points)
                                 $("#cartbtn_" + d.id).addClass('btn_addpoints')
                                 html_str += "<tr id='tr_" + d.id + "'><td>" + d.slot + "</td><td>"

@@ -420,7 +420,7 @@ def launch_thread():
     else:
         Checktime.objects.create(launch_time=launch_time)
     blaunch_timer = 0
-    launch_timer = launch_time
+    launch_timer = launch_time * 3600
     x = threading.Thread(target=count_launch, args=(thread_id,))
     x.start()
     thread_id += 1
