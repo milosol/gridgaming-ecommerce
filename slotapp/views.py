@@ -418,5 +418,5 @@ def setLaunch(value):
     Checktime.objects.all().update(launched=value, launch_code=create_ref_code())
     
 def launch_back():
-    print("=============Bacgkrond launched===")
+    print("=============Background launched===")
     setLaunch(False)
