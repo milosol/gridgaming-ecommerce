@@ -73,6 +73,8 @@ class OrderItemAdmin(admin.ModelAdmin):
                     'username',
                     'launch_code'
                     ]
+
+    list_filter = ['ordered']
     
 class AddressAdmin(admin.ModelAdmin):
     list_display = [
