@@ -154,7 +154,7 @@ class OrderItem(models.Model):
             return 0
 
     def get_amount_saved(self):
-        if kind == 0:
+        if self.kind == 0:
             return self.get_total_item_price() - self.get_total_discount_item_price()
         else:
             return 0
