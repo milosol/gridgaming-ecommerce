@@ -178,14 +178,14 @@
                             <h4>{{ s.title }}</h4>
                             <p class="d-inline-flex">{{ s.description }}</p>
                         </div>
-                        <div class="px-3 pt-2">
+                        <div class="px-2 pt-2 mr-1">
                             <div class="d-flex flex-column">
                                 <button id="cartbtn_{{ s.id }}" onclick="toCart({{ s.id }})" type="button"
                                         style="width:110px;" class="btn px-4 rounded-pill btn_cart">To Cart
                                 </button>
                                 <h4 id="slot_{{ s.id }}" class="align-self-center pt-2 mb-1">{{ s.available }}
                                     / {{ s.total }}</h4>
-                                <h6 id="value_{{ s.id }}" class="align-self-center mb-0">${{ s.value }} per slot</h6>
+                                <h6 id="value_{{ s.id }}" style="font-size: 13px; width:124px; margin-left: -7px; text-align: center; text-shadow: 0px 5px 6px #141414;" class="align-self-center mb-0">${{ s.value }} per {{ s.points }} points</h6>
                             </div>
                         </div>
                     </div>
@@ -265,7 +265,6 @@
             var EXECUTE_PAYMENT_URL = base_url + "/slot/payment_execute";
             var RETURN_URL = base_url + "/shop/orders";
             var CANCEL_URL = base_url + "/slot/first-page";
-            console.log("remain_time" , remain_time)
             $(function () {
                 getCart();
                 if(launched == true){
