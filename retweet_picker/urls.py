@@ -2,10 +2,8 @@ from django.urls import path
 
 from . import views
 from .views import (
-    #GiveawayResultsListView
     OrdersListView,
     launch_giveaway,
-    decoder_ring,
     #prelaunch_validator,
     order_details
 )
