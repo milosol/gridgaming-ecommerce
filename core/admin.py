@@ -67,6 +67,7 @@ class OrderAdmin(admin.ModelAdmin):
 class OrderItemAdmin(admin.ModelAdmin):
     list_display = ['user',
                     'get_title',
+                    'get_email',
                     'quantity',
                     'kind',
                     'ordered',
@@ -75,6 +76,9 @@ class OrderItemAdmin(admin.ModelAdmin):
                     ]
 
     list_filter = ['ordered']
+
+    def get_email(self, obj):
+        return obj.user.email
     
 class AddressAdmin(admin.ModelAdmin):
     list_display = [
