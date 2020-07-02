@@ -178,13 +178,14 @@
                             <h4>{{ s.title }}</h4>
                             <p class="d-inline-flex">{{ s.description }}</p>
                         </div>
-                        <div class="px-3 pt-3">
+                        <div class="px-3 pt-2">
                             <div class="d-flex flex-column">
                                 <button id="cartbtn_{{ s.id }}" onclick="toCart({{ s.id }})" type="button"
                                         style="width:110px;" class="btn px-4 rounded-pill btn_cart">To Cart
                                 </button>
-                                <h4 id="slot_{{ s.id }}" class="align-self-center pt-2">{{ s.available }}
+                                <h4 id="slot_{{ s.id }}" class="align-self-center pt-2 mb-1">{{ s.available }}
                                     / {{ s.total }}</h4>
+                                <h6 id="value_{{ s.id }}" class="align-self-center mb-0">${{ s.value }} per slot</h6>
                             </div>
                         </div>
                     </div>
