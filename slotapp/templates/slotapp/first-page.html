@@ -347,11 +347,13 @@
                             var ss = remain_time % 20;
                             $("#span_timing").html(mm + " min " + ss + " sec");
                         } else {
-                            $("#div_timing").hide();
+                            // $("#div_timing").hide();
+                            $("#div_timing").fadeOut();
                             clearInterval(timer_handle);
                         }
                     }, 1000)
-                    $("#div_timing").show();$("#div_timing").show();
+                    // $("#div_timing").show();
+                    $("#div_timing").fadeIn();
                 }
             }
 
@@ -360,7 +362,8 @@
                     clearInterval(timer_handle);
                 }
                 if (kind == 1) {
-                    $("#div_timing").hide();
+                    // $("#div_timing").hide();
+                    $("#div_timing").fadeOut();
                     remain_time = 0;
                     $(".btn_cart").removeClass('btn_addpoints')
                     $(".btn_cart").html('To Cart')
@@ -445,8 +448,8 @@
                                 $("#cartbtn_" + d.id).addClass('btn_addpoints')
                                 html_str += "<tr id='tr_" + d.id + "'><td>" + d.slot + "</td><td>"
                                     + d.points + "</td><td>" + d.sub_total + "</td><td class='td-action'>" +
-                                    '<a href="#" onclick="cart_minus(' + d.id + ')"><span class="fas fa-minus"></span></a>' +
-                                    '<a href="#" onclick="cart_trash(' + d.id + ')"><span class="fas fa-trash"></span></a>' +
+                                    '<a href="javascript:void(0);" onclick="cart_minus(' + d.id + ')"><span class="fas fa-minus"></span></a>' +
+                                    '<a href="javascript:void(0);" onclick="cart_trash(' + d.id + ')"><span class="fas fa-trash"></span></a>' +
                                     "</td></tr>"
 
                             }
