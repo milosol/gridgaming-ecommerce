@@ -29,6 +29,71 @@ paypalrestsdk.configure({
   "client_id": config("PAYPAL_CLIENT_ID"),
   "client_secret": config("PAYPAL_CLIENT_SECRET") })
 
+
+def docheck(user_id, kind, usernames = []):
+    global count_data
+    res = {'success': True}
+    
+    for item in count_data:
+        if  item['user_id'] == user_id:
+            count_data.remove(item)
+            break
+    
+    user = User.objects.get(id=user_id)
+    order_qs = Order.objects.filter(user=user, ordered=False, kind=1)
+    if not order_qs.exists():
+        res['success'] = False
+        res['msg'] = "You have no order information."     
+        return res
+    
+    order = order_qs[0]
+    if kind == '1':
+        launch_code = Checktime.objects.all()[0].launch_code
+        for u in usernames:
+            order.items.filter(kind=1, slot__id=u['id'], ordered=False, user=user).update(ordered=True, username=u['name'], launch_code=launch_code)
+        
+        payment = Payment()
+        payment.payment_method = 'P'
+        payment.user = order.user
+        payment.amount = order.get_total()
+        payment.save()
+        
+        order.ordered = True
+        order.status = 'P'
+        order.payment = payment
+        order.ref_code = create_ref_code()
+        order.save()
+    else:
+        data_list = []
+        order_items = order.items.filter(kind=1, ordered=False, user=user)
+        for c in order_items:
+            try:
+                data = {}
+                s = Slotitem.objects.get(id=c.slot.id)
+                s.available = s.available + 1
+                s.save()
+                
+                data['slot_id'] = s.id
+                data['available'] = str(s.available) + "/" + str(s.total)
+                data_list.append(data)
+            except Slotitem.DoesNotExist:
+                pass
+        order.items.filter(kind=1, ordered=False, user=user).delete()
+        Order.objects.filter(user=user, ordered=False, kind=1).delete()
+        res['slots'] = data_list
+    return res
+
+
+def release_carts():
+    order_items = OrderItem.objects.filter(ordered=False, kind=1)
+    users = []
+    for item in order_items:
+        if item.user.id not in users:
+            docheck(item.user.id, 2)
+            users.append(item.user.id)
+
+release_carts()
+
 def count_handle(name):
     global count_data, brun
     brun = 1
@@ -101,8 +166,10 @@ def first_page(request):
             break
         
     if data['time'] == 0:
-        Order.objects.filter(user=request.user, kind=1, ordered=False).delete()
-        OrderItem.objects.filter(user=request.user, kind=1, ordered=False).delete()
+        if Order.objects.filter(user=request.user, ordered=False, kind=1).count() > 0:
+            docheck(user_id, 2)
+        # Order.objects.filter(user=request.user, kind=1, ordered=False).delete()
+        # OrderItem.objects.filter(user=request.user, kind=1, ordered=False).delete()
     
     launched = False
     rows = Checktime.objects.all()
@@ -296,58 +363,6 @@ def checkout(request):
     res = docheck(user_id, kind, usernames)
     return JsonResponse(res)
 
-def docheck(user_id, kind, usernames = []):
-    global count_data
-    res = {'success': True}
-    
-    for item in count_data:
-        if  item['user_id'] == user_id:
-            count_data.remove(item)
-            break
-    
-    user = User.objects.get(id=user_id)
-    order_qs = Order.objects.filter(user=user, ordered=False, kind=1)
-    if not order_qs.exists():
-        res['success'] = False
-        res['msg'] = "You have no order information."     
-        return res
-    
-    order = order_qs[0]
-    if kind == '1':
-        launch_code = Checktime.objects.all()[0].launch_code
-        for u in usernames:
-            order.items.filter(kind=1, slot__id=u['id'], ordered=False, user=user).update(ordered=True, username=u['name'], launch_code=launch_code)
-        
-        payment = Payment()
-        payment.payment_method = 'P'
-        payment.user = order.user
-        payment.amount = order.get_total()
-        payment.save()
-        
-        order.ordered = True
-        order.status = 'P'
-        order.payment = payment
-        order.ref_code = create_ref_code()
-        order.save()
-    else:
-        data_list = []
-        order_items = order.items.filter(kind=1, ordered=False, user=user)
-        for c in order_items:
-            try:
-                data = {}
-                s = Slotitem.objects.get(id=c.slot.id)
-                s.available = s.available + 1
-                s.save()
-                
-                data['slot_id'] = s.id
-                data['available'] = str(s.available) + "/" + str(s.total)
-                data_list.append(data)
-            except Slotitem.DoesNotExist:
-                pass
-        order.items.filter(kind=1, ordered=False, user=user).delete()
-        Order.objects.filter(user=user, ordered=False, kind=1).delete()
-        res['slots'] = data_list
-    return res
 
 
 @csrf_exempt
