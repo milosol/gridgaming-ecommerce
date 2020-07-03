@@ -7,8 +7,8 @@ from . import views
 app_name = 'slotapp'
 urlpatterns = [
     path('', views.index, name='index'),
-    path('index', views.index, name='index'),
-    path('first-page', views.first_page, name='first_page'),
+    # path('test', views.test, name='test'),
+    path('community', views.first_page, name='first_page'),
     path('tocart', views.tocart, name='tocart'),
     path('launch', views.launch, name='launch'),
     path('getcart', views.getcart, name='getcart'),
@@ -18,5 +18,6 @@ urlpatterns = [
     path('get_available', views.get_available, name='get_available'),
     path('payment', views.slot_payment, name='slot_payment'),
     path('payment_execute', views.slot_payment_execute, name='slot_payment_execute'),
-    path('logout', views.user_logout, name='user_logout'),
+    # path('logout', views.user_logout, name='user_logout'),
+    
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

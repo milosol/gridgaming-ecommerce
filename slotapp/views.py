@@ -1,6 +1,7 @@
 import json
 import threading
 import time
+from datetime import datetime
 
 import paypalrestsdk
 from decouple import config
@@ -56,7 +57,6 @@ def count_launch(name):
     global blaunch_timer, launch_timer
     while(1):
         if blaunch_timer == 1:
-            print("======== running   b reak")
             break
         launch_timer -= 1
         if launch_timer <= 0:
@@ -64,11 +64,12 @@ def count_launch(name):
             blaunch_timer = 1
             break
         time.sleep(1)
-             
-def index(request):
+
+@csrf_exempt
+def test(request):
     if request.method == "GET":
         if request.user.is_authenticated:
-            return redirect(first_page)
+            return redirect("slotapp:first_page")
         users = User.objects.all()
         return render(request, 'slotapp/index.html', {'data': users})
     else:
@@ -78,9 +79,13 @@ def index(request):
         res = {'success': True}
         return JsonResponse(res)
 
+@login_required
+def index(request):
+    return redirect("slotapp:first_page")
+    
 def user_logout(request):
     logout(request)
-    return redirect(index)
+    return HttpResponse("logout")
 
 @login_required
 def first_page(request):
@@ -89,14 +94,16 @@ def first_page(request):
     u = User.objects.get(id=user_id)
     slots = Slotitem.objects.all()
     data = {'user': u, 'slots': slots, 'time': 0}
-    
-    if user_id in cart_get:
-        cart_get.remove(user_id)
         
     for item in count_data:
         if  item['user_id'] == str(user_id):
             data['time'] = item['remain_time']
             break
+        
+    if data['time'] == 0:
+        Order.objects.filter(user=request.user, kind=1, ordered=False).delete()
+        OrderItem.objects.filter(user=request.user, kind=1, ordered=False).delete()
+    
     launched = False
     rows = Checktime.objects.all()
     if rows.count() > 0:
@@ -169,6 +176,9 @@ def getcart(request):
     ordered_list = []
     order_list = []
     
+    if user_id in cart_get:
+        cart_get.remove(user_id)
+        
     order_qs = Order.objects.filter(user=request.user, ordered=False, kind=1)
     if order_qs.exists():
         order = order_qs[0]
@@ -231,6 +241,7 @@ def cartminus(request):
         
         if order.items.filter(kind=1).count() == 0:
             del_timing(user_id)
+            order.delete()
             res['end_timing'] = True
     else:
         res['success'] = False
@@ -243,12 +254,11 @@ def get_available(request):
     global cart_get
     res = {'success': True}
     user_id = request.POST['user_id']
-
     if user_id in cart_get:
         cart_get.remove(user_id)
-        res['cart_refresh'] = True
+        res['cart_refresh'] = 'yes'
     else:
-        res['cart_refresh'] = False
+        res['cart_refresh'] = 'no'
         
     slot_list = Slotitem.objects.filter().values()
     data_list = []
@@ -258,7 +268,10 @@ def get_available(request):
         data['available'] = s['available']
         data['total'] = s['total']
         data_list.append(data)
+    
     res['slots'] = data_list 
+    res['refresh'] = True if blaunch_timer == 1 else False
+    # res['time_now'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     return JsonResponse(res)
 
 @csrf_exempt
@@ -332,6 +345,7 @@ def docheck(user_id, kind, usernames = []):
             except Slotitem.DoesNotExist:
                 pass
         order.items.filter(kind=1, ordered=False, user=user).delete()
+        Order.objects.filter(user=user, ordered=False, kind=1).delete()
         res['slots'] = data_list
     return res
 
@@ -394,6 +408,7 @@ def slot_payment_execute(request):
         docheck(user_id, '1', usernames)
         messages.success(request, "Order complete!")
     else:
+        messages.warning(request, "Payment Failed!")
         resp['success'] = False
         resp['msg'] = payment.error
         print(payment.error)
@@ -409,7 +424,7 @@ def launch(request):
     else:
         blaunch_timer = 1
         launch_timer = 0
-    return redirect('./first-page')
+    return redirect('./community')
 
 def launch_thread():
     global blaunch_timer, launch_timer, thread_id

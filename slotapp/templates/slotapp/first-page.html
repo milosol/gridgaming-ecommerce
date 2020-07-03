@@ -283,7 +283,7 @@
                         if(launch_timer < 0){
                             location.reload()
                         }
-                        mini_count = (mini_count + 1) % 2
+                        mini_count = (mini_count + 1) % 4
                         if(mini_count == 0){
                             getAvailable();
                         }
@@ -351,7 +351,7 @@
                             clearInterval(timer_handle);
                         }
                     }, 1000)
-                    $("#div_timing").show();
+                    $("#div_timing").show();$("#div_timing").show();
                 }
             }
 
@@ -362,6 +362,8 @@
                 if (kind == 1) {
                     $("#div_timing").hide();
                     remain_time = 0;
+                    $(".btn_cart").removeClass('btn_addpoints')
+                    $(".btn_cart").html('To Cart')
                 }
             }
 
@@ -424,6 +426,7 @@
             }
 
             function getCart() {
+                console.log("here is get cart");
                 $.ajax({
                     type: "POST",
                     url: "./getcart",
@@ -432,7 +435,7 @@
                         if (data.success == true) {
                             $(".btn_cart").removeClass('btn_addpoints')
                             $(".btn_cart").html('To Cart')
-
+                            console.log(" cart refreshed");
                             $("#cart_tbody").html("");
                             var html_str = "";
                             for (i = 0; i < data.order_list.length; i++) {
@@ -448,15 +451,6 @@
 
                             }
                             $("#cart_tbody").html(html_str);
-                            // $("#ordered_tbody").html("");
-                            // var html_str = "";
-                            // for(i=0;i<data.ordered_list.length;i++){
-                            //     var d = data.ordered_list[i]
-                            //     html_str += "<tr id='tr_" + d.id + "'><td>" + d.slot + "</td><td>"
-                            //         + d.points + "</td><td>" + d.sub_total + "</td><td>" + d.username +
-                            //         "</td></tr>"
-                            // }
-                            // $("#ordered_tbody").html(html_str);
 
                             setUserForm(data.order_list);
                         } else {
@@ -512,7 +506,6 @@
                     } else {
                         $("#paypal_btn").hide();
                     }
-                    console.log(valid);
                 })
 
             }
@@ -564,11 +557,14 @@
                     data: {'user_id': user_id},
                     success: function (data) {
                         if (data.success == true) {
+                            if(data.refresh == true){
+                                location.reload()
+                            }
                             for (i = 0; i < data.slots.length; i++) {
                                 var s = data.slots[i]
                                 setAvailable(s.slot_id, s.available + " / " + s.total);
                             }
-                            if (data.cart_refresh == true) {
+                            if (data.cart_refresh == 'yes') {
                                 getCart();
                             }
                         }

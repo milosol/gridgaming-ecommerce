@@ -36,6 +36,10 @@
                                                 <thead>
                                                 <tr role="row">
                                                     <th class="sorting" tabindex="0" aria-controls="zero_config" rowspan="1"
+                                                        colspan="1" aria-label="Date: activate to sort column ascending"
+                                                        style="width: 0px;">Order Date
+                                                    </th>
+                                                    <th class="sorting" tabindex="0" aria-controls="zero_config" rowspan="1"
                                                         colspan="1" aria-label="Order ID: activate to sort column ascending"
                                                         style="width: 0px;">Items
                                                     </th>
@@ -48,10 +52,6 @@
                                                         style="width: 0px;">Cost
                                                     </th>
                                                     <th class="sorting" tabindex="0" aria-controls="zero_config" rowspan="1"
-                                                        colspan="1" aria-label="Date: activate to sort column ascending"
-                                                        style="width: 0px;">Order Date
-                                                    </th>
-                                                    <th class="sorting" tabindex="0" aria-controls="zero_config" rowspan="1"
                                                         colspan="1" aria-label="Status: activate to sort column ascending"
                                                         style="width: 0px;">Status
                                                     </th>
@@ -61,7 +61,7 @@
                                                     </th>
                                                     <th class="sorting" tabindex="0" aria-controls="zero_config" rowspan="1"
                                                         colspan="1" aria-label="Actions: activate to sort column ascending"
-                                                        style="width: 0px;">Order ID
+                                                        style="width: 0px;">Order Code
                                                     </th>
                                                 </tr>
                                                 </thead>
@@ -69,10 +69,10 @@
 
                                                 {% for value in orders %}
                                                 <tr role="row">
+                                                    <td>{{ value.ordered_date }}</td>
                                                     <td>{{ value.get_purchased_items }}</td>
                                                     <td>{{ value.get_items_sum }}</td>
                                                     <td>${{ value.payment.amount }}</td>
-                                                    <td>{{ value.ordered_date }}</td>
                                                     <td>{{ value.get_status_display }}</td>
                                                     {% if value.kind == 0 %}
                                                     <td>Item</td>

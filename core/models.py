@@ -125,6 +125,9 @@ class OrderItem(models.Model):
     username = models.CharField(max_length=200, default='')
     launch_code = models.CharField(max_length=200, blank=True, null=True)
     
+    class Meta:
+        ordering = ['orders__ordered_date']
+        
     def __str__(self):
         if self.kind == 0:
             return f"{self.quantity} of {self.item.title}"
@@ -328,6 +331,10 @@ class Slotitem(models.Model):
     value = models.IntegerField(default=25)
     image = models.ImageField()
     description = models.TextField(blank=True)
+    
+    class Meta:
+        ordering = ['title']
+        
     def __str__(self):
         return self.title
 

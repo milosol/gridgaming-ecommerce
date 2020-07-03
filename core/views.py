@@ -628,11 +628,14 @@ class AllOrderView(View):
                 temp['title'] = item.slot.title
                 temp['points'] = item.quantity * item.slot.points
                 temp['amount'] = item.quantity * item.slot.value
+                if item.orders.all().count() == 0:
+                    temp['order_date'] = ""
+                else:
+                    temp['order_date'] = item.orders.all()[0].ordered_date
                 data.append(temp)
-            print("==================", data)
-            sort_data = sorted(data, key = lambda i: (i['launch_code'], i['username'], i['title'], i['slot_user'], i['points']))  
+            # sort_data = sorted(data, key = lambda i: (i['launch_code'], i['username'], i['title'], i['slot_user'], i['points']))  
             context = {
-                'orders': sort_data,
+                'orders': data,
             }
 
             return render(self.request, "shop_v2/allorders.html", context)
