@@ -1,4 +1,4 @@
-web: gunicorn gridgaming.wsgi --workers 4
+web: gunicorn gridgaming.wsgi --workers 6
 worker: python manage.py rqworker high low default --worker-class rq.SimpleWorker
 
 
