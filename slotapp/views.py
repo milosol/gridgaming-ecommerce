@@ -85,14 +85,21 @@ def docheck(user_id, kind, usernames = []):
 
 
 def release_carts():
+    global count_data
     order_items = OrderItem.objects.filter(ordered=False, kind=1)
     users = []
     for item in order_items:
         if item.user.id not in users:
-            docheck(item.user.id, 2)
+            bcounting = 0
+            for cdata in count_data:
+                if  cdata['user_id'] == str(item.user.id):
+                    bcounting = 1
+                    break
+            if bcounting == 0:
+                docheck(item.user.id, 2)
             users.append(item.user.id)
-
-release_carts()
+        
+# release_carts()
 
 def count_handle(name):
     global count_data, brun
@@ -165,11 +172,12 @@ def first_page(request):
             data['time'] = item['remain_time']
             break
         
-    if data['time'] == 0:
-        if Order.objects.filter(user=request.user, ordered=False, kind=1).count() > 0:
-            docheck(user_id, 2)
+    # if data['time'] == 0:
+    #     if Order.objects.filter(user=request.user, ordered=False, kind=1).count() > 0:
+    #         docheck(user_id, 2)
         # Order.objects.filter(user=request.user, kind=1, ordered=False).delete()
         # OrderItem.objects.filter(user=request.user, kind=1, ordered=False).delete()
+    release_carts()
     
     launched = False
     rows = Checktime.objects.all()
