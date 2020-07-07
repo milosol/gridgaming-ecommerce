@@ -8,14 +8,15 @@ def id_from_url(url):
 
 
 intervals = (
-    ('weeks', 10080), # 60 * 24 * 7
-    ('days', 1440),   # 60 * 24
-    ('hours', 60),    # 60 * 60
+    ('weeks', 10080),
+    ('days', 1440),
+    ('hours', 60),
     ('minutes', 1),
     )
 
 
-def display_time(minutes, granularity=2):
+def display_time(minutes, granularity=3):
+    """ Creates """
     result = []
 
     for name, count in intervals:
