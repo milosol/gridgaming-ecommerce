@@ -25,35 +25,37 @@ blaunch_timer = 1
 launch_timer = 0
 
 paypalrestsdk.configure({
-  "mode": config("PAYPAL_MODE"), # sandbox or live
-  "client_id": config("PAYPAL_CLIENT_ID"),
-  "client_secret": config("PAYPAL_CLIENT_SECRET") })
+    "mode": config("PAYPAL_MODE"),  # sandbox or live
+    "client_id": config("PAYPAL_CLIENT_ID"),
+    "client_secret": config("PAYPAL_CLIENT_SECRET")})
 
 
-def docheck(user_id, kind, usernames = []):
+def docheck(user_id, kind, usernames=[]):
     global count_data
     res = {'success': True}
-    
+
     user = User.objects.get(id=user_id)
     order_qs = Order.objects.filter(user=user, ordered=False, kind=1)
     if not order_qs.exists():
         del_timing(user_id)
         res['success'] = False
-        res['msg'] = "You have no order information."     
+        res['msg'] = "You have no order information."
         return res
-    
+
     order = order_qs[0]
     if kind == '1':
         launch_code = Checktime.objects.all()[0].launch_code
         for u in usernames:
-            order.items.filter(kind=1, slot__id=u['id'], ordered=False, user=user).update(ordered=True, username=u['name'], launch_code=launch_code)
-        
+            order.items.filter(kind=1, slot__id=u['id'], ordered=False, user=user).update(ordered=True,
+                                                                                          username=u['name'],
+                                                                                          launch_code=launch_code)
+
         payment = Payment()
         payment.payment_method = 'P'
         payment.user = order.user
         payment.amount = order.get_total()
         payment.save()
-        
+
         order.ordered = True
         order.status = 'P'
         order.payment = payment
@@ -68,7 +70,7 @@ def docheck(user_id, kind, usernames = []):
                 s = Slotitem.objects.get(id=c.slot.id)
                 s.available = s.available + 1
                 s.save()
-                
+
                 data['slot_id'] = s.id
                 data['available'] = str(s.available) + "/" + str(s.total)
                 data_list.append(data)
@@ -89,19 +91,20 @@ def release_carts():
         if item.user.id not in users:
             bcounting = 0
             for cdata in count_data:
-                if  cdata['user_id'] == str(item.user.id):
+                if cdata['user_id'] == str(item.user.id):
                     bcounting = 1
                     break
             if bcounting == 0:
                 docheck(item.user.id, 2)
             users.append(item.user.id)
-        
+
+
 # release_carts()
 
 def count_handle(name):
     global count_data, brun
     brun = 1
-    while(1):
+    while (1):
         if len(count_data) == 0:
             brun = 0
             break
@@ -114,7 +117,8 @@ def count_handle(name):
                 cart_get.append(item['user_id'])
                 docheck(item['user_id'], 2)
         time.sleep(1)
-        
+
+
 def new_counter():
     global thread_id, brun
     if brun == 0:
@@ -122,9 +126,10 @@ def new_counter():
         x.start()
         thread_id += 1
 
+
 def count_launch(name):
     global blaunch_timer, launch_timer
-    while(1):
+    while (1):
         if blaunch_timer == 1:
             break
         launch_timer -= 1
@@ -133,6 +138,7 @@ def count_launch(name):
             blaunch_timer = 1
             break
         time.sleep(1)
+
 
 @csrf_exempt
 def test(request):
@@ -148,13 +154,16 @@ def test(request):
         res = {'success': True}
         return JsonResponse(res)
 
+
 @login_required
 def index(request):
     return redirect("slotapp:first_page")
-    
+
+
 def user_logout(request):
     logout(request)
     return HttpResponse("logout")
+
 
 @login_required
 def first_page(request):
@@ -163,29 +172,30 @@ def first_page(request):
     u = User.objects.get(id=user_id)
     slots = Slotitem.objects.all()
     data = {'user': u, 'slots': slots, 'time': 0}
-        
+
     for item in count_data:
-        if  item['user_id'] == str(user_id):
+        if item['user_id'] == str(user_id):
             data['time'] = item['remain_time']
             break
-        
+
     # if data['time'] == 0:
     #     if Order.objects.filter(user=request.user, ordered=False, kind=1).count() > 0:
     #         docheck(user_id, 2)
-        # Order.objects.filter(user=request.user, kind=1, ordered=False).delete()
-        # OrderItem.objects.filter(user=request.user, kind=1, ordered=False).delete()
+    # Order.objects.filter(user=request.user, kind=1, ordered=False).delete()
+    # OrderItem.objects.filter(user=request.user, kind=1, ordered=False).delete()
     release_carts()
-    
+
     launched = False
     rows = Checktime.objects.all()
     if rows.count() > 0:
         launched = rows[0].launched
     if launched == True and blaunch_timer == 1:
         launch_thread()
-    data['launched'] = launched    
+    data['launched'] = launched
     data['launch_timer'] = launch_timer
     paypal_status = config("PAYPAL_STATUS_COMMUNITY")
-    return render(request, 'slotapp/first-page.html', {'data': data, 'paypal_status':paypal_status})
+    return render(request, 'slotapp/first-page.html', {'data': data, 'paypal_status': paypal_status})
+
 
 @csrf_exempt
 def tocart(request):
@@ -195,7 +205,7 @@ def tocart(request):
     slot_id = request.POST['slot_id']
     item = Slotitem.objects.get(id=slot_id)
     user = User.objects.get(id=user_id)
-    
+
     cart_count = OrderItem.objects.filter(user=user, ordered=False, kind=1).count()
     order_item, created = OrderItem.objects.get_or_create(
         slot=item,
@@ -203,7 +213,7 @@ def tocart(request):
         ordered=False,
         kind=1
     )
-    
+
     if item.available == 0 and created:
         res['success'] = False
         res['msg'] = 'Slot is not available now.'
@@ -213,7 +223,7 @@ def tocart(request):
         if not created:
             order_item.quantity += 1
             order_item.save()
-            res['kind'] = 1     # not first adding slot to cart
+            res['kind'] = 1  # not first adding slot to cart
         else:
             order_qs = Order.objects.filter(user=request.user, ordered=False, kind=1)
             if order_qs.exists():
@@ -222,7 +232,7 @@ def tocart(request):
                 ordered_date = timezone.now()
                 order = Order.objects.create(
                     user=request.user, ordered_date=ordered_date, kind=1)
-            order.items.add(order_item)     # first adding to cart
+            order.items.add(order_item)  # first adding to cart
             item.available = item.available - 1
             item.save()
             res['kind'] = 0
@@ -235,11 +245,12 @@ def tocart(request):
                 res['time_set'] = 1
                 res['time'] = ct * 20
             new_counter()
-            
+
     res['available'] = item.available
     res['total'] = item.total
-    
+
     return JsonResponse(res)
+
 
 @csrf_exempt
 def getcart(request):
@@ -247,10 +258,10 @@ def getcart(request):
     user_id = request.POST['user_id']
     ordered_list = []
     order_list = []
-    
+
     if user_id in cart_get:
         cart_get.remove(user_id)
-        
+
     order_qs = Order.objects.filter(user=request.user, ordered=False, kind=1)
     if order_qs.exists():
         order = order_qs[0]
@@ -266,24 +277,26 @@ def getcart(request):
             if order_item.ordered:
                 ordered_list.append(data)
             else:
-                order_list.append(data)    
-     
-    res['order_list'] = order_list 
-    res['ordered_list'] = ordered_list 
+                order_list.append(data)
+
+    res['order_list'] = order_list
+    res['ordered_list'] = ordered_list
     return JsonResponse(res)
+
 
 def del_timing(user_id):
     for item in count_data:
-        if  item['user_id'] == user_id:
+        if item['user_id'] == user_id:
             count_data.remove(item)
-            
-@csrf_exempt          
+
+
+@csrf_exempt
 def cartminus(request):
     res = {'success': True, 'end_timing': False}
     user_id = request.POST['user_id']
     slot_id = request.POST['slot_id']
-    kind = request.POST['kind'] # 1: trash 0: minus
-    
+    kind = request.POST['kind']  # 1: trash 0: minus
+
     order_qs = Order.objects.filter(user=request.user, ordered=False, kind=1)
     if order_qs.exists():
         order = order_qs[0]
@@ -298,11 +311,11 @@ def cartminus(request):
             else:
                 order_item.save()
             data = {}
-        
+
             s = Slotitem.objects.get(id=slot_id)
             s.available = s.available + av
             s.save()
-            
+
             data['slot_id'] = s.id
             data['available'] = s.available
             data['total'] = s.total
@@ -310,7 +323,7 @@ def cartminus(request):
         else:
             res['success'] = False
             res['msg'] = "This slot is not in your cart."
-        
+
         if order.items.filter(kind=1).count() == 0:
             del_timing(user_id)
             order.delete()
@@ -318,9 +331,10 @@ def cartminus(request):
     else:
         res['success'] = False
         res['msg'] = "You have no order information now."
-        
+
     return JsonResponse(res)
-    
+
+
 @csrf_exempt
 def get_available(request):
     global cart_get
@@ -331,7 +345,7 @@ def get_available(request):
         res['cart_refresh'] = 'yes'
     else:
         res['cart_refresh'] = 'no'
-        
+
     slot_list = Slotitem.objects.filter().values()
     data_list = []
     for s in slot_list:
@@ -340,11 +354,12 @@ def get_available(request):
         data['available'] = s['available']
         data['total'] = s['total']
         data_list.append(data)
-    
-    res['slots'] = data_list 
+
+    res['slots'] = data_list
     res['refresh'] = True if blaunch_timer == 1 else False
     # res['time_now'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     return JsonResponse(res)
+
 
 @csrf_exempt
 def setpause(request):
@@ -353,21 +368,21 @@ def setpause(request):
     user_id = request.POST['user_id']
     kind = request.POST['kind']
     for item in count_data:
-        if  item['user_id'] == user_id:
+        if item['user_id'] == user_id:
             item['pause'] = kind
             res['time'] = item['remain_time']
             break
     return JsonResponse(res)
+
 
 @csrf_exempt
 def checkout(request):
     user_id = request.POST['user_id']
     kind = request.POST['kind']
     usernames = request.POST['usernames']
-    usernames  = json.loads(usernames)
+    usernames = json.loads(usernames)
     res = docheck(user_id, kind, usernames)
     return JsonResponse(res)
-
 
 
 @csrf_exempt
@@ -402,7 +417,7 @@ def slot_payment(request):
                 "amount": {
                     "total": amount,
                     "currency": "USD"},
-                "description": "This is the payment transaction description."}]})  
+                "description": "This is the payment transaction description."}]})
         if payment.create():
             print("- - - - - - payment success")
         else:
@@ -417,7 +432,7 @@ def slot_payment_execute(request):
     resp = {'success': True}
     user_id = request.POST['user_id']
     usernames = request.POST['usernames']
-    usernames  = json.loads(usernames)
+    usernames = json.loads(usernames)
     payment = paypalrestsdk.Payment.find(request.POST['paymentID'])
     if payment.execute({'payer_id': request.POST['payerID']}):
         print("Execute success")
@@ -433,6 +448,7 @@ def slot_payment_execute(request):
         print(payment.error)
     return JsonResponse(resp)
 
+
 @login_required
 def launch(request):
     global blaunch_timer, launch_timer
@@ -444,6 +460,7 @@ def launch(request):
         blaunch_timer = 1
         launch_timer = 0
     return redirect('./community')
+
 
 def launch_thread():
     global blaunch_timer, launch_timer, thread_id
@@ -459,6 +476,6 @@ def launch_thread():
     x.start()
     thread_id += 1
 
+
 def setLaunch(value):
     Checktime.objects.all().update(launched=value, launch_code=create_ref_code())
-    
