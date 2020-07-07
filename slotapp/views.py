@@ -34,14 +34,10 @@ def docheck(user_id, kind, usernames = []):
     global count_data
     res = {'success': True}
     
-    for item in count_data:
-        if  item['user_id'] == user_id:
-            count_data.remove(item)
-            break
-    
     user = User.objects.get(id=user_id)
     order_qs = Order.objects.filter(user=user, ordered=False, kind=1)
     if not order_qs.exists():
+        del_timing(user_id)
         res['success'] = False
         res['msg'] = "You have no order information."     
         return res
@@ -81,6 +77,7 @@ def docheck(user_id, kind, usernames = []):
         order.items.filter(kind=1, ordered=False, user=user).delete()
         Order.objects.filter(user=user, ordered=False, kind=1).delete()
         res['slots'] = data_list
+    del_timing(user_id)
     return res
 
 
@@ -426,7 +423,6 @@ def slot_payment_execute(request):
         print("Execute success")
         amount = float(payment.transactions[0].amount.total)
         fee = float(payment.transactions[0].related_resources[0].sale.transaction_fee.value)
-        print(" - - - - payment amount: ", amount, fee)
         resp['amount'] = round(amount, 2)
         docheck(user_id, '1', usernames)
         messages.success(request, "Order complete!")
