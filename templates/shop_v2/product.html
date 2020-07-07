@@ -2,6 +2,7 @@
 {% block content %}
 {% load mathfilters %}
 {% load humanize %}
+{% load cart_template_tags %}
 
 <div class="row">
     <!-- Column -->
@@ -22,7 +23,7 @@
                         {% if object.discount_price %}
                         <h2 class="mt-5">${{ object.discount_price }} <del class="text-danger">${{ object.giveaway_fee|mul:user.account_type.fee_quantifier|add:object.giveaway_value }}</del></h2>
                         {% else %}
-                        <p>This ${{ object.giveaway_value|floatformat:0}} giveaway will run for {{ object.duration_to_run|mul:user.account_type.time_quantifier|floatformat:0 }} minutes. <br>
+                        <p>This ${{ object.giveaway_value|floatformat:0}} giveaway will run for {{ object.duration_to_run|mul:user.account_type.time_quantifier|display_time}}. <br>
                         Fee: ${{ object.giveaway_fee|mul:user.account_type.fee_quantifier|floatformat:0 }}<br>
                         Total Cost: ${{ object.giveaway_fee|mul:user.account_type.fee_quantifier|add:object.giveaway_value|floatformat:0 }}<br>
 
