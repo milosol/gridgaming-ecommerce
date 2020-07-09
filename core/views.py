@@ -11,7 +11,7 @@ from django.utils import timezone
 from django.urls import reverse
 from paypal.standard.forms import PayPalPaymentsForm
 from .forms import CheckoutForm, CheckoutFormv2, CouponForm, RefundForm, PaymentForm
-from .models import Item, OrderItem, Order, Address, Payment, Coupon, Refund, UserProfile
+from .models import Item, OrderItem, Order, Address, Payment, Coupon, Refund, UserProfile, Slotitem
 from core.decorators import account_type_check
 from django.utils.decorators import method_decorator
 from users.models import User, UserRoles
@@ -20,6 +20,7 @@ import random
 import string
 import stripe
 from stripe import error
+# from slotapp.views import removefromcart
 #from core.extras import transact, generate_client_token
 
 
@@ -51,6 +52,10 @@ class CheckoutViewV2(View):
         # generate all other required data that you may need on the #checkout page and add them to context.
 
         try:
+            res = removefromcart(self.request.user.id)
+            if res['removed'] == 1:
+                messages.warning(self.request, res['msg'])
+                return redirect("core:order-summary")
             order = Order.objects.get(user=self.request.user, ordered=False, kind=0)
             form = CheckoutFormv2()
             context = {
@@ -74,7 +79,6 @@ class CheckoutViewV2(View):
             return render(self.request, "shop_v2/checkout.html", context)
         except ObjectDoesNotExist:
             braintree_client_token = braintree.ClientToken.generate({})
-
             context = {'braintree_client_token': braintree_client_token}
             messages.info(self.request, "You do not have an active order")
             return redirect("core:checkout")
@@ -351,11 +355,21 @@ class HomeView(ListView):
     model = Item
     paginate_by = 12
     template_name = "core/index.html"
-
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        res = removefromcart(self.request.user.id)
+        if res['removed'] == 1:
+            messages.warning(self.request, res['msg'])
+        return context
 
 class OrderSummaryView(LoginRequiredMixin, View):
     def get(self, *args, **kwargs):
+        bmsg = 0
         try:
+            res = removefromcart(self.request.user.id)
+            if res['removed'] == 1:
+                messages.warning(self.request, res['msg'])
+                bmsg = 1
             order = Order.objects.get(user=self.request.user, ordered=False, kind=0)
             socials = Item.objects.filter(category='SB')
             context = {
@@ -364,15 +378,15 @@ class OrderSummaryView(LoginRequiredMixin, View):
             }
             return render(self.request, 'shop_v2/cart.html', context)
         except ObjectDoesNotExist:
-            messages.warning(self.request, "You do not have an active order")
-            return redirect("/")
+            if bmsg == 0:
+                messages.warning(self.request, "You do not have an active order")
+            return redirect("/shop")
 
 
 @method_decorator(account_type_check, name='dispatch')
 class ItemDetailView(DetailView):
     model = Item
     template_name = "shop_v2/product.html"
-
 
 @account_type_check
 @login_required
@@ -559,7 +573,10 @@ def payment_canceled(request):
 
 class PaypalPaymentProcess(View):
     def get(self, request):
-        print("in process")
+        res = removefromcart(self.request.user.id)
+        if res['removed'] == 1:
+            messages.warning(self.request, res['msg'])
+            return redirect("core:order-summary")
         # order_id = request.GET['order_id']
         # order = get_object_or_404(Order, id=order_id)
         order = Order.objects.get(user=self.request.user, ordered=False, kind=0)
@@ -671,5 +688,41 @@ class AccountView(View):
 
             return render(self.request, "shop_v2/accounts.html", context)
         except ObjectDoesNotExist:
-            messages.info(self.request, "You do not have an active order")
+            messages.info(self.request, "There is not accounts signed up for community")
             return redirect("core:home")
+
+        
+@method_decorator(account_type_check, name='dispatch')
+class DisableView(View):
+
+    def get(self, *args, **kwargs):
+        try:
+            slots = Slotitem.objects.all()
+            items = Item.objects.all()
+            context = {
+                'items': items,
+                'slots': slots,
+            }
+
+            return render(self.request, "shop_v2/disable.html", context)
+        except ObjectDoesNotExist:
+            messages.info(self.request, "You do not have Giveaway items")
+            return redirect("core:home")
+        
+def removefromcart(user_id):
+    res = {'left': 0, 'msg': '', 'removed': 0}
+    user = User.objects.get(id=user_id)
+    order_qs = Order.objects.filter(user=user, ordered=False, kind=0)
+    if not order_qs.exists():
+        return res
+    order = order_qs[0]
+    order_items = order.items.filter(kind=0, item__available=False)
+    if len(order_items) > 0:
+        res['removed'] = 1
+        res['msg'] = "The item in your cart is no longer available and has been removed"
+    order_items.delete()
+    if len(order.items.all()) == 0:
+        order.delete()
+    else:
+        res['left'] = 1
+    return res

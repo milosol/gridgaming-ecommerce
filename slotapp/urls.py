@@ -16,6 +16,7 @@ urlpatterns = [
     path('cartminus', views.cartminus, name='cartminus'),
     path('checkout', views.checkout, name='checkout'),
     path('get_available', views.get_available, name='get_available'),
+    path('setdisable', views.setdisable, name='setdisable'),
     path('payment', views.slot_payment, name='slot_payment'),
     path('payment_execute', views.slot_payment_execute, name='slot_payment_execute'),
     # path('logout', views.user_logout, name='user_logout'),

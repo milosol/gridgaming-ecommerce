@@ -325,7 +325,8 @@ post_save.connect(userprofile_receiver, sender=settings.AUTH_USER_MODEL)
 # Create your models here.
 class Slotitem(models.Model):
     title = models.CharField(max_length=200)
-    available = models.IntegerField(default=20)
+    available_count = models.IntegerField(default=20)
+    available = models.BooleanField(default=True)
     total = models.IntegerField(default=20)
     points = models.IntegerField(default=100)
     value = models.IntegerField(default=25)

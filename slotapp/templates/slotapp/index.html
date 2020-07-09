@@ -40,11 +40,11 @@
             var sel_user = $("#username").val(); 
             $.ajax({ 
                 type:"POST",
-                url: "./index",
+                url: "./test",
                 data: {'user_id': sel_user},
                 success: function(data){
                     if(data.success == true){
-                        window.location = "./first-page";
+                        window.location = "./community";
                     }else{
                         
                     }

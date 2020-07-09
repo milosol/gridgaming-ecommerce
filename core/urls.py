@@ -16,10 +16,11 @@ from .views import (
     RequestRefundView,
     OrderView,
     AllOrderView,
+    DisableView,
     AccountView,
     PaypalPaymentProcess,
     payment_done,
-    payment_canceled
+    payment_canceled,
 )
 
 app_name = 'core'
@@ -31,6 +32,7 @@ urlpatterns = [
     path('orders/', login_required(OrderView.as_view()), name='user-orders'),
     path('all-orders/', login_required(AllOrderView.as_view()), name='all-orders'),
     path('accounts/', login_required(AccountView.as_view()), name='accounts'),
+    path('disable/', login_required(DisableView.as_view()), name='disable'),
     path('product/<slug>/', login_required(ItemDetailView.as_view()), name='product'),
     path('add-to-cart/<slug>/', add_to_cart, name='add-to-cart'),
     path('add-coupon/', login_required(AddCouponView.as_view()), name='add-coupon'),

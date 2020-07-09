@@ -13,7 +13,7 @@ from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
-from core.models import UserProfile, Order, OrderItem, Slotitem, Checktime, Payment
+from core.models import UserProfile, Order, OrderItem, Slotitem, Checktime, Payment, Item
 from core.views import create_ref_code
 from users.models import User
 
@@ -66,11 +66,11 @@ def docheck(user_id, kind, usernames = []):
             try:
                 data = {}
                 s = Slotitem.objects.get(id=c.slot.id)
-                s.available = s.available + 1
+                s.available_count = s.available_count + 1
                 s.save()
                 
                 data['slot_id'] = s.id
-                data['available'] = str(s.available) + "/" + str(s.total)
+                data['available_count'] = str(s.available_count) + "/" + str(s.total)
                 data_list.append(data)
             except Slotitem.DoesNotExist:
                 pass
@@ -161,14 +161,19 @@ def first_page(request):
     global cart_get, count_data, launch_timer
     user_id = request.user.id
     u = User.objects.get(id=user_id)
-    slots = Slotitem.objects.all()
+    slots = Slotitem.objects.filter(available=True)
     data = {'user': u, 'slots': slots, 'time': 0}
-        
+    
+    res = removefromcart(user_id)
     for item in count_data:
         if  item['user_id'] == str(user_id):
-            data['time'] = item['remain_time']
+            if res['left'] == 0:
+                count_data.remove(item)
+            else:
+                data['time'] = item['remain_time']
+                item['pause'] = '0'
             break
-        
+    
     # if data['time'] == 0:
     #     if Order.objects.filter(user=request.user, ordered=False, kind=1).count() > 0:
     #         docheck(user_id, 2)
@@ -185,6 +190,8 @@ def first_page(request):
     data['launched'] = launched    
     data['launch_timer'] = launch_timer
     paypal_status = config("PAYPAL_STATUS_COMMUNITY")
+    if res['removed'] == 1:
+        messages.warning(request, res['msg'])
     return render(request, 'slotapp/first-page.html', {'data': data, 'paypal_status':paypal_status})
 
 @csrf_exempt
@@ -204,7 +211,7 @@ def tocart(request):
         kind=1
     )
     
-    if item.available == 0 and created:
+    if item.available_count == 0 and created:
         res['success'] = False
         res['msg'] = 'Slot is not available now.'
         res['kind'] = 2
@@ -223,7 +230,7 @@ def tocart(request):
                 order = Order.objects.create(
                     user=request.user, ordered_date=ordered_date, kind=1)
             order.items.add(order_item)     # first adding to cart
-            item.available = item.available - 1
+            item.available_count = item.available_count - 1
             item.save()
             res['kind'] = 0
             if cart_count == 0:
@@ -236,7 +243,7 @@ def tocart(request):
                 res['time'] = ct * 20
             new_counter()
             
-    res['available'] = item.available
+    res['available_count'] = item.available_count
     res['total'] = item.total
     
     return JsonResponse(res)
@@ -300,11 +307,11 @@ def cartminus(request):
             data = {}
         
             s = Slotitem.objects.get(id=slot_id)
-            s.available = s.available + av
+            s.available_count = s.available_count + av
             s.save()
             
             data['slot_id'] = s.id
-            data['available'] = s.available
+            data['available_count'] = s.available_count
             data['total'] = s.total
             res['av_data'] = data
         else:
@@ -332,12 +339,12 @@ def get_available(request):
     else:
         res['cart_refresh'] = 'no'
         
-    slot_list = Slotitem.objects.filter().values()
+    slot_list = Slotitem.objects.filter(available=True).values()
     data_list = []
     for s in slot_list:
         data = {}
         data['slot_id'] = s['id']
-        data['available'] = s['available']
+        data['available_count'] = s['available_count']
         data['total'] = s['total']
         data_list.append(data)
     
@@ -462,3 +469,39 @@ def launch_thread():
 def setLaunch(value):
     Checktime.objects.all().update(launched=value, launch_code=create_ref_code())
     
+@csrf_exempt
+def setdisable(request):
+    res = {'success': True}
+    kind = request.POST['kind']   # 0: regular 1:community
+    item_id = request.POST['id']
+    value = request.POST['value']  # 1: available 2:disable
+    if value == '1':
+        value = True
+    else:
+        value = False
+    
+    if kind == '0':
+        Item.objects.filter(id=item_id).update(available=value)
+    else:
+        Slotitem.objects.filter(id=item_id).update(available=value)
+        
+    return JsonResponse(res)
+
+def removefromcart(user_id):
+    res = {'left': 0, 'msg': '', 'removed': 0}
+    user = User.objects.get(id=user_id)
+    order_qs = Order.objects.filter(user=user, ordered=False, kind=1)
+    if not order_qs.exists():
+        return res
+    order = order_qs[0]
+    order_items = order.items.filter(kind=1, slot__available=False)
+    if len(order_items) > 0:
+        res['removed'] = 1
+        res['msg'] = "The item in your cart is no longer available and has been removed"
+    order_items.delete()
+    if len(order.items.all()) == 0:
+        order.delete()
+    else:
+        res['left'] = 1
+    return res
+            
