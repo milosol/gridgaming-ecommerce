@@ -12,6 +12,7 @@ from retweet_picker.bot_check import BotCheck
 from retweet_picker.models import GiveawayResults, GiveawayStats, TwitterGiveawayID, ContestUserAccounts
 from retweet_picker.process import ProcessRetrievedTweets
 from retweet_picker.twitter_interact import TwitterInteract
+from .utils import display_time
 
 
 class TwitterUser(TwitterInteract):
@@ -120,13 +121,13 @@ class GiveawayManager:
             self.tweet_id = self.process_retrieved_tweets.tweet_id
         tweet_url = f'https://twitter.com/{author}/status/{self.tweet_id}'
         self.tweet_id_key, created = TwitterGiveawayID.objects.get_or_create(tweet_url=tweet_url)
-        # print(self.tweet_id_key)
         return tweet_url
 
     def build_tweet(self, amount=None, duration=None, sponsors=[]):
         giveaway_id = str(uuid.uuid4())[0:8]
         sponsor_text = self.build_sponsors(sponsors)
-        tweet_text = f"I'll give ${amount} to a random user who retweets this tweet within the next {duration} minutes.\n\nMust be following {sponsor_text}.\n\nID:{giveaway_id}"
+        beautiful_time = display_time(duration)
+        tweet_text = f"I'll give ${amount} to a random user who retweets this tweet within the next {beautiful_time}.\n\nMust be following {sponsor_text}.\n\nID:{giveaway_id}"
         return tweet_text
 
     def launch_giveaway(self):
