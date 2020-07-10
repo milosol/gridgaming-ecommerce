@@ -1,0 +1,196 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load cart_template_tags %}
+{% load crispy_forms_tags %}
+
+{% block extra_css %}
+<style>
+    .tr-disable{
+        background-color: #1c1f278c;
+    }
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+
+    <div class="container-fluid">
+        <!-- ============================================================== -->
+        <!-- Start Page Content -->
+        <!-- ============================================================== -->
+        <div class="row">
+            <!-- Column -->
+            <!-- TODO replace with datatables eventually -->
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div>
+                            {% if items %}
+                        
+                            <h3 class="mb-4">Giveaway items</h3>
+                            <div class="table-responsive">
+                                <div id="zero_config_wrapper"
+                                    class="dataTables_wrapper container-fluid dt-bootstrap4 no-footer">
+                                    
+                                    <div class="row" style="margin-left: 0; margin-right: 0;">
+                                        <div class="col-sm-12">
+                                            <table class="table product-overview dataTable no-footer" id="zero_config"
+                                                role="grid" aria-describedby="zero_config_info">
+                                                <thead>
+                                                <tr role="row">
+                                                    <th class="sorting" tabindex="0" aria-controls="zero_config" rowspan="1"
+                                                        colspan="1" aria-label="Date: activate to sort column ascending"
+                                                        style="width: 0px;">Title
+                                                    </th>
+                                                    <th class="sorting" tabindex="0" aria-controls="zero_config" rowspan="1"
+                                                        colspan="1" aria-label="Order ID: activate to sort column ascending"
+                                                        style="width: 0px;">Value
+                                                    </th>
+                                                    
+                                                    <th class="sorting" tabindex="0" aria-controls="zero_config" rowspan="1"
+                                                        colspan="1" aria-label="Actions: activate to sort column ascending"
+                                                        style="width: 0px;">Available/Disable
+                                                    </th>
+                                                    <th class="sorting" tabindex="0" aria-controls="zero_config" rowspan="1"
+                                                        colspan="1" aria-label="Actions: activate to sort column ascending"
+                                                        style="width: 0px;">Actions
+                                                    </th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+
+                                                {% for value in items %}
+                                                {% if value.available == True %}
+                                                <tr role="row">
+                                                {% else %}
+                                                <tr class="tr-disable" role="row">
+                                                {% endif %}
+                                                    <td>{{ value.title }}</td>
+                                                    <td>${{ value.giveaway_value }}</td>
+                                                    {% if value.available == True %}
+                                                    <td id="td0_{{value.id}}">available</td>
+                                                    <td><a  id="a0_{{value.id}}" href="#" onclick="setAvailable(0, {{value.id}}, 2)">Disable</a></td>
+                                                    {% else %}
+                                                    <td id="td0_{{value.id}}">disabled</td>
+                                                    <td><a  id="a0_{{value.id}}" href="#" onclick="setAvailable(0, {{value.id}}, 1)">Available</a></td>
+                                                    {% endif %}
+                                                </tr>
+                                                {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <h4> No giveaway items</h4>
+                            {% endif %}
+                        </div>
+
+
+                        <div class="mt-5">
+                            {% if slots %}
+                        
+                            <h3 class="mb-4">Community Giveaway Items</h3>
+                            <div class="table-responsive">
+                                <div id="zero_config_wrapper"
+                                    class="dataTables_wrapper container-fluid dt-bootstrap4 no-footer">
+                                   
+                                    <div class="row" style="margin-left: 0; margin-right: 0;">
+                                        <div class="col-sm-12">
+                                            <table class="table product-overview dataTable no-footer" id="zero_config"
+                                                role="grid" aria-describedby="zero_config_info">
+                                                <thead>
+                                                <tr role="row">
+                                                    <th class="sorting" tabindex="0" aria-controls="zero_config" rowspan="1"
+                                                        colspan="1" aria-label="Order ID: activate to sort column ascending"
+                                                        style="width: 0px;">Title
+                                                    </th>
+                                                    <th class="sorting" tabindex="0" aria-controls="zero_config" rowspan="1"
+                                                        colspan="1" aria-label="Product: activate to sort column ascending"
+                                                        style="width: 0px;">Available count
+                                                    </th>
+                                                    <th class="sorting" tabindex="0" aria-controls="zero_config" rowspan="1"
+                                                        colspan="1" aria-label="Quantity: activate to sort column ascending"
+                                                        style="width: 0px;">Value
+                                                    </th>
+                                                    <th class="sorting" tabindex="0" aria-controls="zero_config" rowspan="1"
+                                                        colspan="1" aria-label="Quantity: activate to sort column ascending"
+                                                        style="width: 0px;">Available/Disable
+                                                    </th>
+                                                    <th class="sorting" tabindex="0" aria-controls="zero_config" rowspan="1"
+                                                        colspan="1" aria-label="Quantity: activate to sort column ascending"
+                                                        style="width: 0px;">Actions
+                                                    </th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+
+                                                {% for value in slots %}
+                                                {% if value.available == True %}
+                                                <tr role="row">
+                                                {% else %}
+                                                <tr class="tr-disable" role="row">
+                                                {% endif %}
+                                                    <td>{{ value.title }}</td>
+                                                    <td>{{ value.available_count }} / {{ value.total }}</td>
+                                                    <td>${{ value.value }} per {{ value.points }} points</td>
+                                                    {% if value.available == True %}
+                                                    <td id="td1_{{value.id}}">available</td>
+                                                    <td><a id="a1_{{value.id}}" href="#" onclick="setAvailable(1, {{value.id}}, 2)">Disable</a></td>
+                                                    {% else %}
+                                                    <td id="td1_{{value.id}}">disabled</td>
+                                                    <td><a id="a1_{{value.id}}" href="#" onclick="setAvailable(1, {{value.id}}, 1)">Available</a></td>
+                                                    {% endif %}
+                                                    
+                                                </tr>
+                                                {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <h4> No community giveaway items</h4>
+                            {% endif %}
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <!-- Column -->
+        </div>
+    </div>
+{% endblock content %}
+
+{% block extra_scripts %}
+    <script>
+       function setAvailable(kind, id, value){
+           $.ajax({
+                type: "POST",
+                url: "/slot/setdisable",
+                data: {'kind': kind, 'id': id, "value": value},
+                success: function (data) {
+                    if (data.success == true) {
+                        if(value == 1){
+                            $("#td"+kind+"_"+id).html("available")
+                            $("#a"+kind+"_"+id).html("Disable")
+                            $("#a"+kind+"_"+id).attr("onClick", 'setAvailable(' + kind + ',' + id + ',2);')
+                            $("#td"+kind+"_"+id).closest("tr").removeClass('tr-disable')
+                        }else{
+                            $("#td"+kind+"_"+id).html("disabled")
+                            $("#a"+kind+"_"+id).html("Available")
+                            $("#a"+kind+"_"+id).attr("onClick", 'setAvailable(' + kind + ',' + id + ',1);')
+                            $("#td"+kind+"_"+id).closest("tr").addClass('tr-disable')
+                        }
+                        
+                        console.log(data)
+                    } else {
+                    }
+                }
+            })
+       }
+    </script>
+
+
+{% endblock extra_scripts %}
