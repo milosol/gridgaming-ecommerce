@@ -80,7 +80,7 @@
                 <a href='./launch?value=0' class='btn btn-secondary'>Close Community Giveaway</a>
             {% endif %}
 
-        {%  if request.user.blacklisted or request.user.account_type != "Big Sponsor Provider" %}
+        {%  if request.user.blacklisted or request.user.account_type.role_name != "Big Sponsor Provider" %}
             <h3> Sorry, you are not eligible for this event!</h3>
         {% else %}
             <div class="d-inline-block mx-md-5"><h5 class="text-success">Registration Closes: <span id="launch_time"></span></h5></div>
@@ -276,8 +276,12 @@
             var EXECUTE_PAYMENT_URL = base_url + "/slot/payment_execute";
             var RETURN_URL = base_url + "/shop/orders";
             var CANCEL_URL = base_url + "/slot/first-page";
+
+            var blacked = "{{request.user.blacklisted}}" == 'True'
+            var not_sponsor = "{{request.user.account_type}}" != "Big Sponsor Provider" 
+            var not_eligable = blacked || not_sponsor
             $(function () {
-                getCart();
+                
                 if(launched == true){
                     setInterval(() => {
                         var hh = parseInt(launch_timer / 3600);
@@ -295,11 +299,16 @@
                     }, 1000);
                 }
                 
+                
+                start_timing();
+                if(not_eligable){
+                    return;
+                }
+                getCart();
                 $("#myModal").on("hidden.bs.modal", function () {
                     setPause(0);
                 });
-                start_timing();
-
+                
                 paypal.Button.render({
                     style: {
                         color: 'blue',
@@ -325,7 +334,6 @@
                             user_id: user_id,
                             usernames: JSON.stringify(usernames)
                         }).then(function (res) {
-                            console.log(res);
                             if (res.success == true) {
                                 window.location.href = "/shop/orders";
                             }
@@ -364,7 +372,6 @@
             }
 
             function stop_timing(kind = 0) {
-                console.log("timer_handle:", timer_handle)
                 if (timer_handle) {
                     clearInterval(timer_handle);
                     timer_handle = 0
@@ -437,7 +444,6 @@
             }
 
             function getCart() {
-                console.log("here is get cart");
                 $.ajax({
                     type: "POST",
                     url: "./getcart",
@@ -446,12 +452,10 @@
                         if (data.success == true) {
                             $(".btn_cart").removeClass('btn_addpoints')
                             $(".btn_cart").html('To Cart')
-                            console.log(" cart refreshed");
                             $("#cart_tbody").html("");
                             var html_str = "";
                             for (i = 0; i < data.order_list.length; i++) {
                                 var d = data.order_list[i]
-                                console.log(d.slot)
                                 $("#cartbtn_" + d.id).html(' + ' + d.points)
                                 $("#cartbtn_" + d.id).addClass('btn_addpoints')
                                 html_str += "<tr id='tr_" + d.id + "'><td>" + d.slot + "</td><td>"
@@ -562,6 +566,9 @@
             }
 
             function getAvailable() {
+                if(not_eligable){
+                    return;
+                }
                 $.ajax({
                     type: "POST",
                     url: "./get_available",
