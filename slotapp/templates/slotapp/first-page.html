@@ -81,7 +81,7 @@
             {% endif %}
 
 
-        {%  if request.user.blacklisted or request.user.account_type == "Big Sponsor Provider" %}
+        {%  if request.user.blacklisted or request.user.account_type.role_name == "Big Sponsor Provider" %}
 
             <h3> Sorry, you are not eligible for this event!</h3>
         {% else %}
@@ -280,8 +280,10 @@
             var CANCEL_URL = base_url + "/slot/first-page";
 
             var blacked = "{{request.user.blacklisted}}" == 'True'
-            var not_sponsor = "{{request.user.account_type}}" != "Big Sponsor Provider" 
-            var not_eligable = blacked || not_sponsor
+            var big_sponsor = "{{request.user.account_type}}" == "Big Sponsor Provider" 
+            var not_eligible = blacked || big_sponsor
+            console.log("account_type: ", "{{request.user.account_type}}")
+            console.log("not_eligible:", not_eligible)
             $(function () {
                 
                 if(launched == true){
@@ -303,7 +305,7 @@
                 
                 
                 start_timing();
-                if(not_eligable){
+                if(not_eligible){
                     return;
                 }
                 getCart();
@@ -337,7 +339,8 @@
                             usernames: JSON.stringify(usernames)
                         }).then(function (res) {
                             if (res.success == true) {
-                                window.location.href = "/shop/orders";
+                                // window.location.href = "/shop/orders";
+                                window.location.href = "/slot/community";
                             }
                         });
                     },
@@ -568,7 +571,7 @@
             }
 
             function getAvailable() {
-                if(not_eligable){
+                if(not_eligible){
                     return;
                 }
                 $.ajax({
