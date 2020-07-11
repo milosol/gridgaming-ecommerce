@@ -80,7 +80,7 @@
                 <a href='./launch?value=0' class='btn btn-secondary'>Close Community Giveaway</a>
             {% endif %}
 
-        {%  if request.user.blacklisted or request.user.account_type != "Big Sponsor Provider" %}
+        {%  if request.user.blacklisted or request.user.account_type == "Big Sponsor Provider" %}
             <h3> Sorry, you are not eligible for this event!</h3>
         {% else %}
             <div class="d-inline-block mx-md-5"><h5 class="text-success">Registration Closes: <span id="launch_time"></span></h5></div>
