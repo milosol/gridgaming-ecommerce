@@ -13,7 +13,7 @@ from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
-from core.models import UserProfile, Order, OrderItem, Slotitem, Checktime, Payment, Item
+from core.models import UserProfile, Order, OrderItem, Slotitem, Checktime, Payment, Item, History
 from core.views import create_ref_code
 from users.models import User
 
@@ -29,8 +29,7 @@ paypalrestsdk.configure({
     "client_id": config("PAYPAL_CLIENT_ID"),
     "client_secret": config("PAYPAL_CLIENT_SECRET")})
 
-
-def docheck(user_id, kind, usernames=[]):
+def docheck(user_id, kind, usernames=[], reason=""):
     global count_data
     res = {'success': True}
 
@@ -61,6 +60,8 @@ def docheck(user_id, kind, usernames=[]):
         order.payment = payment
         order.ref_code = create_ref_code()
         order.save()
+        History.objects.create(user=user, action_type='P', item_str=order.get_purchased_items(),
+                                reason=reason, payment=payment, order_str=order.id)
     else:
         data_list = []
         order_items = order.items.filter(kind=1, ordered=False, user=user)
@@ -76,6 +77,8 @@ def docheck(user_id, kind, usernames=[]):
                 data_list.append(data)
             except Slotitem.DoesNotExist:
                 pass
+        History.objects.create(user=user, action_type='E', item_str=order.get_purchased_items(), 
+                               reason=reason, order_str=order.id)
         order.items.filter(kind=1, ordered=False, user=user).delete()
         Order.objects.filter(user=user, ordered=False, kind=1).delete()
         res['slots'] = data_list
@@ -83,7 +86,7 @@ def docheck(user_id, kind, usernames=[]):
     return res
 
 
-def release_carts():
+def release_carts(by_user):
     global count_data
     order_items = OrderItem.objects.filter(ordered=False, kind=1)
     users = []
@@ -95,11 +98,10 @@ def release_carts():
                     bcounting = 1
                     break
             if bcounting == 0:
-                docheck(item.user.id, 2)
+                docheck(item.user.id, 2, [], "By " + by_user)
             users.append(item.user.id)
 
 
-# release_carts()
 
 def count_handle(name):
     global count_data, brun
@@ -115,7 +117,7 @@ def count_handle(name):
             if item['remain_time'] < 1:
                 count_data.remove(item)
                 cart_get.append(item['user_id'])
-                docheck(item['user_id'], 2)
+                docheck(item['user_id'], 2, [], "Time out")
         time.sleep(1)
 
 
@@ -188,7 +190,7 @@ def first_page(request):
     #         docheck(user_id, 2)
     # Order.objects.filter(user=request.user, kind=1, ordered=False).delete()
     # OrderItem.objects.filter(user=request.user, kind=1, ordered=False).delete()
-    release_carts()
+    release_carts(u.username)
 
     launched = False
     rows = Checktime.objects.all()
@@ -253,7 +255,7 @@ def tocart(request):
                 res['time_set'] = 1
                 res['time'] = ct * 20
             new_counter()
-            
+        # History.objects.create(user=user, action_type='T', item=order_item.quantity + " of " + order_item.slot.title)   
     res['available_count'] = item.available_count
     res['total'] = item.total
     
@@ -447,7 +449,7 @@ def slot_payment_execute(request):
         amount = float(payment.transactions[0].amount.total)
         fee = float(payment.transactions[0].related_resources[0].sale.transaction_fee.value)
         resp['amount'] = round(amount, 2)
-        docheck(user_id, '1', usernames)
+        docheck(user_id, '1', usernames, "Payment done")
         messages.success(request, "Order complete!")
     else:
         messages.warning(request, "Payment Failed!")

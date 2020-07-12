@@ -49,6 +49,12 @@ PAYMENT_METHOD = (
     ('P', 'Paypal')
 )
 
+ACTION_TYPE = (
+    ('T', 'To Cart'),
+    ('E', 'Empty Cart'),
+    ('R', 'Release Cart'),
+    ('P', 'Purchased')
+)
 
 class UserProfile(models.Model):
     user = models.OneToOneField(
@@ -347,3 +353,17 @@ class Checktime(models.Model):
     launch_code = models.CharField(max_length=200, blank=True, null=True)
     def __str__(self):
         return str(self.time)
+
+class History(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE)
+    action_type = models.CharField(choices=ACTION_TYPE, max_length=1, default='T')
+    start_date = models.DateTimeField(auto_now_add=True)
+    reason = models.CharField(max_length=200)
+    item_str = models.CharField(max_length=200)
+    order_str = models.CharField(max_length=100)
+    payment = models.ForeignKey(
+        'Payment', on_delete=models.SET_NULL, blank=True, null=True)
+    other = models.CharField(max_length=200)
+    def __str__(self):
+        return self.user.username + " : " + self.action_type

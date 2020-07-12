@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404
-from .models import Order, Payment
+from .models import Order, Payment, History
 from paypal.standard.ipn.signals import valid_ipn_received
 from django.dispatch import receiver
 import random
@@ -33,5 +33,6 @@ def payment_notification(sender, **kwargs):
         order.payment = payment
         order.ref_code = create_ref_code()
         order.save()
-        
+        History.objects.create(user=order.user, action_type='P', item_str=order.get_purchased_items(), 
+                               reason="Payment done", order_str=order.id, payment=payment)
             

@@ -580,6 +580,7 @@
                     data: {'user_id': user_id},
                     success: function (data) {
                         if (data.success == true) {
+                            console.log("cart_refresh :", user_id, data.cart_refresh)
                             if(data.refresh == true){
                                 location.reload()
                             }

@@ -10,7 +10,8 @@ from .models import (
     Address,
     UserProfile,
     Slotitem,
-    Checktime
+    Checktime,
+    History
 )
 
 
@@ -93,11 +94,28 @@ class AddressAdmin(admin.ModelAdmin):
     list_filter = ['default', 'address_type', 'country']
     search_fields = ['user', 'street_address', 'apartment_address', 'zip']
 
+class HistoryAdmin(admin.ModelAdmin):
+    list_display = [
+        'start_date',
+        'user',
+        'action_type',
+        'reason',
+        'order_str',
+        'item_str',
+        'payment',
+    ]
+    list_display_links = [
+        'user',
+        'payment',
+    ]
+    list_filter = ['user']
+    search_fields = ['user']
 
 
 admin.site.register(Item)
 admin.site.register(OrderItem, OrderItemAdmin)
 admin.site.register(Order, OrderAdmin)
+admin.site.register(History, HistoryAdmin)
 admin.site.register(Payment)
 admin.site.register(Coupon)
 admin.site.register(Refund)
