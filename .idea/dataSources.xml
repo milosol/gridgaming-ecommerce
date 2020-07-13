@@ -15,12 +15,6 @@
         </library>
       </libraries>
     </data-source>
-    <data-source source="LOCAL" name="PostgreSQL (site1)  - postgres@ec2-54-165-36-134.compute-1.amazonaws.com" uuid="a0b51c55-c43c-4103-8138-9902ffd8b6c4">
-      <driver-ref>postgresql</driver-ref>
-      <synchronize>true</synchronize>
-      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
-      <jdbc-url>jdbc:postgres:///iiibjqitxlfpbr:382d9fc7da957b5758ee6f9b416fe0c8eb26019f6d7f9d21a1d2264f10c0ab32@ec2-54-165-36-134.compute-1.amazonaws.com:5432/d81vagpvehtmh1</jdbc-url>
-    </data-source>
     <data-source source="LOCAL" name="desqujcf1aj7pq@ec2-54-211-210-149.compute-1.amazonaws.com" uuid="7d236a6b-eba1-4196-beec-2e1cc6419298">
       <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
