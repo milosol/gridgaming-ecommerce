@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('core', '0019_slotitem_description'),
     ]
-
+ 
     operations = [
         migrations.AddField(
             model_name='checktime',
