@@ -13,34 +13,34 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        # migrations.AlterModelOptions(
-        #     name='orderitem',
-        #     options={'ordering': ['orders__ordered_date']},
-        # ),
-        # migrations.AlterModelOptions(
-        #     name='slotitem',
-        #     options={'ordering': ['title']},
-        # ),
-        # migrations.AddField(
-        #     model_name='checktime',
-        #     name='launch_code',
-        #     field=models.CharField(blank=True, max_length=200, null=True),
-        # ),
-        # migrations.AddField(
-        #     model_name='orderitem',
-        #     name='launch_code',
-        #     field=models.CharField(blank=True, max_length=200, null=True),
-        # ),
-        # migrations.AddField(
-        #     model_name='slotitem',
-        #     name='available_count',
-        #     field=models.IntegerField(default=20),
-        # ),
-        # migrations.AlterField(
-        #     model_name='slotitem',
-        #     name='available',
-        #     field=models.BooleanField(default=True),
-        # ),
+        migrations.AlterModelOptions(
+            name='orderitem',
+            options={'ordering': ['orders__ordered_date']},
+        ),
+        migrations.AlterModelOptions(
+            name='slotitem',
+            options={'ordering': ['title']},
+        ),
+        migrations.AddField(
+            model_name='checktime',
+            name='launch_code',
+            field=models.CharField(blank=True, max_length=200, null=True),
+        ),
+        migrations.AddField(
+            model_name='orderitem',
+            name='launch_code',
+            field=models.CharField(blank=True, max_length=200, null=True),
+        ),
+        migrations.AddField(
+            model_name='slotitem',
+            name='available_count',
+            field=models.IntegerField(default=20),
+        ),
+        migrations.AlterField(
+            model_name='slotitem',
+            name='available',
+            field=models.BooleanField(default=True),
+        ),
         migrations.CreateModel(
             name='History',
             fields=[
