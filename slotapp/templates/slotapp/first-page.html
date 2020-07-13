@@ -295,7 +295,6 @@
                         launch_timer -= 1
                         if(launch_timer < 0){
                             console.log("launch_timer<0=>reload")
-                            alert("launch_timer<0=>reload")
                             location.reload()
                         }
                         mini_count = (mini_count + 1) % 4
@@ -342,7 +341,7 @@
                         }).then(function (res) {
                             if (res.success == true) {
                                 console.log("payment success");
-                                // window.location.href = "/shop/orders";
+                                window.location.href = "/shop/orders";
                                 //window.location.href = "/slot/community";
                             }
                         });
@@ -585,7 +584,7 @@
                         if (data.success == true) {
                             console.log("cart_refresh :", user_id, data.cart_refresh)
                             if(data.refresh == true){
-                                alert("refresh by refresh value")
+                                // alert("refresh by refresh value")
                                 location.reload()
                             }
                             for (i = 0; i < data.slots.length; i++) {

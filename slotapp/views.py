@@ -107,7 +107,6 @@ def release_carts(by_user):
             users.append(item.user.id)
 
 
-
 def count_handle(name):
     global count_data, brun
     brun = 1
@@ -264,7 +263,6 @@ def tocart(request):
                 res['time_set'] = 1
                 res['time'] = ct * 20
             new_counter()
-        # History.objects.create(user=user, action_type='T', item=order_item.quantity + " of " + order_item.slot.title)   
     res['available_count'] = item.available_count
     res['total'] = item.total
     
