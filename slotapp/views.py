@@ -21,13 +21,16 @@ count_data = []
 cart_get = []
 thread_id = 1
 brun = 0
-blaunch_timer = 1
+blaunch_timer = 1 # close status
 launch_timer = 0
 
 paypalrestsdk.configure({
     "mode": config("PAYPAL_MODE"),  # sandbox or live
     "client_id": config("PAYPAL_CLIENT_ID"),
     "client_secret": config("PAYPAL_CLIENT_SECRET")})
+
+History.objects.create(action_type='E', reason="Server restarted")
+print("\n========= server restarted ============\n")
 
 def docheck(user_id, kind, usernames=[], reason=""):
     global count_data
@@ -94,7 +97,7 @@ def release_carts(by_user):
         if item.user.id not in users:
             bcounting = 0
             for cdata in count_data:
-                if cdata['user_id'] == str(item.user.id):
+                if cdata['user_id'] == str(item.user.id) or cdata['user_id'] == item.user.id:
                     bcounting = 1
                     break
             if bcounting == 0:
@@ -115,8 +118,8 @@ def count_handle(name):
                 continue
             item['remain_time'] -= 1
             if item['remain_time'] < 1:
-                count_data.remove(item)
                 cart_get.append(item['user_id'])
+                count_data.remove(item)
                 docheck(item['user_id'], 2, [], "Time out")
         time.sleep(1)
 
@@ -180,6 +183,7 @@ def first_page(request):
         if  item['user_id'] == str(user_id):
             if res['left'] == 0:
                 count_data.remove(item)
+                History.objects.create(user=request.user, action_type='E', reason="Stop timing because left is 0")
             else:
                 data['time'] = item['remain_time']
                 item['pause'] = '0'
@@ -240,6 +244,7 @@ def tocart(request):
                 ordered_date = timezone.now()
                 order = Order.objects.create(
                     user=request.user, ordered_date=ordered_date, kind=1)
+                History.objects.create(user=user, action_type='T', order_str=order.id)
 
             order.items.add(order_item)     # first adding to cart
             item.available_count = item.available_count - 1
@@ -366,7 +371,12 @@ def get_available(request):
         data_list.append(data)
 
     res['slots'] = data_list
-    res['refresh'] = True if blaunch_timer == 1 else False
+    if blaunch_timer == 1:
+        res['refresh'] = True 
+        History.objects.create(user=request.user, action_type='F', reason="By launch")
+    else:
+        res['refresh'] = False 
+    
     # res['time_now'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     return JsonResponse(res)
 
@@ -465,8 +475,8 @@ def launch(request):
     value = request.GET.get('value', 0)
     setLaunch(True if value == '1' else False)
     if value == '1':
-        launch_thread()
-    else:
+        launch_thread() # launch
+    else:               # close
         blaunch_timer = 1
         launch_timer = 0
     return redirect('./community')

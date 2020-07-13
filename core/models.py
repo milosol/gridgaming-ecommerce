@@ -53,7 +53,9 @@ ACTION_TYPE = (
     ('T', 'To Cart'),
     ('E', 'Empty Cart'),
     ('R', 'Release Cart'),
-    ('P', 'Purchased')
+    ('P', 'Purchased'),
+    ('F', 'Refresh page'),
+    ('S', 'Server Restart')
 )
 
 class UserProfile(models.Model):
@@ -338,10 +340,10 @@ class Slotitem(models.Model):
     value = models.IntegerField(default=25)
     image = models.ImageField()
     description = models.TextField(blank=True)
-    
+
     class Meta:
         ordering = ['title']
-        
+
     def __str__(self):
         return self.title
 
@@ -356,7 +358,7 @@ class Checktime(models.Model):
 
 class History(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
-                             on_delete=models.CASCADE)
+                             on_delete=models.CASCADE, blank=True, null=True)
     action_type = models.CharField(choices=ACTION_TYPE, max_length=1, default='T')
     start_date = models.DateTimeField(auto_now_add=True)
     reason = models.CharField(max_length=200)
@@ -366,4 +368,7 @@ class History(models.Model):
         'Payment', on_delete=models.SET_NULL, blank=True, null=True)
     other = models.CharField(max_length=200)
     def __str__(self):
-        return self.user.username + " : " + self.action_type
+        if self.user:
+            return self.user.username + " : " + self.action_type
+        else:
+            return self.action_type

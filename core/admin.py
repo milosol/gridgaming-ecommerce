@@ -109,7 +109,7 @@ class HistoryAdmin(admin.ModelAdmin):
         'payment',
     ]
     list_filter = ['user']
-    search_fields = ['user']
+    search_fields = ['order_str']
 
 
 admin.site.register(Item)

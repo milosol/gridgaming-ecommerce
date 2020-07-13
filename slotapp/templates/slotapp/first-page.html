@@ -294,6 +294,7 @@
                         $("#launch_time").html(hh + " hs " + mm + " min " + ss + " sec");
                         launch_timer -= 1
                         if(launch_timer < 0){
+                            console.log("launch_timer<0=>reload")
                             location.reload()
                         }
                         mini_count = (mini_count + 1) % 4
@@ -339,13 +340,14 @@
                             usernames: JSON.stringify(usernames)
                         }).then(function (res) {
                             if (res.success == true) {
+                                console.log("payment success");
                                 // window.location.href = "/shop/orders";
-                                window.location.href = "/slot/community";
+                                //window.location.href = "/slot/community";
                             }
                         });
                     },
                     onError: function (err) {
-                        //console.log(err);
+                        console.log(err);
                         // Show an error page here, when an error occurs
                     }
                 }, '#paypal_btn')
