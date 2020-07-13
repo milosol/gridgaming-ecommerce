@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('core', '0020_auto_20200630_0754'),
     ]
- 
+
     operations = [
         migrations.AlterModelOptions(
             name='orderitem',

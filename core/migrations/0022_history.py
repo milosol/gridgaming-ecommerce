@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('core', '0021_auto_20200708_0748'),
     ]
- 
+
     operations = [
         migrations.CreateModel(
             name='History',
