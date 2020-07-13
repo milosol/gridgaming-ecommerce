@@ -102,11 +102,9 @@ class HistoryAdmin(admin.ModelAdmin):
         'reason',
         'order_str',
         'item_str',
-        'payment',
     ]
     list_display_links = [
         'user',
-        'payment',
     ]
     list_filter = ['user']
     search_fields = ['order_str']

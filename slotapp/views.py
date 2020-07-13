@@ -39,7 +39,7 @@ def docheck(user_id, kind, usernames=[], reason=""):
     user = User.objects.get(id=user_id)
     order_qs = Order.objects.filter(user=user, ordered=False, kind=1)
     if not order_qs.exists():
-        del_timing(user_id)
+        del_timing(user_id, "No active order")
         res['success'] = False
         res['msg'] = "You have no order information."
         return res
@@ -64,7 +64,8 @@ def docheck(user_id, kind, usernames=[], reason=""):
         order.ref_code = create_ref_code()
         order.save()
         History.objects.create(user=user, action_type='P', item_str=order.get_purchased_items(),
-                                reason=reason, payment=payment, order_str=order.id)
+                                reason=reason, order_str=order.id)
+        del_timing(user_id, "Payment done")
     else:
         data_list = []
         order_items = order.items.filter(kind=1, ordered=False, user=user)
@@ -85,7 +86,8 @@ def docheck(user_id, kind, usernames=[], reason=""):
         order.items.filter(kind=1, ordered=False, user=user).delete()
         Order.objects.filter(user=user, ordered=False, kind=1).delete()
         res['slots'] = data_list
-    del_timing(user_id)
+        del_timing(user_id, "Empty cart command " + reason)
+    
     return res
 
 
@@ -141,6 +143,7 @@ def count_launch(name):
         if launch_timer <= 0:
             setLaunch(False)
             blaunch_timer = 1
+            launch_timer = 0
             break
         time.sleep(1)
 
@@ -172,7 +175,7 @@ def user_logout(request):
 
 @login_required
 def first_page(request):
-    global cart_get, count_data, launch_timer
+    global cart_get, count_data, launch_timer, blaunch_timer
     user_id = request.user.id
     u = User.objects.get(id=user_id)
     slots = Slotitem.objects.filter(available=True)
@@ -201,6 +204,7 @@ def first_page(request):
     if rows.count() > 0:
         launched = rows[0].launched
     if launched == True and blaunch_timer == 1:
+        History.objects.create(action_type='N', reason="By automatic when refresh")
         launch_thread()
     data['launched'] = launched
     data['launch_timer'] = launch_timer
@@ -299,11 +303,19 @@ def getcart(request):
     return JsonResponse(res)
 
 
-def del_timing(user_id):
+def del_timing(user_id, reason):
     for item in count_data:
         if item['user_id'] == user_id:
+            user = get_userinstance(user_id)
+            History.objects.create(user=user, action_type='D', reason=reason)
             count_data.remove(item)
 
+def get_userinstance(user_id):
+    users = User.objects.filter(id=user_id)
+    if len(users) > 0:
+        return users[0]
+    else:
+        return None
 
 @csrf_exempt
 def cartminus(request):
@@ -340,7 +352,7 @@ def cartminus(request):
             res['msg'] = "This slot is not in your cart."
 
         if order.items.filter(kind=1).count() == 0:
-            del_timing(user_id)
+            del_timing(user_id, "Cart is empty by minus")
             order.delete()
             res['end_timing'] = True
     else:
@@ -352,7 +364,7 @@ def cartminus(request):
 
 @csrf_exempt
 def get_available(request):
-    global cart_get
+    global cart_get, blaunch_timer
     res = {'success': True}
     user_id = request.POST['user_id']
     if user_id in cart_get:
@@ -372,8 +384,8 @@ def get_available(request):
 
     res['slots'] = data_list
     if blaunch_timer == 1:
-        res['refresh'] = True 
-        History.objects.create(user=request.user, action_type='F', reason="By launch")
+        res['refresh'] = False
+        # History.objects.create(user=request.user, action_type='F', reason="By launch")
     else:
         res['refresh'] = False 
     
@@ -475,6 +487,7 @@ def launch(request):
     value = request.GET.get('value', 0)
     setLaunch(True if value == '1' else False)
     if value == '1':
+        History.objects.create(user=request.user, action_type='N', reason="By Mannual")
         launch_thread() # launch
     else:               # close
         blaunch_timer = 1

@@ -55,7 +55,9 @@ ACTION_TYPE = (
     ('R', 'Release Cart'),
     ('P', 'Purchased'),
     ('F', 'Refresh page'),
-    ('S', 'Server Restart')
+    ('S', 'Server Restart'),
+    ('D', 'Delete timer'),
+    ('N', 'Launch thread')
 )
 
 class UserProfile(models.Model):
@@ -364,8 +366,6 @@ class History(models.Model):
     reason = models.CharField(max_length=200)
     item_str = models.CharField(max_length=200)
     order_str = models.CharField(max_length=100)
-    payment = models.ForeignKey(
-        'Payment', on_delete=models.SET_NULL, blank=True, null=True)
     other = models.CharField(max_length=200)
     def __str__(self):
         if self.user:
