@@ -38,5 +38,11 @@
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
       <jdbc-url>jdbc:postgresql://ec2-18-210-214-86.compute-1.amazonaws.com/d3niaujlr8vpf1</jdbc-url>
     </data-source>
+    <data-source source="LOCAL" name="GG - Staging PG" uuid="bd0881d7-98e7-40bf-8d56-c6ec2ccf2489">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://ec2-54-236-169-55.compute-1.amazonaws.com/d54lo74dvil0jg</jdbc-url>
+    </data-source>
   </component>
 </project>
