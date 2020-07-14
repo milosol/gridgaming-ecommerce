@@ -98,12 +98,15 @@ def release_carts(by_user):
     for item in order_items:
         if item.user.id not in users:
             bcounting = 0
+            temp = "["
             for cdata in count_data:
+                temp += cdata['user_id'] + "," 
                 if cdata['user_id'] == str(item.user.id) or cdata['user_id'] == item.user.id:
                     bcounting = 1
                     break
+            temp += "]" + str(item.user.id)
             if bcounting == 0:
-                docheck(item.user.id, 2, [], "By " + by_user)
+                docheck(item.user.id, 2, [], "By " + by_user + ":" + temp)
             users.append(item.user.id)
 
 
@@ -302,6 +305,7 @@ def getcart(request):
 
 
 def del_timing(user_id, reason):
+    global count_data
     for item in count_data:
         if item['user_id'] == user_id:
             user = get_userinstance(user_id)
