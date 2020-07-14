@@ -295,6 +295,7 @@
                         launch_timer -= 1
                         if(launch_timer < 0){
                             console.log("launch_timer<0=>reload")
+                            alert("reload now");
                             location.reload()
                         }
                         mini_count = (mini_count + 1) % 4
@@ -585,6 +586,7 @@
                             console.log("cart_refresh :", user_id, data.cart_refresh)
                             if(data.refresh == true){
                                 // alert("refresh by refresh value")
+                                alert("Registration is closed")
                                 location.reload()
                             }
                             for (i = 0; i < data.slots.length; i++) {
