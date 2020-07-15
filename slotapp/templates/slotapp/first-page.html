@@ -294,8 +294,7 @@
                         $("#launch_time").html(hh + " hs " + mm + " min " + ss + " sec");
                         launch_timer -= 1
                         if(launch_timer < 0){
-                            console.log("launch_timer<0=>reload")
-                            alert("reload now");
+                            console.log("reload now because launch time is " + launch_timer);
                             location.reload()
                         }
                         mini_count = (mini_count + 1) % 4
