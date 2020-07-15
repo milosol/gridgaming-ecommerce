@@ -1,7 +1,8 @@
 import json
 import threading
 import time
-from datetime import datetime
+from datetime import timedelta
+from django.utils import timezone
 
 import paypalrestsdk
 from decouple import config
@@ -29,9 +30,55 @@ paypalrestsdk.configure({
     "client_id": config("PAYPAL_CLIENT_ID"),
     "client_secret": config("PAYPAL_CLIENT_SECRET")})
 
-History.objects.create(action_type='E', reason="Server restarted")
-print("\n========= server restarted ============\n")
+def setLaunch(value): 
+    Checktime.objects.all().update(launched=value, launch_code=create_ref_code())
+    
+def count_launch(name):
+    global blaunch_timer, launch_timer
+    release_time = 0
+    while (1):
+        if blaunch_timer == 1:
+            break
+        
+        if release_time > 10:
+            release_time = 0
+            release_carts()
+            
+        launch_timer -= 1
+        if launch_timer <= 0:
+            setLaunch(False)
+            blaunch_timer = 1
+            launch_timer = 0
+            break
+        release_time += 1
+        time.sleep(1)
 
+def launch_thread():
+    global blaunch_timer, launch_timer, thread_id
+    launch_time = 24
+    launched = False
+    rows = Checktime.objects.all()
+    if rows.count() > 0:
+        launch_time = rows[0].launch_time
+        launched = rows[0].launched
+    else:
+        Checktime.objects.create(launch_time=launch_time)
+        
+    if launched == True:
+        blaunch_timer = 0
+        launch_timer = launch_time * 3600
+        x = threading.Thread(target=count_launch, args=(thread_id,))
+        x.start()
+        thread_id += 1
+        
+def initialize():
+    History.objects.create(reason="Server restarted")
+    History.objects.create(action='Lanch', reason="server restart")
+    launch_thread()
+    print("\n========= server restarted ============\n")
+
+initialize()
+        
 def docheck(user_id, kind, usernames=[], reason=""):
     global count_data
     res = {'success': True}
@@ -63,7 +110,7 @@ def docheck(user_id, kind, usernames=[], reason=""):
         order.payment = payment
         order.ref_code = create_ref_code()
         order.save()
-        History.objects.create(user=user, action_type='P', item_str=order.get_purchased_items(),
+        History.objects.create(user=user, action='Purchased', item_str=order.get_purchased_items(),
                                 reason=reason, order_str=order.id)
         del_timing(user_id, "Payment done")
     else:
@@ -81,42 +128,42 @@ def docheck(user_id, kind, usernames=[], reason=""):
                 data_list.append(data)
             except Slotitem.DoesNotExist:
                 pass
-        History.objects.create(user=user, action_type='E', item_str=order.get_purchased_items(), 
+        History.objects.create(user=user, action='Empty cart', item_str=order.get_purchased_items(), 
                                reason=reason, order_str=order.id)
         order.items.filter(kind=1, ordered=False, user=user).delete()
         Order.objects.filter(user=user, ordered=False, kind=1).delete()
         res['slots'] = data_list
-        del_timing(user_id, "Empty cart command " + reason)
+        del_timing(user_id, "Empty command " + reason)
     
     return res
 
 
-def release_carts(by_user):
+def release_carts():
     global count_data
-    order_items = OrderItem.objects.filter(ordered=False, kind=1)
-    users = []
-    for item in order_items:
-        if item.user.id not in users:
-            bcounting = 0
-            temp = "["
-            for cdata in count_data:
-                temp += cdata['user_id'] + "," 
-                if cdata['user_id'] == str(item.user.id) or cdata['user_id'] == item.user.id:
-                    bcounting = 1
-                    break
-            temp += "]" + str(item.user.id)
-            if bcounting == 0:
-                docheck(item.user.id, 2, [], "By " + by_user + ":" + temp)
-            users.append(item.user.id)
+    now = timezone.now() - timedelta(seconds=10)
+    order_qs = Order.objects.filter(ordered_date__lt=now, ordered=False, kind=1)
+    if not order_qs.exists():
+        return
+    for order in order_qs:
+        bcounting = 0
+        for cdata in count_data:
+            if cdata['user_id'] == order.user.id:
+                bcounting = 1
+                break
+        temp = '[' + ', '.join([str(x['user_id']) for x in count_data]) + ']' + str(order.user.id)
+        if bcounting == 0:
+            docheck(order.user.id, 2, [], "By system " + temp)
 
 
 def count_handle(name):
     global count_data, brun
     brun = 1
+    orders = 0
     while (1):
         if len(count_data) == 0:
             brun = 0
             break
+            
         for item in count_data:
             if item['pause'] == '1':
                 continue
@@ -134,21 +181,6 @@ def new_counter():
         x = threading.Thread(target=count_handle, args=(thread_id,))
         x.start()
         thread_id += 1
-
-
-def count_launch(name):
-    global blaunch_timer, launch_timer
-    while (1):
-        if blaunch_timer == 1:
-            break
-        launch_timer -= 1
-        if launch_timer <= 0:
-            setLaunch(False)
-            blaunch_timer = 1
-            launch_timer = 0
-            break
-        time.sleep(1)
-
 
 @csrf_exempt
 def test(request):
@@ -182,32 +214,23 @@ def first_page(request):
     u = User.objects.get(id=user_id)
     slots = Slotitem.objects.filter(available=True)
     data = {'user': u, 'slots': slots, 'time': 0}
-    
+    # History.objects.create(user=request.user, action='Refresh', reason="GET")
     res = removefromcart(user_id)
     for item in count_data:
-        if  item['user_id'] == str(user_id):
+        if  item['user_id'] == user_id:
             if res['left'] == 0:
                 count_data.remove(item)
-                History.objects.create(user=request.user, action_type='E', reason="Stop timing because left is 0")
+                History.objects.create(user=request.user, action='Delete timer', reason="left is 0")
             else:
                 data['time'] = item['remain_time']
                 item['pause'] = '0'
             break
         
-    # if data['time'] == 0:
-    #     if Order.objects.filter(user=request.user, ordered=False, kind=1).count() > 0:
-    #         docheck(user_id, 2)
-    # Order.objects.filter(user=request.user, kind=1, ordered=False).delete()
-    # OrderItem.objects.filter(user=request.user, kind=1, ordered=False).delete()
-    release_carts(u.username)
-
     launched = False
     rows = Checktime.objects.all()
     if rows.count() > 0:
         launched = rows[0].launched
-    if launched == True and blaunch_timer == 1:
-        History.objects.create(action_type='N', reason="By automatic when refresh")
-        launch_thread()
+
     data['launched'] = launched
     data['launch_timer'] = launch_timer
     paypal_status = config("PAYPAL_STATUS_COMMUNITY")
@@ -220,7 +243,7 @@ def first_page(request):
 def tocart(request):
     global count_data
     res = {'success': True, 'time_set': 0}
-    user_id = request.POST['user_id']
+    user_id = request.user.id
     slot_id = request.POST['slot_id']
     item = Slotitem.objects.get(id=slot_id)
     user = User.objects.get(id=user_id)
@@ -250,7 +273,7 @@ def tocart(request):
                 ordered_date = timezone.now()
                 order = Order.objects.create(
                     user=request.user, ordered_date=ordered_date, kind=1)
-                History.objects.create(user=user, action_type='T', order_str=order.id)
+                History.objects.create(user=user, action='To cart', order_str=order.id)
 
             order.items.add(order_item)     # first adding to cart
             item.available_count = item.available_count - 1
@@ -262,10 +285,13 @@ def tocart(request):
                 ct = 5
                 if len(cts) > 0:
                     ct = cts[0].time
-                count_data.append({'user_id': user_id, 'pause': 0, 'remain_time': ct * 20})
+                count_data.append({'user_id': user_id, 'pause': 0, 'remain_time': ct * 60, 'order_id':order.id})
+                temp = '[' + ', '.join([str(x['user_id'])+":"+str(x['order_id']) for x in count_data]) + ']'
+                History.objects.create(user=request.user, action='Add to timer', reason=temp)
                 res['time_set'] = 1
-                res['time'] = ct * 20
+                res['time'] = ct * 60
             new_counter()
+            
     res['available_count'] = item.available_count
     res['total'] = item.total
     
@@ -275,7 +301,7 @@ def tocart(request):
 @csrf_exempt
 def getcart(request):
     res = {'success': True}
-    user_id = request.POST['user_id']
+    user_id = request.user.id
     ordered_list = []
     order_list = []
 
@@ -309,7 +335,7 @@ def del_timing(user_id, reason):
     for item in count_data:
         if item['user_id'] == user_id:
             user = get_userinstance(user_id)
-            History.objects.create(user=user, action_type='D', reason=reason)
+            History.objects.create(user=user, action='Delete timer', reason=reason)
             count_data.remove(item)
 
 def get_userinstance(user_id):
@@ -322,7 +348,7 @@ def get_userinstance(user_id):
 @csrf_exempt
 def cartminus(request):
     res = {'success': True, 'end_timing': False}
-    user_id = request.POST['user_id']
+    user_id = request.user.id
     slot_id = request.POST['slot_id']
     kind = request.POST['kind']  # 1: trash 0: minus
 
@@ -368,7 +394,7 @@ def cartminus(request):
 def get_available(request):
     global cart_get, blaunch_timer
     res = {'success': True}
-    user_id = request.POST['user_id']
+    user_id = request.user.id
     if user_id in cart_get:
         cart_get.remove(user_id)
         res['cart_refresh'] = 'yes'
@@ -385,13 +411,8 @@ def get_available(request):
         data_list.append(data)
 
     res['slots'] = data_list
-    if blaunch_timer == 1:
-        res['refresh'] = False
-        # History.objects.create(user=request.user, action_type='F', reason="By launch")
-    else:
-        res['refresh'] = False 
+    res['refresh'] = False 
     
-    # res['time_now'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     return JsonResponse(res)
 
 
@@ -399,7 +420,7 @@ def get_available(request):
 def setpause(request):
     global count_data
     res = {'success': True}
-    user_id = request.POST['user_id']
+    user_id = request.user.id
     kind = request.POST['kind']
     for item in count_data:
         if item['user_id'] == user_id:
@@ -411,7 +432,7 @@ def setpause(request):
 
 @csrf_exempt
 def checkout(request):
-    user_id = request.POST['user_id']
+    user_id = request.user.id
     kind = request.POST['kind']
     usernames = request.POST['usernames']
     usernames = json.loads(usernames)
@@ -421,7 +442,7 @@ def checkout(request):
 
 @csrf_exempt
 def slot_payment(request):
-    user_id = request.POST['user_id']
+    user_id = request.user.id
     return_url = request.POST['return_url']
     cancel_url = request.POST['cancel_url']
     user = User.objects.get(id=user_id)
@@ -464,7 +485,7 @@ def slot_payment(request):
 @csrf_exempt
 def slot_payment_execute(request):
     resp = {'success': True}
-    user_id = request.POST['user_id']
+    user_id = request.user.id
     usernames = request.POST['usernames']
     usernames = json.loads(usernames)
     payment = paypalrestsdk.Payment.find(request.POST['paymentID'])
@@ -489,7 +510,7 @@ def launch(request):
     value = request.GET.get('value', 0)
     setLaunch(True if value == '1' else False)
     if value == '1':
-        History.objects.create(user=request.user, action_type='N', reason="By Mannual")
+        History.objects.create(user=request.user, action='Launch', reason="By Mannual")
         launch_thread() # launch
     else:               # close
         blaunch_timer = 1
@@ -497,23 +518,7 @@ def launch(request):
     return redirect('./community')
 
 
-def launch_thread():
-    global blaunch_timer, launch_timer, thread_id
-    launch_time = 24
-    rows = Checktime.objects.all()
-    if rows.count() > 0:
-        launch_time = rows[0].launch_time
-    else:
-        Checktime.objects.create(launch_time=launch_time)
-    blaunch_timer = 0
-    launch_timer = launch_time * 3600
-    x = threading.Thread(target=count_launch, args=(thread_id,))
-    x.start()
-    thread_id += 1
-
-
-def setLaunch(value):
-    Checktime.objects.all().update(launched=value, launch_code=create_ref_code())
+    
     
 @csrf_exempt
 def setdisable(request):
@@ -547,6 +552,7 @@ def removefromcart(user_id):
     order_items.delete()
     if len(order.items.all()) == 0:
         order.delete()
+        
     else:
         res['left'] = 1
     return res
