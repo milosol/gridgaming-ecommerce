@@ -16,7 +16,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from core.models import UserProfile, Order, OrderItem, Slotitem, Checktime, Payment, Item, History
 from core.views import create_ref_code
-from users.models import User
+from users.models import User, UserRoles
 
 count_data = []
 cart_get = []
@@ -196,6 +196,14 @@ def test(request):
         res = {'success': True}
         return JsonResponse(res)
 
+@csrf_exempt
+def test_adduser(request):
+    roles = UserRoles.objects.filter(role_name="Content Creator")
+    if roles.exists():
+        role = roles[0]
+        for i in range(20):
+            User.objects.create(username="test" + str(i), password="test", account_type=role)
+    return redirect("slotapp:test")
 
 @login_required
 def index(request):
