@@ -84,10 +84,16 @@ class OrderItemAdmin(admin.ModelAdmin):
         return obj.user.email
     
     def order_id(self, obj):
-        return obj.orders.all()[0].id
+        if obj.orders.all():
+            return obj.orders.all()[0].id
+        else:
+            return 0
     
     def ordered_date(self, obj):
-        return obj.orders.all()[0].ordered_date
+        if obj.orders.all():
+            return obj.orders.all()[0].ordered_date
+        else:
+            return 0
     
 class AddressAdmin(admin.ModelAdmin):
     list_display = [
