@@ -30,12 +30,12 @@ class PaymentAdmin(admin.ModelAdmin):
                     ]
 
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ['user',
+    list_display = ['id',
+                    'user',
                     'get_cleared_hot',
                     'ordered',
                     'ordered_date',
                     'status',
-                    'notes',
                     'get_purchased_items',
                     'billing_address',
                     'payment',
@@ -54,6 +54,7 @@ class OrderAdmin(admin.ModelAdmin):
                    'refund_requested',
                    'refund_granted']
     search_fields = [
+        'id',
         'user__username',
         'ref_code'
     ]
@@ -68,18 +69,25 @@ class OrderAdmin(admin.ModelAdmin):
 class OrderItemAdmin(admin.ModelAdmin):
     list_display = ['user',
                     'get_title',
-                    'get_email',
                     'quantity',
                     'kind',
                     'ordered',
                     'username',
-                    'launch_code'
+                    'launch_code',
+                    'order_id',
+                    'ordered_date'
                     ]
-
+    
     list_filter = ['ordered']
 
     def get_email(self, obj):
         return obj.user.email
+    
+    def order_id(self, obj):
+        return obj.orders.all()[0].id
+    
+    def ordered_date(self, obj):
+        return obj.orders.all()[0].ordered_date
     
 class AddressAdmin(admin.ModelAdmin):
     list_display = [
@@ -98,7 +106,8 @@ class HistoryAdmin(admin.ModelAdmin):
     list_display = [
         'start_date',
         'user',
-        'action_type',
+        'user_id',
+        'action',
         'reason',
         'order_str',
         'item_str',
@@ -109,6 +118,11 @@ class HistoryAdmin(admin.ModelAdmin):
     list_filter = ['user']
     search_fields = ['order_str']
 
+    def user_id(self, obj):
+        if obj.user:
+            return obj.user.id
+        else:
+            return 0
 
 admin.site.register(Item)
 admin.site.register(OrderItem, OrderItemAdmin)

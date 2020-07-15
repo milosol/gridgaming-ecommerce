@@ -7,7 +7,8 @@ from . import views
 app_name = 'slotapp'
 urlpatterns = [
     path('', views.index, name='index'),
-    # path('test', views.test, name='test'),
+    path('test', views.test, name='test'),
+    path('test-adduser', views.test_adduser, name='test_adduser'),
     path('community', views.first_page, name='first_page'),
     path('tocart', views.tocart, name='tocart'),
     path('launch', views.launch, name='launch'),

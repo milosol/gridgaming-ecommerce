@@ -33,6 +33,6 @@ def payment_notification(sender, **kwargs):
         order.payment = payment
         order.ref_code = create_ref_code()
         order.save()
-        History.objects.create(user=order.user, action_type='P', item_str=order.get_purchased_items(), 
-                               reason="Payment done", order_str=order.id, payment=payment)
+        History.objects.create(user=order.user, action='Purchased', item_str=order.get_purchased_items(), 
+                               reason="Payment done", order_str=order.id)
             

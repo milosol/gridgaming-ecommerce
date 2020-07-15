@@ -49,16 +49,6 @@ PAYMENT_METHOD = (
     ('P', 'Paypal')
 )
 
-ACTION_TYPE = (
-    ('T', 'To Cart'),
-    ('E', 'Empty Cart'),
-    ('R', 'Release Cart'),
-    ('P', 'Purchased'),
-    ('F', 'Refresh page'),
-    ('S', 'Server Restart'),
-    ('D', 'Delete timer'),
-    ('N', 'Launch thread')
-)
 
 class UserProfile(models.Model):
     user = models.OneToOneField(
@@ -136,7 +126,7 @@ class OrderItem(models.Model):
     launch_code = models.CharField(max_length=200, blank=True, null=True)
     
     class Meta:
-        ordering = ['orders__ordered_date']
+        ordering = ['-orders__id']
         
     def __str__(self):
         if self.kind == 0:
@@ -149,7 +139,7 @@ class OrderItem(models.Model):
             return self.item.title
         else:
             return self.slot.title
-        
+            
     def get_total_item_price(self):
         # self.user.related_field
         # self.user.account_type
@@ -230,7 +220,8 @@ class Order(models.Model):
 
     class Meta:
         default_related_name = 'orders'
-
+        ordering = ['-id']
+        
     def __str__(self):
         return self.user.username
 
@@ -361,14 +352,18 @@ class Checktime(models.Model):
 class History(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE, blank=True, null=True)
-    action_type = models.CharField(choices=ACTION_TYPE, max_length=1, default='T')
+    action = models.CharField(max_length=200)
     start_date = models.DateTimeField(auto_now_add=True)
     reason = models.CharField(max_length=200)
     item_str = models.CharField(max_length=200)
     order_str = models.CharField(max_length=100)
     other = models.CharField(max_length=200)
+    
     def __str__(self):
         if self.user:
-            return self.user.username + " : " + self.action_type
+            return self.user.username + " : " + self.action
         else:
-            return self.action_type
+            return self.action
+    
+    class Meta:
+        ordering = ['-id']

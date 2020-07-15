@@ -357,15 +357,15 @@
             function start_timing() {
 
                 if (remain_time > 0) {
-                    var mm = parseInt(remain_time / 20);
-                    var ss = remain_time % 20;
+                    var mm = parseInt(remain_time / 60);
+                    var ss = remain_time % 60;
                     $("#span_timing").html(mm + " min " + ss + " sec");
 
                     timer_handle = setInterval(() => {
                         if (remain_time > 0) {
                             remain_time -= 1;
-                            var mm = parseInt(remain_time / 20);
-                            var ss = remain_time % 20;
+                            var mm = parseInt(remain_time / 60);
+                            var ss = remain_time % 60;
                             $("#span_timing").html(mm + " min " + ss + " sec");
                         } else {
                             // $("#div_timing").hide();
