@@ -47,7 +47,7 @@ def count_launch(name):
             
         launch_timer -= 1
         if launch_timer <= 0:
-            History.objects.create(action='Close Launch Thread', reason="launch time < 0")
+            History.objects.create(action='Close Launch Thread', reason="launch time = 0")
             setLaunch(False)
             blaunch_timer = 1
             launch_timer = 0
@@ -245,7 +245,7 @@ def first_page(request):
     data['launch_timer'] = launch_timer
     paypal_status = config("PAYPAL_STATUS_COMMUNITY")
     
-    History.objects.create(user=request.user, action='Refresh', reason="GET launch timer: " + str(data['launch_timer']))
+    History.objects.create(user=request.user, action='Refresh', reason="GET Launched:" + str(launched) + " launch timer: " + str(data['launch_timer']))
     if res['removed'] == 1:
         messages.warning(request, res['msg'])
     return render(request, 'slotapp/first-page.html', {'data': data, 'paypal_status':paypal_status})
