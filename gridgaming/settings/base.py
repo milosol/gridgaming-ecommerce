@@ -21,8 +21,8 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.twitter',
-    #'allauth.socialaccount.providers.twitch',
-    #'allauth.socialaccount.providers.mixer',
+    # 'allauth.socialaccount.providers.twitch',
+    # 'allauth.socialaccount.providers.mixer',
     'crispy_forms',
     'django_countries',
     'paypal.standard.ipn',
@@ -84,7 +84,7 @@ redis_url = urlparse(
 
 RQ_QUEUES = {
     'default': {
-        'URL': os.getenv('REDISTOGO_URL', 'redis://localhost:6379/0'), # If you're on Heroku
+        'URL': os.getenv('REDISTOGO_URL', 'redis://localhost:6379/0'),  # If you're on Heroku
         'DB': 0,
         'PORT': 6379,
         'DEFAULT_TIMEOUT': 260000,
@@ -100,21 +100,18 @@ RQ_QUEUES = {
         },
     },
     'high': {
-        'URL': os.getenv('REDISTOGO_URL', 'redis://localhost:6379/0'), # If you're on Heroku
+        'URL': os.getenv('REDISTOGO_URL', 'redis://localhost:6379/0'),  # If you're on Heroku
         'DB': 0,
         'PORT': 6379,
         'DEFAULT_TIMEOUT': 260000,
     },
     'low': {
-        'URL': os.getenv('REDISTOGO_URL', 'redis://localhost:6379/0'), # If you're on Heroku
+        'URL': os.getenv('REDISTOGO_URL', 'redis://localhost:6379/0'),  # If you're on Heroku
         'DB': 0,
         'PORT': 6379,
         'DEFAULT_TIMEOUT': 260000,
     }
 }
-
-
-
 
 WSGI_APPLICATION = 'gridgaming.wsgi.application'
 
@@ -135,10 +132,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static_in_env')]
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
-
-
-
-DEBUG_PROPAGATE_EXCEPTIONS=True
+DEBUG_PROPAGATE_EXCEPTIONS = True
 
 # Auth
 
@@ -147,17 +141,17 @@ DEBUG_PROPAGATE_EXCEPTIONS=True
 #     'allauth.account.auth_backends.AuthenticationBackend'
 # )
 
-#SITE_ID = 2 - first site
+# SITE_ID = 2 - first site
 
 LOGIN_REDIRECT_URL = '/shop'
 LOGOUT_REDIRECT_URL = '/frontend'
-ACCOUNT_LOGOUT_REDIRECT_URL ="/accounts/login"
+ACCOUNT_LOGOUT_REDIRECT_URL = "/accounts/login"
 
 # CRISPY FORMS
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
-#PAYPAL_BUY_BUTTON_IMAGE = ''
+# PAYPAL_BUY_BUTTON_IMAGE = ''
 
 GIVEAWAY_DAY_RANGE = 5
 
@@ -175,12 +169,11 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
-
 # BRAINTREE_MERCHANT_ID = config('BRAINTREE_MERCHANT_ID')
 # BRAINTREE_PUBLIC_KEY = config('BRAINTREE_PUBLIC_KEY')
 # BRAINTREE_PRIVATE_KEY = config('BRAINTREE_PRIVATE_KEY')
 
-ACCOUNT_EMAIL_REQUIRED  = False
+ACCOUNT_EMAIL_REQUIRED = False
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 # EMAIL_HOST = 'smtp.gmail.com'
@@ -188,7 +181,6 @@ ACCOUNT_EMAIL_VERIFICATION = 'none'
 # EMAIL_PORT = 587
 # EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 # EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
-
 
 
 import sentry_sdk
@@ -202,4 +194,3 @@ sentry_sdk.init(
     # django.contrib.auth) you may enable sending PII data.
     send_default_pii=True
 )
-
