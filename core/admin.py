@@ -141,6 +141,17 @@ class  CountingAdmin(admin.ModelAdmin):
     ]
     list_filter = ['user_id']
     search_fields = ['user_id']
+
+class  ChecktimeAdmin(admin.ModelAdmin):
+    list_display = [
+        'time',
+        'launched',
+        'action_time',
+        'launch_time',
+        'cartcounter_run',
+        'thread_id',
+        'launch_code',
+    ]
     
 admin.site.register(Item)
 admin.site.register(OrderItem, OrderItemAdmin)
@@ -152,6 +163,6 @@ admin.site.register(Refund)
 admin.site.register(Address, AddressAdmin)
 admin.site.register(UserProfile)
 admin.site.register(Slotitem)
-admin.site.register(Checktime)
+admin.site.register(Checktime, ChecktimeAdmin)
 admin.site.register(Counting, CountingAdmin)
 admin.site.register(Cartget)

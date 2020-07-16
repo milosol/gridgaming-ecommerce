@@ -144,11 +144,9 @@ def release_carts():
         temp = '[' + ','.join([str(x.order_id) for x in old_countings]) + ']'
         History.objects.create(action='Erase old countings', reason="Time over", order_str=temp)
         old_countings.delete()
-        print("========== Erase old countings ==========")
         
     if not Counting.objects.all().exists():
         Checktime.objects.all().update(cartcounter_run=False)
-        print("========== Set cart counter as False ==========")
             
     order_qs = Order.objects.filter(start_date__lt=now, ordered=False, kind=1)
     if not order_qs.exists():
@@ -156,7 +154,6 @@ def release_carts():
     for order in order_qs:  
         count_data = Counting.objects.filter(order_id=order.id)
         if not count_data.exists():
-            print("========== Earase cart because of no counting Timer ==========")
             docheck(order.user.id, 2, [], "By system")
 
 def count_handle(name):
@@ -165,7 +162,6 @@ def count_handle(name):
         count_data = Counting.objects.all()
         if not count_data.exists():
             Checktime.objects.all().update(cartcounter_run=False)
-            print("============ cart counting break becaus no counting")
             break
 
         for item in count_data:
@@ -174,7 +170,6 @@ def count_handle(name):
                 item.save()
                 continue
             if item.deadline < timezone.now():
-                print("============ counting time out of deadline =======")
                 Cartget.objects.create(user_id=item.user_id)
                 docheck(item.user_id, 2, [], "Time out")
         time.sleep(1)
@@ -248,9 +243,7 @@ def first_page(request):
     if rows.count() > 0:
         launched = rows[0].launched
         if launched:
-            action_time = rows[0].action_time
-            period = rows[0].launch_time
-            deadline = action_time + timedelta(hours=period)
+            deadline = rows[0].get_deadline()
             launch_timer = int((deadline - timezone.now()).total_seconds())
     data['launched'] = launched
     data['launch_timer'] = launch_timer
@@ -445,7 +438,6 @@ def setpause(request):
     count_data = Counting.objects.filter(user_id=user_id)
     if count_data.exists():
         count_data.update(pause=True if kind == '1' else False)
-        print("============== set pause True =============")
         deadline = count_data[0].deadline
         remain = int((deadline - timezone.now()).total_seconds())
         res['time'] = remain
