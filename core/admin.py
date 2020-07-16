@@ -11,7 +11,9 @@ from .models import (
     UserProfile,
     Slotitem,
     Checktime,
-    History
+    History,
+    Counting,
+    Cartget
 )
 
 
@@ -130,6 +132,16 @@ class HistoryAdmin(admin.ModelAdmin):
         else:
             return 0
 
+class  CountingAdmin(admin.ModelAdmin):
+    list_display = [
+        'user_id',
+        'deadline',
+        'pause',
+        'order_id',
+    ]
+    list_filter = ['user_id']
+    search_fields = ['user_id']
+    
 admin.site.register(Item)
 admin.site.register(OrderItem, OrderItemAdmin)
 admin.site.register(Order, OrderAdmin)
@@ -141,3 +153,5 @@ admin.site.register(Address, AddressAdmin)
 admin.site.register(UserProfile)
 admin.site.register(Slotitem)
 admin.site.register(Checktime)
+admin.site.register(Counting, CountingAdmin)
+admin.site.register(Cartget)

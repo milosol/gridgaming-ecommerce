@@ -346,8 +346,14 @@ class Checktime(models.Model):
     launched = models.BooleanField(default=False)
     status = models.IntegerField(default=0)
     launch_code = models.CharField(max_length=200, blank=True, null=True)
+    action_time = models.DateTimeField(auto_now=False, null=True, blank=True)
+    thread_id = models.IntegerField(default=1)
+    cartcounter_run = models.BooleanField(default=False)
     def __str__(self):
         return str(self.time)
+    
+    def get_deadline(self):
+        return self.action_time + timedelta(hours=self.launch_time)
 
 class History(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
@@ -367,3 +373,16 @@ class History(models.Model):
     
     class Meta:
         ordering = ['-id']
+        
+class Counting(models.Model):
+    user_id = models.IntegerField(default=0)
+    order_id = models.IntegerField(default=0)
+    pause = models.BooleanField(default=False)
+    deadline = models.DateTimeField(auto_now=False)
+    def __str__(self):
+        return str(self.user_id)
+
+class Cartget(models.Model):
+    user_id = models.IntegerField(default=0)
+    def __str__(self):
+        return str(self.user_id)

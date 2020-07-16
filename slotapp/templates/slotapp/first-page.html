@@ -278,7 +278,7 @@
             var EXECUTE_PAYMENT_URL = base_url + "/slot/payment_execute";
             var RETURN_URL = base_url + "/shop/orders";
             var CANCEL_URL = base_url + "/slot/first-page";
-
+            var sinm = 60
             var blacked = "{{request.user.blacklisted}}" == 'True'
             var big_sponsor = "{{request.user.account_type}}" == "Big Sponsor Provider" 
             var not_eligible = blacked || big_sponsor
@@ -356,21 +356,22 @@
             function start_timing() {
 
                 if (remain_time > 0) {
-                    var mm = parseInt(remain_time / 60);
-                    var ss = remain_time % 60;
+                    var mm = parseInt(remain_time / sinm);
+                    var ss = remain_time % sinm;
                     $("#span_timing").html(mm + " min " + ss + " sec");
 
                     timer_handle = setInterval(() => {
                         if (remain_time > 0) {
                             remain_time -= 1;
-                            var mm = parseInt(remain_time / 60);
-                            var ss = remain_time % 60;
+                            var mm = parseInt(remain_time / sinm);
+                            var ss = remain_time % sinm;
                             $("#span_timing").html(mm + " min " + ss + " sec");
                         } else {
                             // $("#div_timing").hide();
                             $("#div_timing").fadeOut();
                             clearInterval(timer_handle);
                             timer_handle = 0
+                            getCart()
                         }
                     }, 1000)
                     // $("#div_timing").show();

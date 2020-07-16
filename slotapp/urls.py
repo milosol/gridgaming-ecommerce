@@ -20,6 +20,6 @@ urlpatterns = [
     path('setdisable', views.setdisable, name='setdisable'),
     path('payment', views.slot_payment, name='slot_payment'),
     path('payment_execute', views.slot_payment_execute, name='slot_payment_execute'),
-    # path('logout', views.user_logout, name='user_logout'),
+    path('logout', views.user_logout, name='user_logout'),
     
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
