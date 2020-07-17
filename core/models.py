@@ -280,7 +280,10 @@ class Payment(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.user.username
+        if self.user:
+            return self.user.username
+        else:
+            return ''
 
 
 class Coupon(models.Model):
