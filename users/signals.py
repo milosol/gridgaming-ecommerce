@@ -7,12 +7,14 @@ from allauth.socialaccount.signals import (
 from allauth.account.signals import (
     email_confirmed,
     user_signed_up,
+    user_logged_in,
+    user_logged_out
 )
 
-# from django.dispatch import receiver
-#from django.contrib.auth.models import User
-# from users.models import User
-
+from django.dispatch import receiver
+from django.contrib.auth.models import User
+from users.models import User
+from core.models import History
 
 
 # @receiver(user_signed_up)
@@ -28,3 +30,17 @@ from allauth.account.signals import (
 #     user.profile.email_address = email
 #     #user.profile.first_name = first_name
 #     user.profile.save()
+
+@receiver(user_logged_in)
+def login_user(sociallogin, user, **kwargs):
+    History.objects.create(user=user, action='Logged In')
+    if sociallogin.account.provider == 'twitter':
+        name = sociallogin.account.extra_data['name']
+        user.first_name = name.split()[0]
+        user.last_name = name.split()[1]
+        user.save()
+
+@receiver(user_logged_out)
+def logged_out(sociallogin, user, **kwargs):
+    History.objects.create(user=user, action='Logged Out')
+        
