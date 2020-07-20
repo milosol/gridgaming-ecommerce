@@ -152,7 +152,18 @@ class  ChecktimeAdmin(admin.ModelAdmin):
         'thread_id',
         'launch_code',
     ]
-    
+
+class  SlotitemAdmin(admin.ModelAdmin):
+    list_display = [
+        'title',
+        'available',
+        'available_count',
+        'total',
+        'points',
+        'value',
+        'description',
+    ]
+
 admin.site.register(Item)
 admin.site.register(OrderItem, OrderItemAdmin)
 admin.site.register(Order, OrderAdmin)
@@ -162,7 +173,7 @@ admin.site.register(Coupon)
 admin.site.register(Refund)
 admin.site.register(Address, AddressAdmin)
 admin.site.register(UserProfile)
-admin.site.register(Slotitem)
+admin.site.register(Slotitem, SlotitemAdmin)
 admin.site.register(Checktime, ChecktimeAdmin)
 admin.site.register(Counting, CountingAdmin)
 admin.site.register(Cartget)

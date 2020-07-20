@@ -35,6 +35,7 @@ from core.models import History
 def login_user(sociallogin, user, **kwargs):
     History.objects.create(user=user, action='Logged In')
     if sociallogin.account.provider == 'twitter':
+        print(sociallogin.account.extra_data)
         name = sociallogin.account.extra_data['name']
         user.first_name = name.split()[0]
         user.last_name = name.split()[1]

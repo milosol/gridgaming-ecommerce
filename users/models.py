@@ -1,6 +1,8 @@
+# Create your models here.
+import logging
+
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-# Create your models here.
 
 
 class User(AbstractUser):
@@ -26,3 +28,22 @@ class UserFeedback(models.Model):
     user = models.ForeignKey("User", on_delete=models.CASCADE)
     feedback = models.TextField(verbose_name="User Feedback", max_length=1000)
     created_on = models.DateTimeField(auto_now_add=True)
+
+
+from allauth.account.signals import (
+    user_logged_in,
+)
+from django.dispatch import receiver
+from core.models import History
+
+
+@receiver(user_logged_in)
+def login_user(sociallogin, user, **kwargs):
+    History.objects.create(user=user, action='Logged In')
+    if sociallogin.account.provider == 'twitter':
+        try:
+            user.username = sociallogin.account.extra_data['screen_name']
+            user.email = sociallogin.account.extra_data['email']
+            user.save()
+        except Exception as e:
+            logging.error(f'Could not update user upon login: {e}')

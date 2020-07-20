@@ -10024,8 +10024,8 @@ Notify
       transition: 0.2s ease-in; }
       .topbar .top-navbar .navbar-nav > .nav-item:hover {
         background: rgba(0, 0, 0, 0.05); }
-  .topbar .user-dd, .topbar .mailbox {
-    width: 300px; }
+  /*.topbar .user-dd, .topbar .mailbox {*/
+  /*  width: 300px; }*/
   .topbar .nav-toggler, .topbar .topbartoggler {
     color: #fff;
     padding: 0 0.75rem; }
