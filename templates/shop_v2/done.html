@@ -1,6 +1,51 @@
 {% extends "core/base.html" %}
+{% load static %}
 {% block content %}
  
-    <p>Payment done.</p>
- 
+<div class="row">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <img class="card-img-top" src="{% static 'img/order_complete.png' %}" alt="Card image cap" style="max-height: 450px">
+                            <div class="card-img-overlay">
+                                <div class="text-success">
+                                    <span class="text-center font-14 mb-0"><i class="fas fa-check-circle font-18"> </i> <span class="font-18 mb-0"> Payment Processed</span></span>
+                                    <p>
+                                    <span class="text-white"> Order Item(s): {{ purchased_items}}<br>
+                                        Total Charged: {{ total_charged }}<br>
+                                        Order Reference: {{ ref_code }}<br>
+                                            <span class="font-20"></span>
+                                    </span>
+                                    </p>
+{#                                    #}
+                                </div>
+                            </div>
+                            <div class="card-footer bg-white">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="row text-center">
+                                            <div class="col-12 col-md-4 border-right">
+                                                <div class="mb-2">Start Giveaway</div>
+                                                <div>
+                                                    <a href="{% url 'retweet_picker:giveaway-list' %}"><button type="button" class="btn btn-outline-primary btn-rounded"><i class="mdi mdi-rocket mb-2"></i>Visit Launchpad</button></a>
+                                                </div>
+                                            </div>
+                                            <div class="col-12 col-md-4 border-right">
+                                                <div class="mb-2">See All Transactions</div>
+                                                <div>
+                                                    <a href="{% url 'core:user-orders' %}"><button type="button" class="btn btn-outline-success btn-rounded"><i class="mdi mdi-reorder-horizontal mb-2"></i>Review Orders</button></a>
+                                                </div>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div class="mb-2">Sponsor Another</div>
+                                                <div>
+                                                    <a href="{% url 'core:home' %}"><button type="button" class="btn btn-outline-info btn-rounded"><i class="mdi mdi-twitter mb-2"></i> Visit Shop</button></a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 {% endblock %}

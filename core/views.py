@@ -563,7 +563,13 @@ class RequestRefundView(View):
 
 @csrf_exempt
 def payment_done(request):
-    return render(request, 'shop_v2/done.html')
+    messages.success(request, "Payment complete!")
+    context = {}
+    user_order = Order.objects.filter(user_id=request.user.id).last()
+    context['purchased_items'] = user_order.get_purchased_items()
+    context['ref_code'] = user_order.ref_code
+    context['total_charged'] = user_order.get_total()
+    return render(request, 'shop_v2/done.html', context=context)
 
 
 @csrf_exempt
