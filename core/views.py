@@ -11,7 +11,7 @@ from django.utils import timezone
 from django.urls import reverse
 from paypal.standard.forms import PayPalPaymentsForm
 from .forms import CheckoutForm, CheckoutFormv2, CouponForm, RefundForm, PaymentForm
-from .models import Item, OrderItem, Order, Address, Payment, Coupon, Refund, UserProfile, Slotitem
+from .models import Item, OrderItem, Order, Address, Payment, Coupon, Refund, UserProfile, Slotitem, History
 from core.decorators import account_type_check
 from django.utils.decorators import method_decorator
 from users.models import User, UserRoles
@@ -20,7 +20,6 @@ import random
 import string
 import stripe
 from stripe import error
-# from slotapp.views import removefromcart
 #from core.extras import transact, generate_client_token
 
 
@@ -246,7 +245,7 @@ class PaymentView(View):
                             userprofile.stripe_customer_id = customer['id']
                             userprofile.one_click_purchasing = True
                             userprofile.save()
-                    redirect(reverse('core:checkout'))
+                    # redirect(reverse('core:checkout'))
                     # return redirect(reverse('shopping_cart:update_records',
                     #                         kwargs={
                     #                             'token': token
@@ -276,8 +275,7 @@ class PaymentView(View):
                     messages.warning(
                         self.request, "A serious error occurred. We have been notifed.")
                     return redirect("core:home")
-
-                messages.info(self.request, "Your card has been declined.")
+                # messages.info(self.request, "Your card has been declined.")
             # else:
 
                 # result = transact({
@@ -335,6 +333,8 @@ class PaymentView(View):
             order.payment = payment
             order.ref_code = create_ref_code()
             order.save()
+            History.objects.create(user=order.user, action='Purchased', item_str=order.get_purchased_items(),
+                                reason="Stripe payment done", order_str=order.id)
             # TODO Add giveaway stats
             # try:
             #     GiveawayStats.objects.create(order_id=order.id)
