@@ -565,10 +565,13 @@ class RequestRefundView(View):
 def payment_done(request):
     messages.success(request, "Payment complete!")
     context = {}
-    user_order = Order.objects.filter(user_id=request.user.id).last()
-    context['purchased_items'] = user_order.get_purchased_items()
-    context['ref_code'] = user_order.ref_code
-    context['total_charged'] = user_order.get_total()
+    try:
+        user_order = Order.objects.filter(user_id=request.user.id).last()
+        context['purchased_items'] = user_order.get_purchased_items()
+        context['ref_code'] = user_order.ref_code
+        context['total_charged'] = user_order.get_total()
+    except Exception as e:
+        print(f'Error on payment done page: {e}')
     return render(request, 'shop_v2/done.html', context=context)
 
 
@@ -687,7 +690,7 @@ class AccountView(View):
                     temp['name'] = order.user.first_name + " " + order.user.last_name
                     temp['date'] = order.user.date_joined
                     accounts.append(temp)
-            print(accounts)
+            #print(accounts)
             context = {
                 'accounts': accounts,
             }

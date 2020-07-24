@@ -3,6 +3,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 from django.shortcuts import redirect
+from giveaways.views import GiveawayDetailView
 
 
 def bubble5000(request):
@@ -16,7 +17,7 @@ urlpatterns = [
     path('contests/', include('retweet_picker.urls', namespace='contests')),
     path('slot/', include('slotapp.urls', namespace='slot')),
     path('django-rq/', include('django_rq.urls')),
-    #path('bubble5000/', bubble5000, name='bubble5000'),
+    path('giveaways/', include('giveaways.urls')),
     path('', include('frontend.urls', namespace='frontend'))
 ]
 

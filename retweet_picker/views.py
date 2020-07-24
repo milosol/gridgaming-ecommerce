@@ -79,11 +79,11 @@ def new_retweet_contest(request):
 
 def order_items_prefetch_related_efficient(user_id):
     queryset = Order.objects.filter(ordered=True, user=user_id, kind=0).prefetch_related(Prefetch("items",
-                                                                                          queryset=OrderItem.
-                                                                                          objects.select_related(
-                                                                                              "item"),
-                                                                                          to_attr='ordered_items'
-                                                                                          ))
+                                                                                                  queryset=OrderItem.
+                                                                                                  objects.select_related(
+                                                                                                      "item"),
+                                                                                                  to_attr='ordered_items'
+                                                                                                  ))
 
     order_items = []
     for order in queryset:
@@ -115,7 +115,6 @@ def queue_giveaway_test(instance, duration):
     instance.test_method(duration)
 
 
-
 @cleared_hot_check
 def retrieve_tweets_choose_winner(request, existing_tweet_url):
     context = {}
@@ -128,8 +127,9 @@ def retrieve_tweets_choose_winner(request, existing_tweet_url):
     except Exception as e:
         messages.error(request, "Your giveaway could not be launched!")
         print(f"ERROR: {e}")
-    #return redirect("retweet_picker:giveaway-list")
+    # return redirect("retweet_picker:giveaway-list")
     return render(request, template_name='launch.html', context=context)
+
 
 @cleared_hot_check
 def launch_giveaway(request, order_id, item_id):
@@ -157,25 +157,25 @@ def launch_giveaway(request, order_id, item_id):
                 messages.success(request, f"Your giveaway is live!")
             # TODO Create queueing system and let user know what position they are in
             redirect("retweet_picker:giveaway-list")
-            #return redirect(request.path)
+            # return redirect(request.path)
         else:
             messages.error(request, "This order has already been redeemed.")
 
     except Exception as e:
         messages.error(request, "Your giveaway could not be launched!")
         print(f"ERROR: {e}")
-    #return redirect("retweet_picker:giveaway-list")
+    # return redirect("retweet_picker:giveaway-list")
     return render(request, template_name='launch.html', context=context)
 
 
 def prelaunch_validator(request, order_id, item_id):
     queryset = Order.objects.filter(ordered=True,
                                     id=request.user.id, kind=1).prefetch_related(Prefetch("items", queryset=OrderItem.
-                                                                                  objects.filter(
+                                                                                          objects.filter(
         item_id=item_id).select_related(
         "item"),
-                                                                                  to_attr='ordered_items'
-                                                                                  ))
+                                                                                          to_attr='ordered_items'
+                                                                                          ))
     for order in queryset:
         for order_item in order.ordered_items:
             if order_item.available_to_run > 0:
@@ -224,6 +224,7 @@ def bubble_rescue(request):
     context = {}
     return render(request, "decoder_ring.html", context)
 
+
 def contest_results(request, order_id):
     """ Take UUID from contest, retrieve the results and present winner. Also have access to reroll when needed"""
     """ Choose winner will execute """
@@ -239,7 +240,7 @@ def contest_results(request, order_id):
     giveaway_results = GiveawayResults.objects.filter(giveaway_id__in=[x.id for x in giveaway_objs])
     context['giveaway_results'] = giveaway_results
 
-    print(giveaway_ids)
+    # print(giveaway_ids)
 
     return render(request, "contest_results.html", context)
 
