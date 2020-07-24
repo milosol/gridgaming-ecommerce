@@ -13,11 +13,11 @@
 {% include "core/preloader.html" %}
 <!-- Main wrapper - style you can find in pages.scss -->
 <!-- ============================================================== -->
-{% if request.user.blacklisted %}
-<h2> Sorry... your account has been restricted.</h2>
-    <span>If you believe this is an error, please contact business@gridgaming.io</span>
-
-    {% else %}
+{#{% if request.user.blacklisted %}#}
+{#<h2> Sorry... your account has been restricted.</h2>#}
+{#    <span>If you believe this is an error, please contact business@gridgaming.io</span>#}
+{##}
+{#    {% else %}#}
 <div id="main-wrapper" data-layout="horizontal" data-navbarbg="skin2" data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed" data-boxed-layout="boxed">
 
 
@@ -49,7 +49,7 @@
     <!-- ============================================================== -->
     <!-- End Page wrapper  -->
     <!-- ============================================================== -->
-{% endif %}
+{#{% endif %}#}
 </div>
 <!-- ============================================================== -->
 <!-- End Wrapper -->
