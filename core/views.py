@@ -20,6 +20,7 @@ import random
 import string
 import stripe
 from stripe import error
+from slotapp.views import del_timing
 #from core.extras import transact, generate_client_token
 
 
@@ -49,19 +50,21 @@ class CheckoutViewV2(View):
 
     def get(self, *args, **kwargs):
         # generate all other required data that you may need on the #checkout page and add them to context.
-
+        kind = self.request.session.get('kind', 0)
+        print("============kind ====", kind)
         try:
-            res = removefromcart(self.request.user.id)
+            res = removefromcart(self.request)
             if res['removed'] == 1:
                 messages.warning(self.request, res['msg'])
                 return redirect("core:order-summary")
-            order = Order.objects.get(user=self.request.user, ordered=False, kind=0)
+            order = Order.objects.get(user=self.request.user, ordered=False, kind=kind)
             form = CheckoutFormv2()
             context = {
                 'form': form,
                 'couponform': CouponForm(),
                 'order': order,
-                'DISPLAY_COUPON_FORM': True
+                'DISPLAY_COUPON_FORM': True,
+                'kind': kind
             }
 
             context.update({'giveaway_day_range': settings.GIVEAWAY_DAY_RANGE})
@@ -77,15 +80,19 @@ class CheckoutViewV2(View):
 
             return render(self.request, "shop_v2/checkout.html", context)
         except ObjectDoesNotExist:
-            braintree_client_token = braintree.ClientToken.generate({})
-            context = {'braintree_client_token': braintree_client_token}
+            # braintree_client_token = braintree.ClientToken.generate({})
+            # context = {'braintree_client_token': braintree_client_token}
             messages.info(self.request, "You do not have an active order")
-            return redirect("core:checkout")
+            if kind == 0:
+                return redirect("core:order-summary")
+            else:
+                return redirect("slotapp:first_page")
 
     def post(self, *args, **kwargs):
         form = CheckoutFormv2(self.request.POST or None)
         try:
-            order = Order.objects.get(user=self.request.user, ordered=False, kind=0)
+            kind = self.request.session.get('kind', 0)
+            order = Order.objects.get(user=self.request.user, ordered=False, kind=kind)
             if form.is_valid():
 
                 use_default_billing = form.cleaned_data.get(
@@ -164,8 +171,9 @@ class CheckoutViewV2(View):
 
 def get_user_pending_order(request):
     # get order for the correct user
+    kind = request.session.get('kind', 0)
     user_profile = get_object_or_404(UserProfile, user=request.user)
-    order = Order.objects.filter(user=user_profile.user, ordered=False, kind=0)
+    order = Order.objects.filter(user=user_profile.user, ordered=False, kind=kind)
     if order.exists():
         # get the only order in the list of filtered orders
         return order[0]
@@ -207,11 +215,12 @@ class PaymentView(View):
             else:
                 messages.warning(
                     self.request, "You have not added a billing address")
-            return redirect("core:checkout")
+                return redirect("core:checkout")
         else:
             return redirect("core:home")
 
     def post(self, *args, **kwargs):
+        kind = self.request.session.get('kind', 0)
         order = get_user_pending_order(self.request)
         form = PaymentForm(self.request.POST)
         userprofile = UserProfile.objects.get(user=self.request.user)
@@ -226,7 +235,7 @@ class PaymentView(View):
             if stripe_token:
                 try:
                     charge = stripe.Charge.create(
-                        amount=amount,
+                        amount=amount*100,
                         currency='usd',
                         description='Example charge',
                         source=stripe_token,
@@ -340,14 +349,20 @@ class PaymentView(View):
             #     GiveawayStats.objects.create(order_id=order.id)
             # except Exception as e:
             #     print(e)
-            messages.success(self.request,
-                             "Head over to the Launch Pad to start your giveaway! If no one is in line, you will start immediately!",
-                             extra_tags='order_complete')
-            # TODO Direct to payment statuses
-            return redirect("retweet_picker:giveaway-list")
-
-        messages.warning(self.request, "Invalid data received")
-        return redirect("/payment/stripe/")
+            if order.kind == 0:
+                messages.success(self.request,
+                                "Head over to the Launch Pad to start your giveaway! If no one is in line, you will start immediately!",
+                                extra_tags='order_complete')
+                # TODO Direct to payment statuses
+                return redirect("retweet_picker:giveaway-list")
+            else:
+                messages.success(self.request, "Payment succeed",
+                                extra_tags='order_complete')
+                # TODO Direct to payment statuses
+                del_timing(order.user.id, 'stripe payment done')
+                return redirect("core:user-orders")
+            messages.warning(self.request, "Invalid data received")   
+        return redirect("core:payment")
 
 
 @method_decorator(account_type_check, name='dispatch')
@@ -357,7 +372,7 @@ class HomeView(ListView):
     template_name = "core/index.html"
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        res = removefromcart(self.request.user.id)
+        res = removefromcart(self.request)
         if res['removed'] == 1:
             messages.warning(self.request, res['msg'])
         return context
@@ -366,7 +381,7 @@ class OrderSummaryView(LoginRequiredMixin, View):
     def get(self, *args, **kwargs):
         bmsg = 0
         try:
-            res = removefromcart(self.request.user.id)
+            res = removefromcart(self.request)
             if res['removed'] == 1:
                 messages.warning(self.request, res['msg'])
                 bmsg = 1
@@ -376,6 +391,7 @@ class OrderSummaryView(LoginRequiredMixin, View):
                 'object': order,
                 'social_boost': socials
             }
+            self.request.session['kind'] = 0
             return render(self.request, 'shop_v2/cart.html', context)
         except ObjectDoesNotExist:
             if bmsg == 0:
@@ -565,7 +581,8 @@ class RequestRefundView(View):
 def payment_done(request):
     messages.success(request, "Payment complete!")
     context = {}
-    user_order = Order.objects.filter(user_id=request.user.id).last()
+    kind = request.session.get('kind', 0)
+    user_order = Order.objects.filter(user_id=request.user.id, ordered=False, kind=kind).last()
     context['purchased_items'] = user_order.get_purchased_items()
     context['ref_code'] = user_order.ref_code
     context['total_charged'] = user_order.get_total()
@@ -579,22 +596,27 @@ def payment_canceled(request):
 
 class PaypalPaymentProcess(View):
     def get(self, request):
-        res = removefromcart(self.request.user.id)
+        res = removefromcart(self.request)
         if res['removed'] == 1:
             messages.warning(self.request, res['msg'])
             return redirect("core:order-summary")
         # order_id = request.GET['order_id']
         # order = get_object_or_404(Order, id=order_id)
-        order = Order.objects.get(user=self.request.user, ordered=False, kind=0)
+        kind = self.request.session.get('kind', 0)
+        order = Order.objects.get(user=self.request.user, ordered=False, kind=kind)
         host = request.get_host()
+        if kind == 0:
+            return_url = 'http://{}{}'.format(host, reverse('core:done'))
+        else:
+            return_url = 'http://{}{}'.format(host, reverse('core:user-orders'))
         paypal_dict = {
             'business': settings.PAYPAL_RECEIVER_EMAIL,
             'amount': order.get_total(),
             'item_name': 'Order {}'.format(order.id),
-            'invoice': str(order.id) + "_0",
+            'invoice': str(order.id) + "_" + str(kind),
             'currency_code': 'USD',
             'notify_url': 'http://{}{}'.format(host, reverse('core:paypal-ipn')),
-            'return_url': 'http://{}{}'.format(host, reverse('core:done')),
+            'return_url': return_url,
             'cancel_return': 'http://{}{}'.format(host, reverse('core:canceled')),
         }
         form = PayPalPaymentsForm(initial=paypal_dict)  
@@ -715,14 +737,15 @@ class DisableView(View):
             messages.info(self.request, "You do not have Giveaway items")
             return redirect("core:home")
         
-def removefromcart(user_id):
+def removefromcart(request):
     res = {'left': 0, 'msg': '', 'removed': 0}
-    user = User.objects.get(id=user_id)
-    order_qs = Order.objects.filter(user=user, ordered=False, kind=0)
+    kind = request.session.get('kind', 0)
+    user = request.user
+    order_qs = Order.objects.filter(user=user, ordered=False, kind=kind)
     if not order_qs.exists():
         return res
     order = order_qs[0]
-    order_items = order.items.filter(kind=0, item__available=False)
+    order_items = order.items.filter(kind=kind, item__available=False)
     if len(order_items) > 0:
         res['removed'] = 1
         res['msg'] = "The item in your cart is no longer available and has been removed"

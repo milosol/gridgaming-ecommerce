@@ -4,7 +4,7 @@ from paypal.standard.ipn.signals import valid_ipn_received
 from django.dispatch import receiver
 import random
 import string
-
+from slotapp.views import del_timing
 def create_ref_code():
     return ''.join(random.choices(string.ascii_lowercase + string.digits, k=20))
  
@@ -33,6 +33,9 @@ def payment_notification(sender, **kwargs):
         order.payment = payment
         order.ref_code = create_ref_code()
         order.save()
+        order.items.filter(ordered=False).update(ordered=True)
+        if order.kind == 1:
+            del_timing(order.user.id, 'paypal payment done')
         History.objects.create(user=order.user, action='Purchased', item_str=order.get_purchased_items(), 
                                reason="Payment done", order_str=order.id)
             
