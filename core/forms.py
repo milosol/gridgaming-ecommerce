@@ -6,7 +6,7 @@ from django.utils import timezone
 import pytz
 
 PAYMENT_CHOICES = (
-    # ('S', 'Stripe'),
+    ('S', 'Stripe'),
     ('P', 'Paypal'),
 )
 

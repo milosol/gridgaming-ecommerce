@@ -394,9 +394,24 @@
             }
 
             function check_submit(event) {
+                
                 event.preventDefault();
-                // checkout(1);
-                return false;
+                // return false;
+                console.log("sent")
+                var usernames = getusernames();
+                $.ajax({
+                    type: "POST",
+                    url: "./setusernames",
+                    data: {'usernames': JSON.stringify(usernames)},
+                    success: function (data) {
+                        if (data.success == true) {
+                            console.log("username saved")
+                            window.location.href = "/shop/checkout";
+                        } else {
+                            alert(data.msg)
+                        }
+                    }
+                })
             }
 
             function showCheckout() {
@@ -521,15 +536,15 @@
                 }
                 $("#username_container").html(html_str);
 
-                $("#username_container input").keyup(function () {
-                    $("#form_usernames").validate();
-                    valid = $("#form_usernames").valid();
-                    if (valid == true) {
-                        $("#paypal_btn").show();
-                    } else {
-                        $("#paypal_btn").hide();
-                    }
-                })
+                // $("#username_container input").keyup(function () {
+                //     $("#form_usernames").validate();
+                //     valid = $("#form_usernames").valid();
+                //     if (valid == true) {
+                //         // $("#paypal_btn").show();
+                //     } else {
+                //         $("#paypal_btn").hide();
+                //     }
+                // })
 
             }
 

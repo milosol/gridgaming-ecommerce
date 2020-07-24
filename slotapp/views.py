@@ -15,8 +15,9 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
 from core.models import UserProfile, Order, OrderItem, Slotitem, Checktime, Cartget, Payment, Item, History, Counting
-from core.views import create_ref_code
 from users.models import User, UserRoles
+import random
+import string
 
 count_data = []
 cart_get = []
@@ -26,6 +27,9 @@ paypalrestsdk.configure({
     "mode": config("PAYPAL_MODE"),  # sandbox or live
     "client_id": config("PAYPAL_CLIENT_ID"),
     "client_secret": config("PAYPAL_CLIENT_SECRET")})
+
+def create_ref_code():
+    return ''.join(random.choices(string.ascii_lowercase + string.digits, k=20))
 
 def setLaunch(value): 
     Checktime.objects.all().update(launched=value, launch_code=create_ref_code(), action_time=timezone.now())
@@ -220,6 +224,7 @@ def user_logout(request):
 
 @login_required
 def first_page(request):
+    request.session['kind'] = 1
     user_id = request.user.id
     u = User.objects.get(id=user_id)
     slots = Slotitem.objects.filter(available=True)
@@ -544,6 +549,24 @@ def setdisable(request):
     else:
         Slotitem.objects.filter(id=item_id).update(available=value)
         
+    return JsonResponse(res)
+
+@csrf_exempt
+def setusernames(request):
+    res = {'success': True}
+    usernames = request.POST['usernames']
+    usernames = json.loads(usernames)
+    user = request.user
+    order_qs = Order.objects.filter(user=user, ordered=False, kind=1)
+    if not order_qs.exists():
+        res['success'] = False
+        res['msg'] = 'You have no active order of community giveaway'
+        return res
+    order = order_qs[0]
+    launch_code = Checktime.objects.all()[0].launch_code
+    for u in usernames:
+        order.items.filter(kind=1, slot__id=u['id'], ordered=False, user=user).update(username=u['name'], launch_code=launch_code)
+
     return JsonResponse(res)
 
 def removefromcart(user_id):

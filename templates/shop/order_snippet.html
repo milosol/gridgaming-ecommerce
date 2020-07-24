@@ -13,6 +13,14 @@
             </div>
             <span class="text-muted">${{ order_item.get_final_price }}</span>
         </li>
+        {% else %}
+        <li class="list-group-item d-flex justify-content-between lh-condensed">
+            <div>
+            <h6 class="my-0">{{ order_item.quantity }} x {{ order_item.slot.title}}</h6>
+            <small class="text-muted">{{ order_item.slot.description}}</small>
+            </div>
+            <span class="text-muted">${{ order_item.get_final_price }}</span>
+        </li>
         {% endif %}
     {% endfor %}
     {% if order.coupon %}
