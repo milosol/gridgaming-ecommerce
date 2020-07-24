@@ -582,7 +582,7 @@ def payment_done(request):
     messages.success(request, "Payment complete!")
     context = {}
     kind = request.session.get('kind', 0)
-    user_order = Order.objects.filter(user_id=request.user.id, ordered=False, kind=kind).last()
+    user_order = Order.objects.filter(user_id=request.user.id, kind=kind).last()
     context['purchased_items'] = user_order.get_purchased_items()
     context['ref_code'] = user_order.ref_code
     context['total_charged'] = user_order.get_total()
