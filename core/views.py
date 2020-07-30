@@ -361,7 +361,7 @@ class PaymentView(View):
                 # TODO Direct to payment statuses
                 del_timing(order.user.id, 'stripe payment done')
                 return redirect("core:user-orders")
-            messages.warning(self.request, "Invalid data received")   
+            messages.warning(self.request, "Invalid data received")
         return redirect("core:payment")
 
 
@@ -581,11 +581,14 @@ class RequestRefundView(View):
 def payment_done(request):
     messages.success(request, "Payment complete!")
     context = {}
-    kind = request.session.get('kind', 0)
-    user_order = Order.objects.filter(user_id=request.user.id, kind=kind).last()
-    context['purchased_items'] = user_order.get_purchased_items()
-    context['ref_code'] = user_order.ref_code
-    context['total_charged'] = user_order.get_total()
+    try:
+        kind = request.session.get('kind', 0)
+        user_order = Order.objects.filter(user_id=request.user.id, kind=kind).last()
+        context['purchased_items'] = user_order.get_purchased_items()
+        context['ref_code'] = user_order.ref_code
+        context['total_charged'] = user_order.get_total()
+    except Exception as e:
+        print(f'Error on payment done page: {e}')
     return render(request, 'shop_v2/done.html', context=context)
 
 
@@ -709,10 +712,10 @@ class AccountView(View):
                     temp['name'] = order.user.first_name + " " + order.user.last_name
                     temp['date'] = order.user.date_joined
                     accounts.append(temp)
+            #print(accounts)
             context = {
                 'accounts': accounts,
             }
-
             return render(self.request, "shop_v2/accounts.html", context)
         except ObjectDoesNotExist:
             messages.info(self.request, "There is not accounts signed up for community")
