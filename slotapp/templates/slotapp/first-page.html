@@ -440,11 +440,15 @@
             }
 
             function toCart(slot_id) {
+                // console.log("to cart:", slot_id)
+                // $("#cartbtn_"+slot_id).attr("disabled", true);
+                $(".btn_cart").attr("disabled", true);
                 $.ajax({
                     type: "POST",
                     url: "./tocart",
                     data: {'user_id': user_id, "slot_id": slot_id},
                     success: function (data) {
+                        $(".btn_cart").attr("disabled", false);
                         if (data.success == true) {
                             if (data.kind == 0) {
                                 setAvailable(slot_id, data.available_count + " / " + data.total)
@@ -458,6 +462,9 @@
                             setAvailable(slot_id, data.available_count + " / " + data.total)
                             alert(data.msg)
                         }
+                    },
+                    error: function(){
+                        $("#cartbtn_"+slot_id).attr("disabled", false);
                     }
                 })
             }
@@ -598,7 +605,7 @@
                     data: {'user_id': user_id},
                     success: function (data) {
                         if (data.success == true) {
-                            console.log("cart_refresh :", user_id, data.cart_refresh)
+                            // console.log("cart_refresh :", user_id, data.cart_refresh)
                             if(data.refresh == true){
                                 // alert("refresh by refresh value")
                                 alert("Registration is closed")

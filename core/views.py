@@ -21,6 +21,7 @@ import string
 import stripe
 from stripe import error
 from slotapp.views import del_timing
+import logging
 #from core.extras import transact, generate_client_token
 
 
@@ -51,7 +52,6 @@ class CheckoutViewV2(View):
     def get(self, *args, **kwargs):
         # generate all other required data that you may need on the #checkout page and add them to context.
         kind = self.request.session.get('kind', 0)
-        print("============kind ====", kind)
         try:
             res = removefromcart(self.request)
             if res['removed'] == 1:
@@ -709,7 +709,6 @@ class AccountView(View):
                     temp['name'] = order.user.first_name + " " + order.user.last_name
                     temp['date'] = order.user.date_joined
                     accounts.append(temp)
-            print(accounts)
             context = {
                 'accounts': accounts,
             }

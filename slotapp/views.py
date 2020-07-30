@@ -18,6 +18,10 @@ from core.models import UserProfile, Order, OrderItem, Slotitem, Checktime, Cart
 from users.models import User, UserRoles
 import random
 import string
+import logging
+import sys
+
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
 count_data = []
 cart_get = []
@@ -57,8 +61,8 @@ def count_launch(name):
         time.sleep(1)
     setLaunch(False)
     History.objects.create(action='Close Launch Thread ' + str(name))
-    
-            
+
+
 def launch_thread():
     launched = False
     thread_id = 1
@@ -79,7 +83,7 @@ def initialize():
     History.objects.create(reason="Server restarted")
     History.objects.create(action='Launch', reason="server restart")
     launch_thread()
-    print("\n========= server restarted ============\n")
+    logging.info("========= server restarted ============")
 
 initialize()
         
@@ -224,6 +228,7 @@ def user_logout(request):
 
 @login_required
 def first_page(request):
+    logging.info("first page")
     request.session['kind'] = 1
     user_id = request.user.id
     u = User.objects.get(id=user_id)
@@ -254,7 +259,7 @@ def first_page(request):
     data['launch_timer'] = launch_timer
     paypal_status = config("PAYPAL_STATUS_COMMUNITY")
     Cartget.objects.filter(user_id=user_id).delete()
-    History.objects.create(user=request.user, action='Refresh', reason="GET Launched:" + str(launched) + " launch timer: " + str(data['launch_timer']))
+    # History.objects.create(user=request.user, action='Refresh', reason="GET Launched:" + str(launched) + " launch timer: " + str(data['launch_timer']))
     if res['removed'] == 1:
         messages.warning(request, res['msg'])
     return render(request, 'slotapp/first-page.html', {'data': data, 'paypal_status':paypal_status})
@@ -509,7 +514,6 @@ def slot_payment_execute(request):
     usernames = json.loads(usernames)
     payment = paypalrestsdk.Payment.find(request.POST['paymentID'])
     if payment.execute({'payer_id': request.POST['payerID']}):
-        print("Execute success")
         amount = float(payment.transactions[0].amount.total)
         fee = float(payment.transactions[0].related_resources[0].sale.transaction_fee.value)
         resp['amount'] = round(amount, 2)
@@ -519,7 +523,6 @@ def slot_payment_execute(request):
         messages.warning(request, "Payment Failed!")
         resp['success'] = False
         resp['msg'] = payment.error
-        print(payment.error)
     return JsonResponse(resp)
 
 
