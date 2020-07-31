@@ -1,28 +1,28 @@
-from django.conf import settings
-from django.contrib import messages
-from django.core.exceptions import ObjectDoesNotExist
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import render, get_object_or_404
-from django.views.generic import ListView, DetailView, View
-from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import redirect
-from django.utils import timezone
-from django.urls import reverse
-from paypal.standard.forms import PayPalPaymentsForm
-from .forms import CheckoutForm, CheckoutFormv2, CouponForm, RefundForm, PaymentForm
-from .models import Item, OrderItem, Order, Address, Payment, Coupon, Refund, UserProfile, Slotitem, History
-from core.decorators import account_type_check
-from django.utils.decorators import method_decorator
-from users.models import User, UserRoles
-import braintree
 import random
 import string
+
 import stripe
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import redirect
+from django.shortcuts import render, get_object_or_404
+from django.urls import reverse
+from django.utils import timezone
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+from django.views.generic import ListView, DetailView, View
+from paypal.standard.forms import PayPalPaymentsForm
 from stripe import error
+
+from core.decorators import account_type_check
 from slotapp.views import del_timing
-import logging
-#from core.extras import transact, generate_client_token
+from .forms import CheckoutFormv2, CouponForm, RefundForm, PaymentForm
+from .models import Item, OrderItem, Order, Address, Payment, Coupon, Refund, UserProfile, Slotitem, History
+
+# from core.extras import transact, generate_client_token
 
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -187,15 +187,15 @@ class PaymentView(View):
 
     def get(self, *args, **kwargs):
         order = get_user_pending_order(self.request)
-        #client_token = generate_client_token()
+        # client_token = generate_client_token()
         if order != 0:
             if order.billing_address:
                 context = {
                     'order': order,
                     'DISPLAY_COUPON_FORM': False,
                     'STRIPE_PUBLIC_KEY': settings.STRIPE_PUBLIC_KEY,
-                    #'client_token': client_token,
-                    'client_token':create_ref_code(),
+                    # 'client_token': client_token,
+                    'client_token': create_ref_code(),
                 }
                 userprofile = self.request.user.user_profile
                 if userprofile.one_click_purchasing:
@@ -235,7 +235,7 @@ class PaymentView(View):
             if stripe_token:
                 try:
                     charge = stripe.Charge.create(
-                        amount=amount*100,
+                        amount=amount * 100,
                         currency='usd',
                         description='Example charge',
                         source=stripe_token,
@@ -287,37 +287,37 @@ class PaymentView(View):
                 # messages.info(self.request, "Your card has been declined.")
             # else:
 
-                # result = transact({
-                #     'amount': amount,
-                #     'payment_method_nonce': self.request.POST['payment_method_nonce'],
-                #     'options': {
-                #         "submit_for_settlement": True
-                #     }
-                # })
+            # result = transact({
+            #     'amount': amount,
+            #     'payment_method_nonce': self.request.POST['payment_method_nonce'],
+            #     'options': {
+            #         "submit_for_settlement": True
+            #     }
+            # })
 
-                # if result.is_success or result.transaction:
-                #     braintree_id = result.transaction.id
-                # else:
-                #     for x in result.errors.deep_errors:
-                #         messages.info(self.request, x)
-                #     return redirect(reverse('core:checkout'))
+            # if result.is_success or result.transaction:
+            #     braintree_id = result.transaction.id
+            # else:
+            #     for x in result.errors.deep_errors:
+            #         messages.info(self.request, x)
+            #     return redirect(reverse('core:checkout'))
 
-                # if use_default or save:
-                #     # charge the customer because we cannot charge the token more than once
-                #     charge = stripe.Charge.create(
-                #         amount=amount,  # cents
-                #         currency="usd",
-                #         customer=userprofile.stripe_customer_id
-                #     )
-                # else:
-                #     # charge once off on the token
-                #     charge = stripe.Charge.create(
-                #         amount=amount,  # cents
-                #         currency="usd",
-                #         source=token
-                #     )
+            # if use_default or save:
+            #     # charge the customer because we cannot charge the token more than once
+            #     charge = stripe.Charge.create(
+            #         amount=amount,  # cents
+            #         currency="usd",
+            #         customer=userprofile.stripe_customer_id
+            #     )
+            # else:
+            #     # charge once off on the token
+            #     charge = stripe.Charge.create(
+            #         amount=amount,  # cents
+            #         currency="usd",
+            #         source=token
+            #     )
 
-                # create the payment
+            # create the payment
             payment = Payment()
             if charge:
                 payment.stripe_charge_id = charge.get('id', '')
@@ -343,7 +343,7 @@ class PaymentView(View):
             order.ref_code = create_ref_code()
             order.save()
             History.objects.create(user=order.user, action='Purchased', item_str=order.get_purchased_items(),
-                                reason="Stripe payment done", order_str=order.id)
+                                   reason="Stripe payment done", order_str=order.id)
             # TODO Add giveaway stats
             # try:
             #     GiveawayStats.objects.create(order_id=order.id)
@@ -351,13 +351,13 @@ class PaymentView(View):
             #     print(e)
             if order.kind == 0:
                 messages.success(self.request,
-                                "Head over to the Launch Pad to start your giveaway! If no one is in line, you will start immediately!",
-                                extra_tags='order_complete')
+                                 "Head over to the Launch Pad to start your giveaway! If no one is in line, you will start immediately!",
+                                 extra_tags='order_complete')
                 # TODO Direct to payment statuses
                 return redirect("retweet_picker:giveaway-list")
             else:
                 messages.success(self.request, "Payment succeed",
-                                extra_tags='order_complete')
+                                 extra_tags='order_complete')
                 # TODO Direct to payment statuses
                 del_timing(order.user.id, 'stripe payment done')
                 return redirect("core:user-orders")
@@ -370,12 +370,14 @@ class HomeView(ListView):
     model = Item
     paginate_by = 12
     template_name = "core/index.html"
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         res = removefromcart(self.request)
         if res['removed'] == 1:
             messages.warning(self.request, res['msg'])
         return context
+
 
 class OrderSummaryView(LoginRequiredMixin, View):
     def get(self, *args, **kwargs):
@@ -403,6 +405,7 @@ class OrderSummaryView(LoginRequiredMixin, View):
 class ItemDetailView(DetailView):
     model = Item
     template_name = "shop_v2/product.html"
+
 
 @account_type_check
 @login_required
@@ -622,7 +625,7 @@ class PaypalPaymentProcess(View):
             'return_url': return_url,
             'cancel_return': 'http://{}{}'.format(host, reverse('core:canceled')),
         }
-        form = PayPalPaymentsForm(initial=paypal_dict)  
+        form = PayPalPaymentsForm(initial=paypal_dict)
         return render(request, 'shop_v2/process.html', {'order': order,
                                                         'form': form})
 
@@ -641,7 +644,7 @@ class OrderView(View):
                 # 'slot_orders': slot_orders,
                 'slot_items': slot_items,
             }
-            
+
             billing_address_qs = Address.objects.filter(
                 user=self.request.user,
                 address_type='B',
@@ -657,8 +660,6 @@ class OrderView(View):
             return redirect("core:home")
 
 
-
-
 @method_decorator(account_type_check, name='dispatch')
 class AllOrderView(View):
 
@@ -668,9 +669,9 @@ class AllOrderView(View):
             slot_items = OrderItem.objects.filter(ordered=True, kind=1)
             data = []
             for item in slot_items:
-                temp = {} 
+                temp = {}
                 temp['launch_code'] = item.launch_code
-                temp['username'] = item.user.username 
+                temp['username'] = item.user.username
                 temp['email'] = item.user.email
                 temp['slot_user'] = item.username
                 temp['title'] = item.slot.title
@@ -690,7 +691,8 @@ class AllOrderView(View):
         except ObjectDoesNotExist:
             messages.info(self.request, "You do not have an active order")
             return redirect("core:home")
-        
+
+
 @method_decorator(account_type_check, name='dispatch')
 class AccountView(View):
 
@@ -712,7 +714,7 @@ class AccountView(View):
                     temp['name'] = order.user.first_name + " " + order.user.last_name
                     temp['date'] = order.user.date_joined
                     accounts.append(temp)
-            #print(accounts)
+            # print(accounts)
             context = {
                 'accounts': accounts,
             }
@@ -721,7 +723,7 @@ class AccountView(View):
             messages.info(self.request, "There is not accounts signed up for community")
             return redirect("core:home")
 
-        
+
 @method_decorator(account_type_check, name='dispatch')
 class DisableView(View):
 
@@ -738,7 +740,8 @@ class DisableView(View):
         except ObjectDoesNotExist:
             messages.info(self.request, "You do not have Giveaway items")
             return redirect("core:home")
-        
+
+
 def removefromcart(request):
     res = {'left': 0, 'msg': '', 'removed': 0}
     kind = request.session.get('kind', 0)
