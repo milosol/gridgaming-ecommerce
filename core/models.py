@@ -279,11 +279,15 @@ class Payment(models.Model):
     amount = models.FloatField()
     timestamp = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ['-id']
+        
     def __str__(self):
         if self.user:
             return self.user.username
         else:
             return ''
+    
 
 
 class Coupon(models.Model):

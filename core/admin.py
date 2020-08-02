@@ -164,11 +164,20 @@ class  SlotitemAdmin(admin.ModelAdmin):
         'description',
     ]
 
+class  PaymentAdmin(admin.ModelAdmin):
+    list_display = [
+        'user',
+        'payment_method',
+        'stripe_charge_id',
+        'amount',
+        'timestamp'
+    ]
+    
 admin.site.register(Item)
 admin.site.register(OrderItem, OrderItemAdmin)
 admin.site.register(Order, OrderAdmin)
 admin.site.register(History, HistoryAdmin)
-admin.site.register(Payment)
+admin.site.register(Payment, PaymentAdmin)
 admin.site.register(Coupon)
 admin.site.register(Refund)
 admin.site.register(Address, AddressAdmin)

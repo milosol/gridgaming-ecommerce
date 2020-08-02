@@ -11,23 +11,12 @@ from .utils import build_socials
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 from django.urls import reverse_lazy
-from django.http import HttpResponse
-from django.views import View
 
-
-class AdsView(View):
-    """Replace pub-0000000000000000 with your own publisher ID"""
-    ad_string = "google.com, pub-2399779593674817, DIRECT, f08c47fec0942fa0"
-    
-    def get(self, request, *args, **kwargs):
-        return HttpResponse(self.ad_string)
 
 
 @register.filter
 def get_item(dictionary, key):
     return dictionary.get(key)
-
-
 # Create your views here.
 
 def index(request):
@@ -36,7 +25,6 @@ def index(request):
 
 def home(request):
     return render(request, "frontend/index.html")
-
 
 class ProfileHomeView(LoginRequiredMixin, TemplateView):
     template_name = 'frontend/profile.html'
@@ -48,15 +36,17 @@ class ProfileHomeView(LoginRequiredMixin, TemplateView):
             return True
         return False
 
+
     def record_create(self, service, username):
         return {'service_name': service, 'service_nick': username}
 
         # Make final check for epic and if still in list query yunite with discord ID
 
+
     def get_context_data(self, **kwargs):
         context = super(ProfileHomeView, self).get_context_data(**kwargs)
-        # profile = UserProfile.objects.get_or_create(user=self.request.user)[0]
-        # context['profile'] = profile
+        #profile = UserProfile.objects.get_or_create(user=self.request.user)[0]
+        #context['profile'] = profile
         context['socials'] = build_socials(self.request.user.id)
         return context
 
@@ -90,6 +80,7 @@ def account_type(request):
 def update_account_type(request):
     if request.method == "POST":
         print(request.name)
+
 
     # if request.method == "POST":
     #     form = UserAccountForm(request.POST)
