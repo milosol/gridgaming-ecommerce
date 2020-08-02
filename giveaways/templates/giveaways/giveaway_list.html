@@ -53,7 +53,26 @@
                 </div>
         </div>
     </div>
-
+{#<div class="card profile-card">#}
+{#                    {% if giveaway.url %}#}
+{#                          <a href="{{ giveaway.url }}" target="_blank">#}
+{#                    {% else %}#}
+{#                          <a data-toggle="popover" data-placement="bottom" data-original-title="No link available!" data-content="This giveaway doesn't have a link provided yet. Please check back later.">#}
+{#                    {% endif %}#}
+{#                        {% if giveaway.image %}#}
+{#                        <img class="card-img profile-img" src="{{ giveaway.image.url }}" alt="GridGaming Giveaway">#}
+{#                        {% else %}#}
+{#                        <img class="card-img profile-img" src="{% static 'img/default_giveaway_gg.jpg' %}" alt="GridGaming Giveaway">#}
+{#                        {% endif %}#}
+{#                        <div class="card-img-overlay card-inverse social-profile text-center d-flex ">#}
+{#                            <div class="align-self-center"> <img src="{% static 'img/default_giveaway_gg.jpg' %}" alt="user" class="rounded-circle" width="100">#}
+{#                                <h4 class="card-title text-white">{{ giveaway.title }}</h4>#}
+{#                                <h6 class="card-subtitle text-white op-5">end date: {{ giveaway.giveaway_end_date }}</h6>#}
+{#                                <p class="text-white">{{ giveaway.description }}</p>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                        </a>#}
+{#                    </div>#}
 
 {#    <a href="{% url 'giveaways:giveaway-create' %}">Create Giveaway</a>#}
 {% endblock %}
