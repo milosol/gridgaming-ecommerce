@@ -238,15 +238,8 @@ class PaymentView(View):
             save = form.cleaned_data.get('save')
             use_default = form.cleaned_data.get('use_default')
             amount = int(order.get_total())
-            
             try:
                 if stripe_token:
-                    charge = stripe.Charge.create(
-                        amount=amount * 100,
-                        currency='usd',
-                        description='Example charge',
-                        source=stripe_token,
-                    )
                     if save:
                         if userprofile.stripe_customer_id != '' and userprofile.stripe_customer_id is not None:
                             customer = stripe.Customer.retrieve(
@@ -270,6 +263,7 @@ class PaymentView(View):
                             currency='usd',
                             source=stripe_token,
                         )
+                    
                 if use_default or save:
                     # charge the customer because we cannot charge the token more than once
                     charge = stripe.Charge.create(
