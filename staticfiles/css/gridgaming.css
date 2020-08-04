@@ -1,0 +1,28 @@
+
+/*#main-wrapper[data-layout=horizontal] .page-titles {*/
+/*    background: 0 0;*/
+/*    box-shadow: none;*/
+/*    margin-bottom: 0;*/
+/*    padding: 15px 30px 0;*/
+/*}*/
+
+/*#main-wrapper[data-layout=horizontal] .sidebar-nav #sidebarnav {*/
+/*    display: flex;*/
+/*    width: 100%;*/
+/*    padding: 6px 20px 0;*/
+/*}*/
+
+
+a:focus, a:hover {
+    text-decoration: none;
+    color: mediumturquoise;
+}
+
+a {
+    color: white;
+}
+
+.error-box {
+    position:  inherit;
+    background: no-repeat transparent;
+}
