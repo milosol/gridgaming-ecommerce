@@ -24,6 +24,8 @@ STRIPE_SECRET_KEY = config('STRIPE_LIVE_SECRET_KEY')
 PAYPAL_RECEIVER_EMAIL = config('PAYPAL_RECEIVER_EMAIL')
 PAYPAL_TEST = False
 
+BITPAY_TOKEN = config('BITPAY_TOKEN')
+BITPAY_TEST = config('BITPAY_TEST', cast=bool)
 
 # Store files in Amazon S3
 AWS_LOCATION = 'static'
