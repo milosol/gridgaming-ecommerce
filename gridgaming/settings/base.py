@@ -35,7 +35,7 @@ INSTALLED_APPS = [
     'frontend',
     'mathfilters',
     'slotapp',
-    'giveaways'
+    'giveaways',
 ]
 
 MIDDLEWARE = [

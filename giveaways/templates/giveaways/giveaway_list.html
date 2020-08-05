@@ -11,13 +11,15 @@
                 {% for giveaway in object_list %}
 
                     <div class="card">
-                    {% if giveaway.url %}
-                          <a href="{{ giveaway.url }}" target="_blank">
-                    {% else %}
-                          <a data-toggle="popover" data-placement="bottom" data-original-title="No link available!" data-content="This giveaway doesn't have a link provided yet. Please check back later.">
-                    {% endif %}
-{#                        <a href="{{ giveaway.get_absolute_url }}">#}
+{#                    {% if giveaway.url %}#}
+{#                          <a href="{{ giveaway.url }}" target="_blank">#}
+{#                         <a href="#" target="_blank">#}
+{#                    {% else %}#}
+{#                          <a data-toggle="popover" data-placement="bottom" data-original-title="No link available!" data-content="This giveaway doesn't have a link provided yet. Please check back later.">#}
+{#                    {% endif %}#}
+                         <a href="{{ giveaway.get_absolute_url }}">
                             {% if giveaway.image %}
+                                <!-- Used for absolute url with slug -->
                                 <img class="card-img-top img-fluid" src="{{ giveaway.image.url }}"
                                      alt="Image for {{ giveaway.title }}">
                             {% else %}
