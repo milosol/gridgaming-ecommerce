@@ -63,12 +63,12 @@ STRIPE_SECRET_KEY = config('STRIPE_TEST_SECRET_KEY')
 BRAINTREE_PRODUCTION = False
 BRAINTREE_ENVIRONMENT='sandbox'
 
-
+#Used for bit coin acceptance
+BITPAY_TOKEN = config('BITPAY_TOKEN')
+BITPAY_TEST = config('BITPAY_TEST', cast=bool)
 
 #PAYPAL_RECEIVER_EMAIL = 'sb-nckcy2223315@business.example.com'
 PAYPAL_RECEIVER_EMAIL = 'sb-ufygx2384593@business.example.com'
 PAYPAL_TEST = True
 
-BITPAY_TOKEN = 'FWUX5iqyA19qY1wVimA8eCW9shcVXNtjuQpX32BhbsRS'
-BITPAY_TEST = True
 SITE_ID = 2
