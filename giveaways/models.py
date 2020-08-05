@@ -20,6 +20,7 @@ class Giveaway(models.Model):
     giveaway_end_date = models.DateTimeField(null=True, blank=True)
     url = models.URLField(max_length=500, unique=True, blank=True, null=True)
     gleam_embed = models.TextField(null=True, blank=True)
+    gleam_graph_tags = models.TextField(null=True, blank=True)
     image = models.ImageField(null=True, blank=True)
     slug = models.SlugField(
         default="", editable=False, max_length=settings.GIVEAWAY_TITLE_MAX_LENGTH
