@@ -192,36 +192,30 @@ class PaymentView(View):
 
     def get(self, *args, **kwargs):
         order = get_user_pending_order(self.request)
-        # client_token = generate_client_token()
+        #client_token = generate_client_token()
         if order != 0:
             if order.billing_address:
                 context = {
                     'order': order,
                     'DISPLAY_COUPON_FORM': False,
                     'STRIPE_PUBLIC_KEY': settings.STRIPE_PUBLIC_KEY,
-                    # 'client_token': client_token,
-                    'client_token': create_ref_code(),
+                    #'client_token': client_token,
+                    'client_token':create_ref_code(),
                 }
                 userprofile = self.request.user.user_profile
                 if userprofile.one_click_purchasing:
                     # fetch the users card list
-                    try:
-                        cards = stripe.Customer.list_sources(
-                            userprofile.stripe_customer_id,
-                            limit=3,
-                            object='card'
-                        )
-                        card_list = cards['data']
-                        if len(card_list) > 0:
-                            # update the context with the default card
-                            context.update({
-                                'card': card_list[len(card_list)-1]
-                            })
-                    except Exception as e:
-                        logging.info(e)
-                        userprofile.one_click_purchasing = False
-                        userprofile.stripe_customer_id = ''
-                        userprofile.save()
+                    cards = stripe.Customer.list_sources(
+                        userprofile.stripe_customer_id,
+                        limit=3,
+                        object='card'
+                    )
+                    card_list = cards['data']
+                    if len(card_list) > 0:
+                        # update the context with the default card
+                        context.update({
+                            'card': card_list[0]
+                        })
                 return render(self.request, "shop_v2/stripe.html", context)
             else:
                 messages.warning(
@@ -268,7 +262,7 @@ class PaymentView(View):
                             currency='usd',
                             source=stripe_token,
                         )
-                    
+
                 if use_default or save:
                     # charge the customer because we cannot charge the token more than once
                     charge = stripe.Charge.create(
@@ -299,7 +293,7 @@ class PaymentView(View):
                 messages.warning(
                     self.request, "A serious error occurred. We have been notifed.")
                 return redirect("core:home")
-            
+
             # create the payment
             payment = Payment()
             if charge:

@@ -6,11 +6,10 @@ from django.utils import timezone
 import pytz
 
 PAYMENT_CHOICES = (
-    ('S', 'Stripe'),
     ('P', 'Paypal'),
     ('C', 'Bitcoin'),
+    ('S', 'Stripe'),
 )
-
 
 
 def present_or_future_date(value):
@@ -19,12 +18,15 @@ def present_or_future_date(value):
         raise forms.ValidationError("The date cannot be in the past!")
     return value
 
+
 def giveaway_day_range(value):
-    current_time_range = (timezone.now() - timezone.timedelta(hours=7)) + timezone.timedelta(days=settings.GIVEAWAY_DAY_RANGE)
+    current_time_range = (timezone.now() - timezone.timedelta(hours=7)) + timezone.timedelta(
+        days=settings.GIVEAWAY_DAY_RANGE)
     timezone_aware = current_time_range.replace(tzinfo=pytz.timezone(settings.TIME_ZONE))
     if not timezone_aware >= value >= timezone.now():
         raise forms.ValidationError(f"Date must be within {settings.GIVEAWAY_DAY_RANGE} days!")
     return value
+
 
 class CheckoutFormv2(forms.Form):
     billing_address = forms.CharField(required=False)
@@ -53,6 +55,7 @@ class CheckoutFormv2(forms.Form):
     #                                             validators=[])
     payment_option = forms.ChoiceField(
         widget=forms.RadioSelect, choices=PAYMENT_CHOICES)
+
 
 class CheckoutForm(forms.Form):
     shipping_address = forms.CharField(required=False)
