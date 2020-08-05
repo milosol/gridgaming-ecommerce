@@ -734,7 +734,7 @@ class PaypalPaymentProcess(View):
         paypal_dict = {
             'business': settings.PAYPAL_RECEIVER_EMAIL,
             'amount': order.get_total(),
-            'item_name': 'Order {}'.format(order.id),
+            'item_name': 'Order {}:{}'.format(order.id, order.get_purchased_items()),
             'invoice': str(order.id) + "_" + str(kind),
             'currency_code': 'USD',
             'notify_url': 'http://{}{}'.format(host, reverse('core:paypal-ipn')),
