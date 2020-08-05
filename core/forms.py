@@ -7,6 +7,7 @@ import pytz
 
 PAYMENT_CHOICES = (
     ('P', 'Paypal'),
+    ('C', 'Bitcoin'),
     ('S', 'Stripe'),
 )
 
@@ -107,3 +108,7 @@ class PaymentForm(forms.Form):
     stripeToken = forms.CharField(required=False)
     save = forms.BooleanField(required=False)
     use_default = forms.BooleanField(required=False)
+
+class BitpayForm(forms.Form):
+    invoice_id = forms.CharField(required=False)
+    order_id = forms.CharField(required=False)

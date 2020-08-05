@@ -1,6 +1,7 @@
 import random
 import string
-
+import json
+from django.http import HttpResponse
 import stripe
 from django.conf import settings
 from django.contrib import messages
@@ -16,11 +17,13 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView, DetailView, View
 from paypal.standard.forms import PayPalPaymentsForm
 from stripe import error
+from bitpay.client import Client
 
 from core.decorators import account_type_check
 from slotapp.views import del_timing
-from .forms import CheckoutFormv2, CouponForm, RefundForm, PaymentForm
+from .forms import CheckoutFormv2, CouponForm, RefundForm, PaymentForm, BitpayForm
 from .models import Item, OrderItem, Order, Address, Payment, Coupon, Refund, UserProfile, Slotitem, History
+import logging
 
 # from core.extras import transact, generate_client_token
 
@@ -153,6 +156,8 @@ class CheckoutViewV2(View):
                     return redirect('core:payment')
                 elif payment_option == 'P':
                     return redirect('core:process')
+                elif payment_option == 'C':
+                    return redirect('core:bitpay')
                 else:
                     messages.warning(
                         self.request, "Invalid payment option selected")
@@ -337,6 +342,145 @@ class PaymentView(View):
         return redirect("core:payment")
 
 
+class BitpayView(View):
+    """
+    View dedicated to handling payment for stripe
+    """
+
+    def get(self, *args, **kwargs):
+        order = get_user_pending_order(self.request)
+        if order != 0:
+            try:
+                tokens = {
+                    'pos': settings.BITPAY_TOKEN
+                }
+                # client = Client(api_uri="https://test.bitpay.com") #if api_uri is not passed, it defaults to "https://bitpay.com"
+                if settings.BITPAY_TEST == True:
+                    client = Client(api_uri="https://test.bitpay.com", tokens=tokens)
+                    amount = 1
+                else:
+                    client = Client(api_uri="https://bitpay.com", tokens=tokens)
+                    amount = int(order.get_total())
+                # client.create_token('pos')
+                # client.pair_pos_client("faD2tzX")
+                
+                host = self.request.get_host()
+                notify_url = 'https://{}{}'.format(host, reverse('core:bitpay-notify'))
+                
+                pos_data = {
+                    "price": amount, 
+                    "currency": "USD",
+                    "token": client.tokens['pos'],
+                    'orderId': order.id,
+                    'notificationURL': notify_url,
+                    'notificationEmail': '',
+                    'buyer': {
+                        'email': self.request.user.email,
+                        'notify': True
+                    },
+                }
+                # invoice = client.create_invoice(pos_data)
+                res = client.unsigned_request('/invoices', pos_data)
+                if res.ok:
+                    res = res.json()
+                    invoice_id = res['data']['id']
+                    context = {
+                        'order': order,
+                        'invoice_id': invoice_id,
+                        'order_id': order.id,
+                        'bitpay_env': 'test' if settings.BITPAY_TEST == True else 'prod'
+                    }
+                    return render(self.request, "shop_v2/bitpay.html", context)
+                else:
+                    messages.warning(self.request, "Creating invoice failed. Error:")
+                    return redirect("core:checkout")
+            except Exception as e:
+                logging.info(e)
+                messages.warning(self.request, "Creating bitpay invoice failed. Error:" + str(e))
+                return redirect("core:checkout")
+        else:
+            return redirect("core:home")
+
+    def post(self, *args, **kwargs):
+        try:
+            kind = self.request.session.get('kind', 0)
+            order = get_user_pending_order(self.request)
+            form = BitpayForm(self.request.POST)
+            if form.is_valid() and order != 0:
+                invoice_id = form.cleaned_data.get('invoice_id')
+                order_id = form.cleaned_data.get('order_id')
+                amount = int(order.get_total())
+                if str(order.id) == order_id:
+                    # create the payment
+                    payment = Payment()
+                    payment.payment_method = 'C'
+                    payment.user = self.request.user
+                    payment.amount = order.get_total()
+                    payment.save()
+
+                    # assign the payment to the order
+
+                    order_items = order.items.all()
+                    order_items.update(ordered=True)
+                    for item in order_items:
+                        item.save()
+
+                    order.ordered = True
+                    order.status = 'P'
+                    order.payment = payment
+                    order.ref_code = create_ref_code()
+                    order.save()
+                    History.objects.create(user=order.user, action='Purchased', item_str=order.get_purchased_items(),
+                                        reason="Bitcoin payment done", order_str=order.id)
+                if order.kind == 0:
+                    messages.success(self.request,
+                                    "Head over to the Launch Pad to start your giveaway! If no one is in line, you will start immediately!",
+                                    extra_tags='order_complete')
+                    # TODO Direct to payment statuses
+                    return redirect("retweet_picker:giveaway-list")
+                else:
+                    messages.success(self.request, "Payment succeed",
+                                    extra_tags='order_complete')
+                    # TODO Direct to payment statuses
+                    del_timing(order.user.id, 'bitcoin payment done')
+                    return redirect("core:user-orders")
+        except Exception as e:
+            logging.info(e)
+            messages.warning(self.request, "Invalid data received")
+        return redirect("core:home")
+
+@csrf_exempt
+def bitpay_notify(request):
+    try:
+        data = json.loads(request.body)
+        if data['status'] in ['confirmed', 'complete', 'paid']:
+            order_id = data['orderId']
+            orders = Order.objects.filter(id=order_id)
+            if orders.exists():
+                order = orders[0]
+                if order.ordered == True:
+                    return HttpResponse(status=200)
+                payment = Payment()
+                payment.payment_method = 'C'
+                payment.user = order.user
+                payment.amount = order.get_total()
+                payment.save()
+
+                order_items = order.items.all()
+                order_items.update(ordered=True)
+                for item in order_items:
+                    item.save()
+
+                order.ordered = True
+                order.status = 'P'
+                order.payment = payment
+                order.ref_code = create_ref_code()
+                order.save()
+                History.objects.create(user=order.user, action='Purchased', item_str=order.get_purchased_items(),
+                                    reason="Bitcoin payment done", order_str=order.id)
+    except Exception as e:
+        logging.info(e)
+    return HttpResponse(status=200)
 @method_decorator(account_type_check, name='dispatch')
 class HomeView(ListView):
     model = Item
@@ -563,7 +707,7 @@ def payment_done(request):
         context['ref_code'] = user_order.ref_code
         context['total_charged'] = user_order.get_total()
     except Exception as e:
-        print(f'Error on payment done page: {e}')
+        logging.info(f'Error on payment done page: {e}')
     return render(request, 'shop_v2/done.html', context=context)
 
 

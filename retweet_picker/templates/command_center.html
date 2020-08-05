@@ -68,15 +68,12 @@
                                 <thead>
                                 <tr>
                                     <th>Available</th>
-                                    <th>Order ID</th>
+                                    <th>Deadline</th>
                                     <th>Package</th>
                                     <th>Status</th>
                                     <th>Results</th>
-
-
                                     <th data-toggle="tooltip" data-placement="bottom" title="" data-original-title="Coordinated Universal Time (UTC). Map UTC to your timezone"><i class="far fa-question-circle text-info"></i> Expires On (UTC)</th>
                                     <th>Duration</th>
-
                                     {% if user.is_staff %}
                                     <th>Choose Winner</th>
                                     {% endif %}
@@ -93,9 +90,6 @@
                                                 <td name="launch">
 
                                                     <button type="button" onclick="confirmLaunch({{ order.order.id }}, {{ item.id }})" class="btn btn-primary">
-
-
-
                                                         Launch <span
                                                             class="badge badge-light">{{ item.available_to_run }}</span>
                                                         <span class="sr-only">Available Giveaways</span>
@@ -110,6 +104,9 @@
                                                 </td>
                                                 <td> Redeemed</td>
                                             {% endif %}
+                                            <td id="package"><a href="{{ item.item.get_absolute_url }}"
+                                                class="font-medium link">{{ item.item.title }}</a></td><!--{{ order.order.ref_code }}-->
+
                                         <!-- start status -->
                                             {% if order.order.status == "P" %}
                                                 <td><span
@@ -140,9 +137,7 @@
 
 
                                             <!-- TODO add different status mapped to displays here -->
-                                            <td id="package"><a href="{{ item.item.get_absolute_url }}"
-                                                   class="font-medium link">{{ item.item.title }}</a></td><!--{{ order.order.ref_code }}-->
-
+                                            
 
                   <!-- results start -->
                                             <td id="results">
