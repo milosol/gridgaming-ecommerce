@@ -3,6 +3,9 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 from django.shortcuts import redirect
+from giveaways.views import GiveawayDetailView
+
+from frontend.views import AdsView
 
 
 def bubble5000(request):
@@ -11,6 +14,7 @@ def bubble5000(request):
 
 urlpatterns = [
     path('gridadmin/', admin.site.urls),
+    path('ads.txt', AdsView.as_view()),
     path('accounts/', include('allauth.urls')),
     path('shop/', include('core.urls', namespace='shop')),
     path('contests/', include('retweet_picker.urls', namespace='contests')),
