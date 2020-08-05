@@ -10,6 +10,7 @@ from .views import (
     remove_from_cart,
     remove_single_item_from_cart,
     PaymentView,
+    BitpayView,
     #PaymentStripeView,
     #PaymentMainView,
     AddCouponView,
@@ -21,6 +22,7 @@ from .views import (
     PaypalPaymentProcess,
     payment_done,
     payment_canceled,
+    bitpay_notify
 )
 
 app_name = 'core'
@@ -41,6 +43,8 @@ urlpatterns = [
          name='remove-single-item-from-cart'),
     #path('payment/', login_required(PaymentStripeView.as_view()), name='payment-stripe'),
     path('payment/', login_required(PaymentView.as_view()), name='payment'),
+    path('bitpay/', login_required(BitpayView.as_view()), name='bitpay'),
+    path('bitpay-notify/', bitpay_notify, name='bitpay-notify'),
     path('request-refund/', login_required(RequestRefundView.as_view()), name='request-refund'),
     re_path(r'^paypal/',include('paypal.standard.ipn.urls')),
     re_path(r'^process/$', login_required(PaypalPaymentProcess.as_view()), name='process'),

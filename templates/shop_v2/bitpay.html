@@ -1,0 +1,78 @@
+{% extends "core/base.html" %}
+{% block extra_head %}
+    <style>
+    </style>
+{% endblock extra_head %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title text-cyan">Pay with Bitpay</h5>
+                    <div class="row">
+                        <div class="col-md-7">
+                            <a id="btn_bitpay">
+                                <img style="cursor: pointer;" src="https://test.bitpay.com/cdn/en_US/bp-btn-pay-currencies.svg">
+                            </a>
+                            <form action="." method="post" id="complete_form">
+                                {% csrf_token %}
+                                <input type="hidden" name="order_id" value="{{order_id}}">
+                                <input type="hidden" name="invoice_id" value="{{invoice_id}}">
+                                <div style="display: none;">
+                                    <button>Submit Payment</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}
+
+{% block extra_scripts %}
+    <script src="https://bitpay.com/bitpay.min.js"></script>
+    <script language="javascript">
+        var is_paid = false
+        var invoice_id = '{{invoice_id}}'
+        var order_id = '{{order_id}}'
+        var env = '{{bitpay_env}}'
+        function pay_complete(){
+            $("#complete_form").submit()
+        }
+        bitpay.onModalWillEnter(function() {
+            console.log('modal is opening');
+        });
+
+        bitpay.onModalWillLeave(function() {
+            console.log('modal is closing');
+        });
+
+        window.addEventListener("message", function (event) {
+          payment_status = event.data.status;
+          if (payment_status == "paid") {
+            is_paid = true
+            pay_complete()
+            return;
+          } 
+        }, false);
+        //show the order info
+        bitpay.onModalWillLeave(function () {
+            if (is_paid == false) {
+                console.log("bitpay paid false")
+            } 
+        });
+        //show the modal
+        if(env == 'test'){
+          bitpay.enableTestMode()
+        }
+        $(function(){
+            $("#btn_bitpay").click(function(){
+                bitpay.showInvoice(invoice_id)
+            })
+        })
+        
+      </script>
+{% endblock extra_scripts %}

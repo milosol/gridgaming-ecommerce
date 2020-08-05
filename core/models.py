@@ -46,7 +46,8 @@ SCHEDULER_QUEUE = (
 PAYMENT_METHOD = (
     ('S', 'Stripe'),
     ('B', 'Braintree'),
-    ('P', 'Paypal')
+    ('P', 'Paypal'),
+    ('C', 'Bitcoin')
 )
 
 
