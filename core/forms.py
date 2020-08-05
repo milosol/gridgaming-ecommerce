@@ -6,8 +6,8 @@ from django.utils import timezone
 import pytz
 
 PAYMENT_CHOICES = (
-    ('S', 'Stripe'),
     ('P', 'Paypal'),
+    ('S', 'Stripe'),
 )
 
 
@@ -53,7 +53,7 @@ class CheckoutFormv2(forms.Form):
     #                                             #TODO Add validator soon
     #                                             validators=[])
     payment_option = forms.ChoiceField(
-        widget=forms.RadioSelect, choices=PAYMENT_CHOICES)
+        widget=forms.Select, choices=PAYMENT_CHOICES)
 
 
 class CheckoutForm(forms.Form):
