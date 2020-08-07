@@ -16,11 +16,11 @@
                     <div class="card">
                     {% if giveaway.url %}
                           <a href="{{ giveaway.url }}" target="_blank">
-                         <a href="#" target="_blank">
-                    {% else %}
+                    {% elif not giveaway.url and not giveaway.gleam_embed %}
                           <a data-toggle="popover" data-placement="bottom" data-original-title="No link available!" data-content="This giveaway doesn't have a link provided yet. Please check back later.">
-                    {% endif %}
+                    {% else %}
                          <a href="{{ giveaway.get_absolute_url }}">
+                    {% endif %}
                             {% if giveaway.image %}
                                 <!-- Used for absolute url with slug -->
                                 <img class="card-img-top img-fluid" src="{{ giveaway.image.url }}"
@@ -41,16 +41,12 @@
                                 {% else %}
                                     <br>
                                     <a href="{{ giveaway.get_absolute_url }}"><button type="button" class="btn btn-block btn-sm btn-outline-dark-warning"><div class="spinner-grow spinner-grow-sm text-danger" role="status"></div> <b>LIVE</b><br>{{ giveaway.giveaway_end_date }} EST</button></a>
-{#                                    <span class="text-muted"><b>LIVE</b> </span>#}
-
 
                                 {% endif %}
 
 
                             </div>
                         </div>
-                        <!--<a class="text-center" href="{{ giveaway.get_absolute_url }}"><button type="button" class="btn waves-effect waves-light btn-rounded btn-outline-success">See More</button></a>-->
-
                     </div>
                     {% if forloop.counter|divisibleby:3 %}
                         </div>
