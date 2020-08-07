@@ -16,7 +16,8 @@ from .process import ProcessRetrievedTweets
 from core.decorators import account_type_check, cleared_hot_check
 from django.utils.decorators import method_decorator
 from django.http import JsonResponse
-
+from giveaways.models import Giveaway
+from .utils import giveaway_ends
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 import time
