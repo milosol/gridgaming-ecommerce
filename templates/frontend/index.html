@@ -100,6 +100,7 @@ twq('track','PageView');
                             <li><a href="#features" class="scroll">Process</a></li>
                             <li><a href="#additional" class="scroll">About</a></li>
                             <li><a href="{% url 'core:home' %}" class="scroll">Sponsor Giveaway</a></li>
+                            <li><a href="{% url 'giveaways:giveaway-list' %}" class="scroll">Current Giveaways</a></li>
 {#                            <li><a href="#team" class="scroll">Team</a></li>#}
 {#                            <li><a href="#news" class="scroll">News</a></li>#}
                             {% if user.is_authenticated %}
