@@ -26,8 +26,13 @@
                                 <img class="card-img-top img-fluid" src="{{ giveaway.image.url }}"
                                      alt="Image for {{ giveaway.title }}">
                             {% else %}
+                                {% if giveaway.sponsored %}
+                                <img class="card-img-top img-fluid" src="{% static 'img/sponsored_giveaway_gg.png' %}"
+                                     alt="Image for {{ giveaway.title }}">
+                                    {% else %}
                                 <img class="card-img-top img-fluid" src="{% static 'img/gridgaming_giveaway_default.png' %}"
                                      alt="Image for {{ giveaway.title }}">
+                                    {% endif %}
                             {% endif %}
                         </a>
                         <div class="card-body d-flex flex-column">
