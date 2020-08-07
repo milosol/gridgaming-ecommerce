@@ -136,6 +136,7 @@ class GiveawayManager:
             giveaway_title = f'${self.giveaway_amount} Giveaway'
             Giveaway.objects.create(title=giveaway_title,
                                     description=f'${self.giveaway_amount} lasting for {display_time(self.duration)}',
+                                    url=self.build_tweet_url(),
                                     giveaway_end_date=giveaway_ends(self.duration),
                                     visible=True,
                                     sponsored=True)
@@ -253,8 +254,8 @@ class GiveawayManager:
 
     def run_pipeline(self):
         if self.new_giveaway:
-            self.create_giveaway_entry()
             self.launch_giveaway()
+            self.create_giveaway_entry()
             if not self.scheduled_task:
                 self.sleep_for_duration()
         self.retrieve_tweets()

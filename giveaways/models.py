@@ -4,15 +4,6 @@ from django.urls import reverse
 from django.utils.text import slugify
 from django.utils import timezone
 
-# class Giveaway(models.Model):
-#     title = models.CharField(max_length=200)
-#     url = models.URLField(max_length=500, unique=True, blank=True, null=True)
-#     image = models.ImageField(null=True, blank=True)
-#
-#     def get_absolute_url(self):
-#         return reverse("giveaways:giveaway-detail", args=[str(self.id)])
-
-
 class Giveaway(models.Model):
     """Uses primary key and slug in URL"""
     title = models.CharField(max_length=settings.GIVEAWAY_TITLE_MAX_LENGTH)
