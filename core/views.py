@@ -727,6 +727,7 @@ class PaypalPaymentProcess(View):
         kind = self.request.session.get('kind', 0)
         order = Order.objects.get(user=self.request.user, ordered=False, kind=kind)
         host = request.get_host()
+        
         if kind == 0:
             return_url = 'http://{}{}'.format(host, reverse('core:done'))
         else:
