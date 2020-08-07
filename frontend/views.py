@@ -77,7 +77,7 @@ def account_type(request):
             role = get_object_or_404(UserRoles, role_name=form.cleaned_data['user_roles'])
             request.user.account_type = role
             request.user.save()
-            messages.success(request, "All set! You are ready to sponsor!")
+            messages.success(request, "All set! Welcome to the Grid.")
             return HttpResponseRedirect(reverse('core:home'))
         else:
             print(form.errors)
