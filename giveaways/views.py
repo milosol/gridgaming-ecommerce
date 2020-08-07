@@ -17,7 +17,7 @@ class GiveawayDetailView(DetailView):
 
 class GiveawayListView(ListView):
     model = Giveaway
-    ordering = ['giveaway_end_date']
+    ordering = ['-giveaway_end_date']
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

@@ -11777,7 +11777,13 @@ body[data-theme="dark"] {
   /* Settings for the  element */
   /* Body bg and color */
   color: #b2b9bf;
-  background: #212529;
+  /*background: #212529;*/
+
+
+
+
+
+
   /* scafholdings scss override */
   /* Background colors */
   /* Background Alt colors */
@@ -11875,7 +11881,23 @@ body[data-theme="dark"] {
   body[data-theme="dark"] .wizard:not(.wizard-circle) > .actions .disabled a:active,
   body[data-theme="dark"] .wizard-content .wizard > .steps .step,
   body[data-theme="dark"] .cke_toolbar_separator {
-    background-color: #323743; }
+ /*background-color: #1d2126;*/
+/* Permalink - use to edit and share this gradient: https://colorzilla.com/gradient-editor/#000000+0,000000+66,000000+83,09606a+100 */
+background: rgb(0,0,0); /* Old browsers */
+background: -moz-linear-gradient(top,  rgba(0,0,0,1) 0%, rgba(0,0,0,1) 66%, rgba(0,0,0,1) 83%, rgba(9,96,106,1) 100%); /* FF3.6-15 */
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(0,0,0,1)), color-stop(66%,rgba(0,0,0,1)), color-stop(83%,rgba(0,0,0,1)), color-stop(100%,rgba(9,96,106,1))); /* Chrome4-9,Safari4-5 */
+background: -webkit-linear-gradient(top,  rgba(0,0,0,1) 0%,rgba(0,0,0,1) 66%,rgba(0,0,0,1) 83%,rgba(9,96,106,1) 100%); /* Chrome10-25,Safari5.1-6 */
+background: -o-linear-gradient(top,  rgba(0,0,0,1) 0%,rgba(0,0,0,1) 66%,rgba(0,0,0,1) 83%,rgba(9,96,106,1) 100%); /* Opera 11.10-11.50 */
+background: -ms-linear-gradient(top,  rgba(0,0,0,1) 0%,rgba(0,0,0,1) 66%,rgba(0,0,0,1) 83%,rgba(9,96,106,1) 100%); /* IE10 preview */
+background: linear-gradient(to bottom,  rgba(0,0,0,1) 0%,rgba(0,0,0,1) 66%,rgba(0,0,0,1) 83%,rgba(9,96,106,1) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#000000', endColorstr='#09606a',GradientType=0 ); /* IE6-9 */
+
+
+
+
+background-attachment:fixed;
+
+  }
   body[data-theme="dark"] .fc td, body[data-theme="dark"] .fc th {
     background: #323743 !important;
     border-color: #272b34 !important; }
