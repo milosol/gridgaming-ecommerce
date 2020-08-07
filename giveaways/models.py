@@ -22,7 +22,7 @@ class Giveaway(models.Model):
     gleam_embed = models.TextField(null=True, blank=True)
     gleam_graph_tags = models.TextField(null=True, blank=True)
     image = models.ImageField(null=True, blank=True)
-    visible = models.BooleanField(default=False)
+    visible = models.BooleanField(default=True)
     sponsored = models.BooleanField(default=False)
     slug = models.SlugField(
         default="", editable=False, max_length=settings.GIVEAWAY_TITLE_MAX_LENGTH

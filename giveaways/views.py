@@ -18,11 +18,10 @@ class GiveawayDetailView(DetailView):
 class GiveawayListView(ListView):
     model = Giveaway
     ordering = ['-giveaway_end_date']
+    queryset = Giveaway.objects.filter(visible=True)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # context["giveawaypkandslug_list"] = GiveawayPkAndSlug.objects.all()
-
         return context
 
 

@@ -6,7 +6,7 @@ from .models import Giveaway
 
 
 class GiveawayAdmin(admin.ModelAdmin):
-    list_display = ['title', 'description', 'url', 'gleam_embed', 'gleam_graph_tags', 'image', 'giveaway_end_date']
+    list_display = ['title', 'description', 'url', 'gleam_embed', 'gleam_graph_tags', 'image', 'sponsored','visible', 'giveaway_end_date']
 
 
 admin.site.register(Giveaway, GiveawayAdmin)
