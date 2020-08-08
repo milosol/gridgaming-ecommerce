@@ -3,25 +3,22 @@ import sys
 
 from django.contrib import messages
 from django.db.models import Prefetch
+from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.shortcuts import render
+from django.utils.decorators import method_decorator
 from django.views.generic import ListView
 
+from core.decorators import account_type_check, cleared_hot_check
 from core.models import Order, OrderItem
-# from retweet_picker.manager import GiveawayManager
-from .tasks import start_giveaway_bg, retrieve_tweets_choose_winner_job
 from .forms import RetweetChooserForm
 from .models import GiveawayResults, TwitterGiveawayID, TwitterGiveaway, GiveawayStats
 from .process import ProcessRetrievedTweets
-from core.decorators import account_type_check, cleared_hot_check
-from django.utils.decorators import method_decorator
-from django.http import JsonResponse
-from giveaways.models import Giveaway
-from .utils import giveaway_ends
+from .tasks import start_giveaway_bg, retrieve_tweets_choose_winner_job
+
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 import time
-from datetime import datetime
 import django_rq
 
 
