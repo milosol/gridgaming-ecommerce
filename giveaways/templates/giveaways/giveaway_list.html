@@ -42,10 +42,10 @@
                             <div class="col-md6 mt-auto">
 
                                 {% if giveaway.giveaway_ended %}
-                                    <a href="{{ giveaway.get_absolute_url }}"><button type="button" class="btn btn-block btn-sm btn-outline-secondary"><i class="fa fa-check"></i> Concluded <br>{{ giveaway.giveaway_end_date }} EST</button></a>
+                                    <a href="{{ giveaway.get_display_url }}"><button type="button" class="btn btn-block btn-sm btn-outline-secondary"><i class="fa fa-check"></i> Concluded <br>{{ giveaway.giveaway_end_date }} EST</button></a>
                                 {% else %}
                                     <br>
-                                    <a href="{{ giveaway.get_absolute_url }}"><button type="button" class="btn btn-block btn-sm btn-outline-dark-warning"><div class="spinner-grow spinner-grow-sm text-danger" role="status"></div> <b>LIVE</b><br>{{ giveaway.giveaway_end_date }} EST</button></a>
+                                    <a href="{{ giveaway.get_display_url }}"><button type="button" class="btn btn-block btn-sm btn-outline-dark-warning"><div class="spinner-grow spinner-grow-sm text-danger" role="status"></div> <b>LIVE</b><br>{{ giveaway.giveaway_end_date }} EST</button></a>
 
                                 {% endif %}
 

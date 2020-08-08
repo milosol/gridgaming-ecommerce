@@ -22,6 +22,15 @@ class Giveaway(models.Model):
     def __str__(self):
         return self.title
 
+    def get_display_url(self):
+        if self.url:
+            return self.url
+        elif self.gleam_embed:
+            return self.get_absolute_url()
+        else:
+            return '#'
+
+
     def get_absolute_url(self):
         kwargs = {"pk": self.id, "slug": self.slug}
         return reverse("giveaways:giveaway-detail", kwargs=kwargs)
