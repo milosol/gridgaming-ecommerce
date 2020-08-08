@@ -170,12 +170,8 @@ def launch_giveaway(request, order_id, item_id):
 
 def prelaunch_validator(request, order_id, item_id):
     queryset = Order.objects.filter(ordered=True,
-                                    id=request.user.id, kind=1).prefetch_related(Prefetch("items", queryset=OrderItem.
-                                                                                  objects.filter(
-        item_id=item_id).select_related(
-        "item"),
-                                                                                  to_attr='ordered_items'
-                                                                                  ))
+                                    id=request.user.id, kind=1).prefetch_related(Prefetch("items", queryset=OrderItem.objects.filter(item_id=item_id).select_related("item"),
+                                                                                  to_attr='ordered_items'))
     for order in queryset:
         for order_item in order.ordered_items:
             if order_item.available_to_run > 0:
