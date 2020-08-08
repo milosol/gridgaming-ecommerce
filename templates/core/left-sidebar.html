@@ -2,62 +2,109 @@
 <!-- Left Sidebar - style you can find in sidebar.scss  -->
 <!-- ============================================================== -->
 {% if user.is_authenticated %}
-<aside class="left-sidebar" data-sidebarbg="skin2">
-    <!-- Sidebar scroll-->
-    <div class="scroll-sidebar">
-        <!-- Sidebar navigation-->
-        <nav class="sidebar-nav">
-            <ul id="sidebarnav">
-                <!-- User Profile-->
-                <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark" data-toggle="tooltip" data-placement="bottom" title data-original-title="Grow your twitter following and brand!" href="{% url 'core:home' %}" aria-expanded="false"><i class="mdi mdi-twitter"></i><span class="hide-menu">Sponsor</span></a>
-                <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark" data-toggle="tooltip" data-placement="bottom" title data-original-title="Launch your giveaway after you purchase" href="{% url 'retweet_picker:giveaway-list' %}" aria-expanded="false"><i class="mdi mdi-rocket"></i><span class="hide-menu">Launch</span></a>
-                <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark" data-toggle="tooltip" data-placement="bottom" title data-original-title="Join a community giveaway (limited availability)" href="{% url 'slotapp:first_page' %}" aria-expanded="false"><i class="mdi mdi-human-handsup"></i><span class="hide-menu">Community</span></a>
-                    <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark" data-toggle="tooltip" data-placement="bottom" title data-original-title="Review your orders. Email business@gridgaming.io if you need support" href="{% url 'core:user-orders' %}" aria-expanded="false"><i class="mdi mdi-reorder-horizontal"></i><span class="hide-menu">Orders</span></a>
-                    {#                <li class="sidebar-item"> <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false"><i class="mdi mdi-gauge"></i><span class="hide-menu">Dashboard </span></a>#}
+    <aside class="left-sidebar" data-sidebarbg="skin1">
+        <!-- Sidebar scroll-->
+        <div class="scroll-sidebar">
+            <!-- Sidebar navigation-->
+            <nav class="sidebar-nav">
+                <ul id="sidebarnav">
+                    <!-- User Profile-->
+                    <li class="sidebar-item"><a class="sidebar-link waves-effect waves-dark" data-toggle="tooltip"
+                                                data-placement="bottom" title
+                                                data-original-title="Grow your twitter following and brand!"
+                                                href="{% url 'core:home' %}" aria-expanded="false"><i
+                            class="mdi mdi-twitter"></i><span class="hide-menu">Sponsor</span></a></li>
+                    <li class="sidebar-item"><a class="sidebar-link waves-effect waves-dark" data-toggle="tooltip"
+                                                data-placement="bottom" title
+                                                data-original-title="Launch your giveaway after you purchase"
+                                                href="{% url 'retweet_picker:giveaway-list' %}" aria-expanded="false"><i
+                        class="mdi mdi-rocket"></i><span class="hide-menu">Launch</span></a></li>
+                    <li class="sidebar-item"><a class="sidebar-link waves-effect waves-dark" data-toggle="tooltip"
+                                                data-placement="bottom" title
+                                                data-original-title="Join a community giveaway (limited availability)"
+                                                href="{% url 'slotapp:first_page' %}" aria-expanded="false"><i
+                        class="mdi mdi-human-handsup"></i><span class="hide-menu">Community</span></a></li>
+                    <li class="sidebar-item"><a class="sidebar-link waves-effect waves-dark" data-toggle="tooltip"
+                                                data-placement="bottom" title
+                                                data-original-title="Review your orders. Email business@gridgaming.io if you need support"
+                                                href="{% url 'core:user-orders' %}" aria-expanded="false"><i
+                        class="mdi mdi-reorder-horizontal"></i><span class="hide-menu">Orders</span></a></li>
+                    <li class="sidebar-item"><a class="sidebar-link waves-effect waves-dark" data-toggle="tooltip"
+                                data-placement="bottom" title
+                                data-original-title="All current giveaways!"
+                                href="{% url 'giveaways:giveaway-list' %}" aria-expanded="false"><i
+                        class="mdi mdi-cash"></i><span class="hide-menu">Giveaways</span></a>
+                        {#                <li class="sidebar-item"> <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false"><i class="mdi mdi-gauge"></i><span class="hide-menu">Dashboard </span></a>#}
                         {% if request.user.is_staff %}
+                            <li class="sidebar-item nav-item dropdown">
+                                <a class="nav-link dropdown-toggle sidebar-link waves-effect waves-dark text-light-warning"
+                                   href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
+                                   aria-haspopup="true" aria-expanded="false">
+                                    STAFF
+                                </a>
+                                <div class="sidebar-item dropdown-menu" aria-labelledby="navbarDropdown">
+                                    <a class="dropdown-item sidebar-link waves-effect waves-dark" data-toggle="tooltip"
+                                       data-placement="bottom" title
+                                       data-original-title="Staff only: Review all community orders"
+                                       href="{% url 'core:all-orders' %}" aria-expanded="false"><i
+                                            class="mdi mdi-marker-check"></i><span class="hide-menu">All Community Orders</span></a>
+                                    <a class="dropdown-item sidebar-link waves-effect waves-dark" data-toggle="tooltip"
+                                       data-placement="bottom" title
+                                       data-original-title="Account information about community giveaway participants"
+                                       href="{% url 'core:accounts' %}" aria-expanded="false"><i
+                                            class="mdi mdi-marker-check"></i><span class="hide-menu">Accounts</span></a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item sidebar-link waves-effect waves-dark" data-toggle="tooltip"
+                                       data-placement="bottom" title
+                                       data-original-title="Set available or disable items"
+                                       href="{% url 'core:disable' %}" aria-expanded="false"><i
+                                            class="mdi mdi-block-helper"></i><span
+                                            class="hide-menu">Available/Disable</span></a>
+                                </div>
+                            </li>
                             <!-- <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark" href="https://www.gridgaming.io/gridadmin/core/order/" aria-expanded="false"><i class="mdi zmdi-money-box"></i><span class="hide-menu">Orders</span></a> -->
-                            <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark" data-toggle="tooltip" data-placement="bottom" title data-original-title="Staff only: Review all community orders" href="{% url 'core:all-orders' %}" aria-expanded="false"><i class="mdi mdi-marker-check"></i><span class="hide-menu">All Community Orders</span></a>
-                            <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark" data-toggle="tooltip" data-placement="bottom" title data-original-title="Account information about community giveaway participants" href="{% url 'core:accounts' %}" aria-expanded="false"><i class="mdi mdi-marker-check"></i><span class="hide-menu">Accounts</span></a>
-                            <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark" data-toggle="tooltip" data-placement="bottom" title data-original-title="Set available or disable items" href="{% url 'core:disable' %}" aria-expanded="false"><i class="mdi mdi-block-helper"></i><span class="hide-menu">Available/Disable</span></a>
+                            {#                            <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark" data-toggle="tooltip" data-placement="bottom" title data-original-title="Staff only: Review all community orders" href="{% url 'core:all-orders' %}" aria-expanded="false"><i class="mdi mdi-marker-check"></i><span class="hide-menu">All Community Orders</span></a>#}
+                            {#                            <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark" data-toggle="tooltip" data-placement="bottom" title data-original-title="Account information about community giveaway participants" href="{% url 'core:accounts' %}" aria-expanded="false"><i class="mdi mdi-marker-check"></i><span class="hide-menu">Accounts</span></a>#}
+                            {#                            <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark" data-toggle="tooltip" data-placement="bottom" title data-original-title="Set available or disable items" href="{% url 'core:disable' %}" aria-expanded="false"><i class="mdi mdi-block-helper"></i><span class="hide-menu">Available/Disable</span></a>#}
                         {% endif %}
-        
-                        <!--<li class="nav-small-cap"><i class="mdi mdi-dots-horizontal"></i> <span class="hide-menu">Personal</span></li>-->
-{#                    <ul aria-expanded="false" class="collapse  first-level">#}
-{#                        <li class="sidebar-item">#}
-{#                            <a href="index.html" class="sidebar-link">#}
-{#                                <i class="mdi mdi-adjust"></i>#}
-{#                                <span class="hide-menu"> Dashboard 1 </span>#}
-{#                            </a>#}
-{#                        </li>#}
-{#                        <li class="sidebar-item">#}
-{#                            <a href="index2.html" class="sidebar-link">#}
-{#                                <i class="mdi mdi-adjust"></i>#}
-{#                                <span class="hide-menu"> Dashboard 2 </span>#}
-{#                            </a>#}
-{#                        </li>#}
-{#                        <li class="sidebar-item">#}
-{#                            <a href="index3.html" class="sidebar-link">#}
-{#                                <i class="mdi mdi-adjust"></i>#}
-{#                                <span class="hide-menu"> Dashboard 3 </span>#}
-{#                            </a>#}
-{#                        </li>#}
-{#                    </ul>#}
-{#                </li>#}
-{##}
-{#                <li class="sidebar-item"> <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false"><i class="mdi mdi-trending-up"></i><span class="hide-menu">Stats</span></a>#}
-{#                    <ul aria-expanded="false" class="collapse first-level">#}
-{#                        <li class="sidebar-item"><a href="javascript:void(0)" class="sidebar-link"><i class="mdi mdi-octagram"></i><span class="hide-menu"> item 1.1</span></a></li>#}
-{##}
-{#                        </li>#}
-{#                        <li class="sidebar-item"><a href="javascript:void(0)" class="sidebar-link"><i class="mdi mdi-playlist-check"></i><span class="hide-menu"> item 1.4</span></a></li>#}
-{#                    </ul>#}
-{#                </li>#}
-            </ul>
-        </nav>
-        <!-- End Sidebar navigation -->
-    </div>
-    <!-- End Sidebar scroll-->
-</aside>
+
+                    <!--<li class="nav-small-cap"><i class="mdi mdi-dots-horizontal"></i> <span class="hide-menu">Personal</span></li>-->
+                    {#                    <ul aria-expanded="false" class="collapse  first-level">#}
+                    {#                        <li class="sidebar-item">#}
+                    {#                            <a href="index.html" class="sidebar-link">#}
+                    {#                                <i class="mdi mdi-adjust"></i>#}
+                    {#                                <span class="hide-menu"> Dashboard 1 </span>#}
+                    {#                            </a>#}
+                    {#                        </li>#}
+                    {#                        <li class="sidebar-item">#}
+                    {#                            <a href="index2.html" class="sidebar-link">#}
+                    {#                                <i class="mdi mdi-adjust"></i>#}
+                    {#                                <span class="hide-menu"> Dashboard 2 </span>#}
+                    {#                            </a>#}
+                    {#                        </li>#}
+                    {#                        <li class="sidebar-item">#}
+                    {#                            <a href="index3.html" class="sidebar-link">#}
+                    {#                                <i class="mdi mdi-adjust"></i>#}
+                    {#                                <span class="hide-menu"> Dashboard 3 </span>#}
+                    {#                            </a>#}
+                    {#                        </li>#}
+                    {#                    </ul>#}
+                    {#                </li>#}
+                    {##}
+                    {#                <li class="sidebar-item"> <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false"><i class="mdi mdi-trending-up"></i><span class="hide-menu">Stats</span></a>#}
+                    {#                    <ul aria-expanded="false" class="collapse first-level">#}
+                    {#                        <li class="sidebar-item"><a href="javascript:void(0)" class="sidebar-link"><i class="mdi mdi-octagram"></i><span class="hide-menu"> item 1.1</span></a></li>#}
+                    {##}
+                    {#                        </li>#}
+                    {#                        <li class="sidebar-item"><a href="javascript:void(0)" class="sidebar-link"><i class="mdi mdi-playlist-check"></i><span class="hide-menu"> item 1.4</span></a></li>#}
+                    {#                    </ul>#}
+                    {#                </li>#}
+                </ul>
+            </nav>
+            <!-- End Sidebar navigation -->
+        </div>
+        <!-- End Sidebar scroll-->
+    </aside>
 {% endif %}
 <!-- ============================================================== -->
 <!-- End Left Sidebar - style you can find in sidebar.scss  -->

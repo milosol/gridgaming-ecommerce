@@ -12,8 +12,8 @@ from retweet_picker.bot_check import BotCheck
 from retweet_picker.models import GiveawayResults, GiveawayStats, TwitterGiveawayID, ContestUserAccounts
 from retweet_picker.process import ProcessRetrievedTweets
 from retweet_picker.twitter_interact import TwitterInteract
-from .utils import display_time
-
+from .utils import display_time, giveaway_ends
+from giveaways.models import Giveaway
 
 class TwitterUser(TwitterInteract):
 
@@ -130,6 +130,19 @@ class GiveawayManager:
         tweet_text = f"I'll give ${amount} to a random user who retweets this tweet within the next {beautiful_time}.\n\nMust be following {sponsor_text}.\n\nID:{giveaway_id}"
         return tweet_text
 
+    def create_giveaway_entry(self):
+        try:
+
+            giveaway_title = f'${self.giveaway_amount} Giveaway'
+            Giveaway.objects.create(title=giveaway_title,
+                                    description=f'${self.giveaway_amount} lasting for {display_time(self.duration)}',
+                                    giveaway_end_date=giveaway_ends(self.duration),
+                                    visible=True,
+                                    sponsored=True)
+        except Exception as e:
+            print('Error creating giveaway entry')
+            print(e)
+
     def launch_giveaway(self):
         """ Launch a giveaway with the wording for the tweet """
         self.start_time = datetime.datetime.now()
@@ -240,6 +253,7 @@ class GiveawayManager:
 
     def run_pipeline(self):
         if self.new_giveaway:
+            self.create_giveaway_entry()
             self.launch_giveaway()
             if not self.scheduled_task:
                 self.sleep_for_duration()

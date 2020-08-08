@@ -9,38 +9,16 @@
             {{ object.gleam_graph_tags|safe }}
         {% endif %}
     </head>
-    <div class="row">
-                                    {% if object.gleam_embed %}
-                                {{ object.gleam_embed|safe }}
-                            {% endif %}
-    </div>
-    <div class="row">
-        <!-- Column -->
-        <div class="col-lg-12">
-            <div class="card">
-                <div class="card-body">
-                    {#                    <h3 class="card-title text-warning">{{ object.title }}</h3>#}
-                    {#                    <h6 class="card-subtitle">Ends {{ giveaway.giveaway_end_date }}</h6>#}
-                    <div class="row">
-                        {#                        <div class="col-lg-3 col-md-3 col-sm-6">#}
-                        {#                            {% if giveaway.image %}#}
-                        {#                                <div class="white-box text-center"><img src="{{ object.image.url }}" class="img-fluid">#}
-                        {#                                </div>#}
-                        {#                            {% else %}#}
-                        {#                                <div class="white-box text-center"><img src="{% static 'img/default_giveaway_gg.jpg' %}"#}
-                        {#                                                                        class="img-fluid"></div>#}
-                        {#                            {% endif %}#}
-                        {#                            </div>#}
-                        <div class="col-lg-9 col-md-9 col-sm-6">
-                            <h4 class="box-title mt-5 text-success center">{{ object.title }}</h4>
-                            <p>{{ object.description }}</p>
+{#<div class="text-center mb-4">#}
+{#<a href="{% url 'giveaways:giveaway-list' %}"><button type="button" class="btn btn-success btn-circle-lg">#}
+{#    <i class="fa fa-arrow-circle-left"></i> Back to Giveaways#}
+{#                                </button></a>#}
+{#</div>#}
 
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Column -->
-    </div>
+    {% if object.gleam_embed %}
+        {{ object.gleam_embed|safe }}
+    {% endif %}
+
+
 
 {% endblock %}

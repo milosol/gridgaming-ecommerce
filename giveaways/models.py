@@ -2,7 +2,7 @@ from django.conf import settings
 from django.db import models
 from django.urls import reverse
 from django.utils.text import slugify
-
+from django.utils import timezone
 
 # class Giveaway(models.Model):
 #     title = models.CharField(max_length=200)
@@ -22,6 +22,8 @@ class Giveaway(models.Model):
     gleam_embed = models.TextField(null=True, blank=True)
     gleam_graph_tags = models.TextField(null=True, blank=True)
     image = models.ImageField(null=True, blank=True)
+    visible = models.BooleanField(default=True)
+    sponsored = models.BooleanField(default=False)
     slug = models.SlugField(
         default="", editable=False, max_length=settings.GIVEAWAY_TITLE_MAX_LENGTH
     )
@@ -32,6 +34,10 @@ class Giveaway(models.Model):
     def get_absolute_url(self):
         kwargs = {"pk": self.id, "slug": self.slug}
         return reverse("giveaways:giveaway-detail", kwargs=kwargs)
+
+    @property
+    def giveaway_ended(self):
+        return timezone.now() > self.giveaway_end_date
 
     def save(self, *args, **kwargs):
         value = self.title

@@ -5,4 +5,7 @@ register = template.Library()
 
 @register.filter
 def index(indexable, i):
-    return indexable[i]
+    try:
+        return indexable[i]
+    except:
+        return indexable[0]
