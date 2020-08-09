@@ -3,7 +3,75 @@
 <!DOCTYPE html>
 <html dir="ltr" lang="en">
 
-{% include "core/header.html" %}
+{#{% include "core/header.html" %}#}
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- Tell the browser to be responsive to screen width -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Build your Twitter following rapidly, while marketing your brand and giving back to the world! Takes minutes to start.">
+    <meta name="author" content="DNP3">
+    {% block extra_head_tags %}
+
+    {% endblock %}
+    <!-- Favicon icon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'assets/images/apple-touch-icon.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'assets/images/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'assets/images/favicon-16x16.png' %}">
+    <link rel="manifest" href="{% static 'assets/images/site.webmanifest'%}">
+    <title>GridGamingIO - Grow your brand while giving back to the world.</title>
+	<link rel="canonical" href="https://www.wrappixel.com/templates/xtremeadmin/" />
+    <!-- google adsense -->
+    <script data-ad-client="ca-pub-2399779593674817" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+    <!-- end google adsense -->
+
+    <!-- This Page CSS -->
+    <link href="{% static 'assets/libs/magnific-popup/dist/magnific-popup.css' %}" rel="stylesheet">
+
+    <!-- Sweet Alerts -->
+    <script src="{% static 'assets/libs/sweetalert2/dist/sweetalert2.all.min.js' %}"></script>
+
+    <!-- Custom CSS -->
+    <link href="{% static 'assets/libs/sweetalert2/dist/sweetalert2.min.css' %}">
+
+{#    <link href="{% static 'dist/css/style.min.css'%}" rel="stylesheet">#}
+    <link href="{% static 'dist/css/style.css'%}" rel="stylesheet">
+    <link href="{% static 'css/gridgaming.css' %}" rel="stylesheet">
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]-->
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-167140459-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-167140459-1');
+</script>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-5B62NKF');</script>
+<!-- End Google Tag Manager -->
+<!-- Twitter universal website tag code -->
+<script>
+!function(e,t,n,s,u,a){e.twq||(s=e.twq=function(){s.exe?s.exe.apply(s,arguments):s.queue.push(arguments);
+},s.version='1.1',s.queue=[],u=t.createElement(n),u.async=!0,u.src='//static.ads-twitter.com/uwt.js',
+a=t.getElementsByTagName(n)[0],a.parentNode.insertBefore(u,a))}(window,document,'script');
+// Insert Twitter Pixel ID and Standard Event data below
+twq('init','o3wjq');
+twq('track','PageView');
+</script>
+<!-- End Twitter universal website tag code -->
+</head>
+<![endif]-->
 {% block extra_css %}
 
 {% endblock extra_css %}

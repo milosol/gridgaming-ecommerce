@@ -1,0 +1,154 @@
+{#<script>#}
+{#$(function () {#}
+{#	var austDay = new Date();#}
+{#	austDay = new Date(austDay.getFullYear() + 1, 1 - 1, 26);#}
+{#	$('#defaultCountdown').countdown({until: austDay});#}
+{#	$('#year').text(austDay.getFullYear());#}
+{#});#}
+{#</script>#}
+{#</head>#}
+{#<script>#}
+{#    function makeTimer() {#}
+{#        var endTime = new Date({{ giveaway.giveaway_end_date|date:"U" }} * 1000)#}
+{#        ;#}
+{##}
+{#        endTime = (Date.parse(endTime) / 1000);#}
+{##}
+{#        var now = new Date();#}
+{#        now = (Date.parse(now) / 1000);#}
+{##}
+{#        var timeLeft = endTime - now;#}
+{##}
+{#        var days = Math.floor(timeLeft / 86400);#}
+{#        var hours = Math.floor((timeLeft - (days * 86400)) / 3600);#}
+{#        var minutes = Math.floor((timeLeft - (days * 86400) - (hours * 3600)) / 60);#}
+{#        var seconds = Math.floor((timeLeft - (days * 86400) - (hours * 3600) - (minutes * 60)));#}
+{##}
+{#        if (hours < "10") {#}
+{#            hours = "0" + hours;#}
+{#        }#}
+{#        if (minutes < "10") {#}
+{#            minutes = "0" + minutes;#}
+{#        }#}
+{#        if (seconds < "10") {#}
+{#            seconds = "0" + seconds;#}
+{#        }#}
+{##}
+{#        document.getElementById("timer").innerHTML = days + "d " + hours + "h "#}
+{#            + minutes + "m " + seconds + "s ";#}
+{##}
+{#        // If the count down is finished, write some text#}
+{#        if (distance < 0) {#}
+{#            clearInterval(x);#}
+{#            document.getElementById("timer").innerHTML = "EXPIRED";#}
+{#        }#}
+{#    },1000);#}
+{##}
+{#    $("#days").html(days + "<span>Days</span>");#}
+{#    $("#hours").html(hours + "<span>Hours</span>");#}
+{#    $("#minutes").html(minutes + "<span>Minutes</span>");#}
+{#    $("#seconds").html(seconds + "<span>Seconds</span>");#}
+{##}
+{#    }#}
+{#    setInterval(function () {#}
+{#        makeTimer();#}
+{#    }, 1000);#}
+{#</script>#}
+
+{#<script>#}
+{#// Set the date we're counting down to#}
+{#var countDownDate = new Date("{{ giveaway.giveaway_end_date|date:'M d, Y H:i:s' }}").getTime();#}
+{#console.log(countDownDate)#}
+{#// Update the count down every 1 second#}
+{#var x = setInterval(function() {#}
+{##}
+{#  // Get today's date and time#}
+{#  var now = new Date().getTime();#}
+{##}
+{#  // Find the distance between now and the count down date#}
+{#  var distance = countDownDate - now;#}
+{##}
+{#  // Time calculations for days, hours, minutes and seconds#}
+{#  var days = Math.floor(distance / (1000 * 60 * 60 * 24));#}
+{#  var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));#}
+{#  var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));#}
+{#  var seconds = Math.floor((distance % (1000 * 60)) / 1000);#}
+{##}
+{#  // Output the result in an element with id="demo"#}
+{#  document.getElementById("timer").innerHTML = days + "d " + hours + "h "#}
+{#  + minutes + "m " + seconds + "s ";#}
+{##}
+{#  // If the count down is over, write some text#}
+{#  if (distance < 0) {#}
+{#    clearInterval(x);#}
+{#    document.getElementById("timer").innerHTML = "EXPIRED";#}
+{#  }#}
+{#}, 1000);#}
+{#</script>#}
+
+{#    <script>#}
+{#        $(function () {#}
+{#            var austDay = new Date();#}
+{#            austDay = new Date(austDay.getFullYear() + 1, 1 - 1, 26);#}
+{#            $('#defaultCountdown').countdown({until: austDay});#}
+{#            $('#year').text(austDay.getFullYear());#}
+{#        });#}
+{#    </script>#}
+
+{#<script>#}
+{#function makeTimer() {#}
+{#   var endTime=new Date({{ giveaway.giveaway_end_date|date:"U" }}  * 1000);#}
+{#    endTime = (Date.parse(endTime) / 1000);#}
+{##}
+{#        var now = new Date();#}
+{#        now = (Date.parse(now) / 1000);#}
+{##}
+{#        var timeLeft = endTime - now;#}
+{##}
+{#        var days = Math.floor(timeLeft / 86400);#}
+{#        var hours = Math.floor((timeLeft - (days * 86400)) / 3600);#}
+{#        var minutes = Math.floor((timeLeft - (days * 86400) - (hours * 3600 )) / 60);#}
+{#        var seconds = Math.floor((timeLeft - (days * 86400) - (hours * 3600) - (minutes * 60)));#}
+{##}
+{#        if (hours < "10") { hours = "0" + hours; }#}
+{#        if (minutes < "10") { minutes = "0" + minutes; }#}
+{#        if (seconds < "10") { seconds = "0" + seconds; }#}
+{##}
+{#        $("#days").html(days + "<span>Days</span>");#}
+{#        $("#hours").html(hours + "<span>Hours</span>");#}
+{#        $("#minutes").html(minutes + "<span>Minutes</span>");#}
+{#        $("#seconds").html(seconds + "<span>Seconds</span>");#}
+{##}
+{#}#}
+{##}
+{#setInterval(function() { makeTimer(); }, 1000);#}
+{#</script>#}
+
+{#<div id="getting-started"></div>#}
+{#<script type="text/javascript">#}
+{#  $("#getting-started")#}
+{#  .countdown("2021/01/01", function(event) {#}
+{#    $(this).text(#}
+{#      event.strftime('%D days %H:%M:%S')#}
+{#    );#}
+{#  });#}
+{#</script>#}
+
+                <script type="text/javascript">
+              // Turn on Bootstrap
+              $('[data-toggle="tooltip"]').tooltip();
+
+              // 15 days from now!
+              function get15dayFromNow() {
+                return new Date(new Date().valueOf() + 15 * 24 * 60 * 60 * 1000);
+              }
+
+              var $clock = $('#clock');
+              var timeexample = Date().valueOf()
+              //console.log(timeexample)
+
+              $clock.countdown(get15dayFromNow(), function(event) {
+                $(this).html(event.strftime('%D days %H:%M:%S'));
+              });
+
+            </script>

@@ -25,12 +25,9 @@ def display_time(minutes, granularity=3):
     result = []
 
     for name, count in intervals:
-        print(minutes, name, count)
         value = minutes // count
-        print(value)
         if value:
             minutes -= value * count
-            print('minutes', minutes)
             if value == 1:
                 name = name.rstrip('s')
             result.append("{} {}".format(value, name))

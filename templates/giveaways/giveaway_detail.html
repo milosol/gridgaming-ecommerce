@@ -1,14 +1,17 @@
 {% extends "core/base.html" %}
 {% load static %}
 
-{% block content %}
-    <html>
-    <head>
+
+    {% block extra_head_tags %}
+
         <title>GridGaming Giveaway - {{ object.title }}</title>
         {% if gleam.graph_tags %}
+
             {{ object.gleam_graph_tags|safe }}
         {% endif %}
-    </head>
+    {% endblock %}
+
+{% block content %}
 {#<div class="text-center mb-4">#}
 {#<a href="{% url 'giveaways:giveaway-list' %}"><button type="button" class="btn btn-success btn-circle-lg">#}
 {#    <i class="fa fa-arrow-circle-left"></i> Back to Giveaways#}

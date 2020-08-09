@@ -1,7 +1,12 @@
 {% extends "core/base.html" %}
 {% load static %}
 
+{% block extra_css %}
+<link rel="{% static 'assets/extra-libs/jquery.countdown.package-2.1.0/css/jquery.countdown.css' %}">
+
+{% endblock %}
 {% block content %}
+
     <div class="text-center">
     <h1 class="mb-0 text-success">GIVEAWAY ZONE</h1>
     <!--<h4 class="text-muted mt-0 font-italic">Enter all the things</h4>-->
@@ -9,10 +14,11 @@
 
     <div class="row">
         <div class="col-12 mt-4">
-
+                {% include 'giveaways/timer.html' %}
             <div class="card-group">
                 {% for giveaway in object_list %}
 
+{#                    {{ giveaway.giveaway_end_date|date:'M d, Y H:i:s T' }}#}
                     <div class="card">
                     {% if giveaway.url %}
                           <a href="{{ giveaway.url }}" target="_blank">
@@ -46,17 +52,20 @@
                                 {% else %}
                                     <br>
                                     <a href="{{ giveaway.get_display_url }}"><button type="button" class="btn btn-block btn-sm btn-outline-dark-warning"><div class="spinner-grow spinner-grow-sm text-danger" role="status"></div> <b>LIVE</b><br>{{ giveaway.giveaway_end_date }} EST</button></a>
+{#                                    <a href="{{ giveaway.get_display_url }}"><button type="button" class="btn btn-block btn-sm btn-outline-dark-warning" id="clock"><div class="spinner-grow spinner-grow-sm text-danger" role="status"></div> <b>LIVE</b><br> EST</button></a>#}
 
                                 {% endif %}
 
 
                             </div>
                         </div>
+                    {% include 'giveaways/timer.html' %}
                     </div>
                     {% if forloop.counter|divisibleby:3 %}
                         </div>
                         <div class="card-group">
                     {% endif %}
+
                 {% endfor %}
 
                 </div>
@@ -66,3 +75,27 @@
 
 {#    <a href="{% url 'giveaways:giveaway-create' %}">Create Giveaway</a>#}
 {% endblock %}
+
+{% block extra_scripts %}
+      <script src="//cdn.rawgit.com/hilios/jQuery.countdown/2.2.0/dist/jquery.countdown.min.js"></script>
+                <script type="text/javascript">
+              // Turn on Bootstrap
+              $('[data-toggle="tooltip"]').tooltip();
+
+              // 15 days from now!
+              function get15dayFromNow() {
+                return new Date(new Date().valueOf() + 15 * 24 * 60 * 60 * 1000);
+              }
+
+              var $clock = $('#clock');
+              var timeexample = Date().valueOf()
+              //console.log(timeexample)
+
+              $clock.countdown(get15dayFromNow(), function(event) {
+                $(this).html(event.strftime('%D days %H:%M:%S'));
+              });
+
+            </script>
+{% endblock %}
+
+

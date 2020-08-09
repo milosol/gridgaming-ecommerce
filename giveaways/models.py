@@ -3,6 +3,8 @@ from django.db import models
 from django.urls import reverse
 from django.utils.text import slugify
 from django.utils import timezone
+from retweet_picker.utils import display_time
+
 
 class Giveaway(models.Model):
     """Uses primary key and slug in URL"""
@@ -30,7 +32,6 @@ class Giveaway(models.Model):
         else:
             return '#'
 
-
     def get_absolute_url(self):
         kwargs = {"pk": self.id, "slug": self.slug}
         return reverse("giveaways:giveaway-detail", kwargs=kwargs)
@@ -38,6 +39,10 @@ class Giveaway(models.Model):
     @property
     def giveaway_ended(self):
         return timezone.now() > self.giveaway_end_date
+
+    @property
+    def time_remaining(self):
+        return self.giveaway_end_date - timezone.now()
 
     def save(self, *args, **kwargs):
         value = self.title
