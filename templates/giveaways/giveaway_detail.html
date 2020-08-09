@@ -3,8 +3,7 @@
 
 
     {% block extra_head_tags %}
-
-        <title>GridGaming Giveaway - {{ object.title }}</title>
+    <meta property="og:title" content="GridGaming Giveaway - {{ object.title }}">
         {% if object.gleam_graph_tags %}
 
             {{ object.gleam_graph_tags|safe }}
