@@ -2,23 +2,70 @@
 {% load static %}
 
 
-    {% block extra_head_tags %}
+
+{% block extra_head_tags %}
     <meta property="og:title" content="GridGaming Giveaway - {{ object.title }}">
-        {% if object.gleam_graph_tags %}
-            {{ object.gleam_graph_tags|safe }}
-        {% endif %}
-    {% endblock %}
+    {% if object.gleam_graph_tags %}
+        {{ object.gleam_graph_tags|safe }}
+    {% endif %}
+{% endblock %}
 
 {% block content %}
-{#<div class="text-center mb-4">#}
-{#<a href="{% url 'giveaways:giveaway-list' %}"><button type="button" class="btn btn-success btn-circle-lg">#}
-{#    <i class="fa fa-arrow-circle-left"></i> Back to Giveaways#}
-{#                                </button></a>#}
-{#</div>#}
+    {#<div class="text-center mb-4">#}
+    {#<a href="{% url 'giveaways:giveaway-list' %}"><button type="button" class="btn btn-success btn-circle-lg">#}
+    {#    <i class="fa fa-arrow-circle-left"></i> Back to Giveaways#}
+    {#                                </button></a>#}
+    {#</div>#}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="card">
+                            <img class="card-img-top img-fluid" src="{% static 'img/icon_w.png'%}"
+                                 alt="Card image cap">
+                            <div class="card-body">
+                                <h4 class="card-title">Grow Your Brand</h4>
+                                <p class="card-text">Take your socials to the next level! Sponsor a giveaway and launch it when you're ready!</p>
+                                <a href="https://www.gridgaming.io" class="btn btn-warning">Learn More</a>
+                            </div>
+                        </div>
 
-    {% if object.gleam_embed %}
-        {{ object.gleam_embed|safe }}
-    {% endif %}
+                                                <a class="twitter-timeline" data-width="100%" data-height="550" data-theme="dark" href="https://twitter.com/GridGamingIO?ref_src=twsrc%5Etfw">Tweets by GridGamingIO</a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+                    </div>
+                    <div class="col-md-6">
+                        {% if object.gleam_embed %}
+                            {{ object.gleam_embed|safe }}
+                        {% endif %}
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card">
+                            <img class="card-img-top img-fluid" src="{% static 'img/default_giveaway_gg.png' %}"
+                                 alt="Card image cap">
+                            <div class="card-body">
+                                <h4 class="card-title">More free stuff?</h4>
+                                <p class="card-text">Stop by our giveaway page to see all current giveaways!</p>
+                                <a href="{% url 'giveaways:giveaway-list' %}" class="btn btn-success">See Giveaways</a>
+                            </div>
+                        </div>
+                                                <p>
+                        <h4 class="text-center">Welcome to another Grid Gaming Giveaway!</h4> Earn as many entries as you can from the slots below.
+                            If you are having problems redeeming some entries, try disconnecting your associated
+                            social media account and reconnecting it. Also be sure to click <strong>continue</strong>
+                            for entries that require it. Be sure to turn on notifications for GridGaming to stay up to date
+                            and if you haven't already, be sure to bookmark our <a href="{% url 'giveaways:giveaway-list' %}">giveaways page</a>. Thank you for entering & <span class="text-success">Good luck!</span>
+                            </p>
+
+                        </p>
+
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
 
 
 
