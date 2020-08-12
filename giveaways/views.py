@@ -19,7 +19,7 @@ class GiveawayListView(ListView):
     model = Giveaway
     ordering = ['-giveaway_end_date']
     queryset = Giveaway.objects.filter(visible=True)
-    paginate_by = 12
+    paginate_by = 3
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

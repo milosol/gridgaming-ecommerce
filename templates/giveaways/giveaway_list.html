@@ -2,44 +2,46 @@
 {% load static %}
 
 {% block extra_css %}
-<link rel="{% static 'assets/extra-libs/jquery.countdown.package-2.1.0/css/jquery.countdown.css' %}">
+    <link rel="{% static 'assets/extra-libs/jquery.countdown.package-2.1.0/css/jquery.countdown.css' %}">
 
 {% endblock %}
 {% block content %}
 
     <div class="text-center">
-    <h1 class="mb-0 text-success">GIVEAWAY ZONE</h1>
-    <!--<h4 class="text-muted mt-0 font-italic">Enter all the things</h4>-->
+        <h1 class="mb-0 text-success">GIVEAWAY ZONE</h1>
+        <!--<h4 class="text-muted mt-0 font-italic">Enter all the things</h4>-->
     </div>
 
     <div class="row">
         <div class="col-12 mt-4">
-                {% include 'giveaways/timer.html' %}
+            {% include 'giveaways/timer.html' %}
             <div class="card-group">
                 {% for giveaway in object_list %}
 
-{#                    {{ giveaway.giveaway_end_date|date:'M d, Y H:i:s T' }}#}
+                    {#                    {{ giveaway.giveaway_end_date|date:'M d, Y H:i:s T' }}#}
                     <div class="card">
-                    {% if giveaway.url %}
-                          <a href="{{ giveaway.url }}" target="_blank">
-                    {% elif not giveaway.url and not giveaway.gleam_embed %}
-                          <a data-toggle="popover" data-placement="bottom" data-original-title="No link available!" data-content="This giveaway doesn't have a link provided yet. Please check back later.">
-                    {% else %}
-                         <a href="{{ giveaway.get_absolute_url }}">
-                    {% endif %}
-                            {% if giveaway.image %}
-                                <!-- Used for absolute url with slug -->
-                                <img class="card-img-top img-fluid" src="{{ giveaway.image.url }}"
-                                     alt="Image for {{ giveaway.title }}">
-                            {% else %}
-                                {% if giveaway.sponsored %}
+                        {% if giveaway.url %}
+                            <a href="{{ giveaway.url }}" target="_blank">
+                        {% elif not giveaway.url and not giveaway.gleam_embed %}
+                            <a data-toggle="popover" data-placement="bottom" data-original-title="No link available!"
+                               data-content="This giveaway doesn't have a link provided yet. Please check back later.">
+                        {% else %}
+                            <a href="{{ giveaway.get_absolute_url }}">
+                        {% endif %}
+                        {% if giveaway.image %}
+                            <!-- Used for absolute url with slug -->
+                            <img class="card-img-top img-fluid" src="{{ giveaway.image.url }}"
+                                 alt="Image for {{ giveaway.title }}">
+                        {% else %}
+                            {% if giveaway.sponsored %}
                                 <img class="card-img-top img-fluid" src="{% static 'img/sponsored_giveaway_gg.png' %}"
                                      alt="Image for {{ giveaway.title }}">
-                                    {% else %}
-                                <img class="card-img-top img-fluid" src="{% static 'img/gridgaming_giveaway_default.png' %}"
+                            {% else %}
+                                <img class="card-img-top img-fluid"
+                                     src="{% static 'img/gridgaming_giveaway_default.png' %}"
                                      alt="Image for {{ giveaway.title }}">
-                                    {% endif %}
                             {% endif %}
+                        {% endif %}
                         </a>
                         <div class="card-body d-flex flex-column">
                             <h4 class="card-title">{{ giveaway.title }}</h4>
@@ -48,18 +50,28 @@
                             <div class="col-md6 mt-auto">
 
                                 {% if giveaway.giveaway_ended %}
-                                    <a href="{{ giveaway.get_display_url }}"><button type="button" class="btn btn-block btn-sm btn-outline-secondary"><i class="fa fa-check"></i> Concluded <br>{{ giveaway.giveaway_end_date }} EST</button></a>
+                                    <a href="{{ giveaway.get_display_url }}">
+                                        <button type="button" class="btn btn-block btn-sm btn-outline-secondary"><i
+                                                class="fa fa-check"></i> Concluded <br>{{ giveaway.giveaway_end_date }}
+                                            EST
+                                        </button>
+                                    </a>
                                 {% else %}
                                     <br>
-                                    <a href="{{ giveaway.get_display_url }}"><button type="button" class="btn btn-block btn-sm btn-outline-dark-warning"><div class="spinner-grow spinner-grow-sm text-danger" role="status"></div> <b>LIVE</b><br>{{ giveaway.giveaway_end_date }} EST</button></a>
-{#                                    <a href="{{ giveaway.get_display_url }}"><button type="button" class="btn btn-block btn-sm btn-outline-dark-warning" id="clock"><div class="spinner-grow spinner-grow-sm text-danger" role="status"></div> <b>LIVE</b><br> EST</button></a>#}
+                                    <a href="{{ giveaway.get_display_url }}">
+                                        <button type="button" class="btn btn-block btn-sm btn-outline-dark-warning">
+                                            <div class="spinner-grow spinner-grow-sm text-danger" role="status"></div>
+                                            <b>LIVE</b><br>{{ giveaway.giveaway_end_date }} EST
+                                        </button>
+                                    </a>
+                                    {#                                    <a href="{{ giveaway.get_display_url }}"><button type="button" class="btn btn-block btn-sm btn-outline-dark-warning" id="clock"><div class="spinner-grow spinner-grow-sm text-danger" role="status"></div> <b>LIVE</b><br> EST</button></a>#}
 
                                 {% endif %}
 
 
                             </div>
                         </div>
-                    {% include 'giveaways/timer.html' %}
+                        {% include 'giveaways/timer.html' %}
                     </div>
                     {% if forloop.counter|divisibleby:3 %}
                         </div>
@@ -71,63 +83,66 @@
                 </div>
         </div>
     </div>
-      <!--Pagination-->
+    <!--Pagination-->
 
-      {% if is_paginated %}
-      <nav class="d-flex justify-content-center wow fadeIn">
+    {% if is_paginated %}
+        <nav class="d-flex justify-content-center wow fadeIn">
         <ul class="pagination pg-teal">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                        <span aria-hidden="true" class="text-dark-success">Previous</span>
+                        <span class="sr-only text-dark-success">Previous</span>
+                    </a>
+                </li>
+            {% endif %}
 
-          {% if page_obj.has_previous %}
-          <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
-              <span aria-hidden="true">Previous</span>
-              <span class="sr-only">Previous</span>
-            </a>
-          </li>
-          {% endif %}
-
-          <li class="page-item active">
-            <a class="page-link" href="?page={{ page_obj.number }}">{{ page_obj.number }}
-              <span class="sr-only">(current)</span>
-            </a>
-          </li>
-
-          {% if page_obj.has_next %}
-          <li class="page-item ">
-            <a class="page-link " href="?page={{ page_obj.next_page_number }}" aria-label="Next">
-              <span aria-hidden="true">Next</span>
-              <span class="sr-only">Next</span>
-            </a>
-          </li>
-          {% endif %}
+            {% for i in paginator.page_range %}
+                {% if page_obj.number == i %}
+                    <li class="page-item active">
+                        <a class="page-link" href="?page={{ page_obj.number }}">{{ page_obj.number }}
+                            <span class="sr-only">(current)</span>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item">
+                        <a class="page-link text-dark-success" href="?page={{ i }}">{{ i }}</a></li>
+                {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link " href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                        <span aria-hidden="true" class="text-dark-success">Next</span>
+                        <span class="sr-only text-dark-success">Next</span>
+                    </a>
+                </li>
+            {% endif %}
         </ul>
-      </nav>
-      {% endif %}
+    {% endif %}
 
-
-{#    <a href="{% url 'giveaways:giveaway-create' %}">Create Giveaway</a>#}
+    {#    <a href="{% url 'giveaways:giveaway-create' %}">Create Giveaway</a>#}
 {% endblock %}
 
 {% block extra_scripts %}
-      <script src="//cdn.rawgit.com/hilios/jQuery.countdown/2.2.0/dist/jquery.countdown.min.js"></script>
-                <script type="text/javascript">
-              // Turn on Bootstrap
-              $('[data-toggle="tooltip"]').tooltip();
+    <script src="//cdn.rawgit.com/hilios/jQuery.countdown/2.2.0/dist/jquery.countdown.min.js"></script>
+    <script type="text/javascript">
+        // Turn on Bootstrap
+        $('[data-toggle="tooltip"]').tooltip();
 
-              // 15 days from now!
-              function get15dayFromNow() {
-                return new Date(new Date().valueOf() + 15 * 24 * 60 * 60 * 1000);
-              }
+        // 15 days from now!
+        function get15dayFromNow() {
+            return new Date(new Date().valueOf() + 15 * 24 * 60 * 60 * 1000);
+        }
 
-              var $clock = $('#clock');
-              var timeexample = Date().valueOf()
-              //console.log(timeexample)
+        var $clock = $('#clock');
+        var timeexample = Date().valueOf()
+        //console.log(timeexample)
 
-              $clock.countdown(get15dayFromNow(), function(event) {
-                $(this).html(event.strftime('%D days %H:%M:%S'));
-              });
+        $clock.countdown(get15dayFromNow(), function (event) {
+            $(this).html(event.strftime('%D days %H:%M:%S'));
+        });
 
-            </script>
+    </script>
 {% endblock %}
 
 
