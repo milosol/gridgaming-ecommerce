@@ -192,15 +192,15 @@ class PaymentView(View):
 
     def get(self, *args, **kwargs):
         order = get_user_pending_order(self.request)
-        #client_token = generate_client_token()
+        # client_token = generate_client_token()
         if order != 0:
             if order.billing_address:
                 context = {
                     'order': order,
                     'DISPLAY_COUPON_FORM': False,
                     'STRIPE_PUBLIC_KEY': settings.STRIPE_PUBLIC_KEY,
-                    #'client_token': client_token,
-                    'client_token':create_ref_code(),
+                    # 'client_token': client_token,
+                    'client_token': create_ref_code(),
                 }
                 userprofile = self.request.user.user_profile
                 if userprofile.one_click_purchasing:
@@ -258,7 +258,7 @@ class PaymentView(View):
                             userprofile.save()
                     else:
                         charge = stripe.Charge.create(
-                            amount=amount*100,
+                            amount=amount * 100,
                             currency='usd',
                             source=stripe_token,
                         )
@@ -266,7 +266,7 @@ class PaymentView(View):
                 if use_default or save:
                     # charge the customer because we cannot charge the token more than once
                     charge = stripe.Charge.create(
-                        amount=amount*100,  # cents
+                        amount=amount * 100,  # cents
                         currency="usd",
                         customer=userprofile.stripe_customer_id
                     )
@@ -363,12 +363,12 @@ class BitpayView(View):
                     amount = int(order.get_total())
                 # client.create_token('pos')
                 # client.pair_pos_client("faD2tzX")
-                
+
                 host = self.request.get_host()
                 notify_url = 'https://{}{}'.format(host, reverse('core:bitpay-notify'))
-                
+
                 pos_data = {
-                    "price": amount, 
+                    "price": amount,
                     "currency": "USD",
                     "token": client.tokens['pos'],
                     'orderId': order.id,
@@ -431,16 +431,16 @@ class BitpayView(View):
                     order.ref_code = create_ref_code()
                     order.save()
                     History.objects.create(user=order.user, action='Purchased', item_str=order.get_purchased_items(),
-                                        reason="Bitcoin payment done", order_str=order.id)
+                                           reason="Bitcoin payment done", order_str=order.id)
                 if order.kind == 0:
                     messages.success(self.request,
-                                    "Head over to the Launch Pad to start your giveaway! If no one is in line, you will start immediately!",
-                                    extra_tags='order_complete')
+                                     "Head over to the Launch Pad to start your giveaway! If no one is in line, you will start immediately!",
+                                     extra_tags='order_complete')
                     # TODO Direct to payment statuses
                     return redirect("retweet_picker:giveaway-list")
                 else:
                     messages.success(self.request, "Payment succeed",
-                                    extra_tags='order_complete')
+                                     extra_tags='order_complete')
                     # TODO Direct to payment statuses
                     del_timing(order.user.id, 'bitcoin payment done')
                     return redirect("core:user-orders")
@@ -448,6 +448,7 @@ class BitpayView(View):
             logging.info(e)
             messages.warning(self.request, "Invalid data received")
         return redirect("core:home")
+
 
 @csrf_exempt
 def bitpay_notify(request):
@@ -477,14 +478,16 @@ def bitpay_notify(request):
                 order.ref_code = create_ref_code()
                 order.save()
                 History.objects.create(user=order.user, action='Purchased', item_str=order.get_purchased_items(),
-                                    reason="Bitcoin payment done", order_str=order.id)
+                                       reason="Bitcoin payment done", order_str=order.id)
     except Exception as e:
         logging.info(e)
     return HttpResponse(status=200)
+
+
 @method_decorator(account_type_check, name='dispatch')
 class HomeView(ListView):
     model = Item
-    paginate_by = 12
+    paginate_by = 9
     template_name = "core/index.html"
 
     def get_context_data(self, **kwargs):
@@ -727,7 +730,7 @@ class PaypalPaymentProcess(View):
         kind = self.request.session.get('kind', 0)
         order = Order.objects.get(user=self.request.user, ordered=False, kind=kind)
         host = request.get_host()
-        
+
         if kind == 0:
             return_url = 'http://{}{}'.format(host, reverse('core:done'))
         else:
