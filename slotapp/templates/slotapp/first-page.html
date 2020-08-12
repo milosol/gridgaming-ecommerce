@@ -1,5 +1,11 @@
 {% extends "core/base.html" %}
 {% load static %}
+
+{% block extra_head_tags %}
+    <meta property="og:title" content="GridGaming Giveaway - Sponsor a giveaway">
+    <meta property="og:description" content="Community giveaways are like car pooling, but for giveaways. Give and grow back with others!">
+{% endblock %}
+
 {% block extra_css %}
     <style>
         .td-action {
