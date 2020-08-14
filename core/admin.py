@@ -23,7 +23,9 @@ def make_refund_accepted(modeladmin, request, queryset):
 
 make_refund_accepted.short_description = 'Update orders to refund granted'
 
+
 class PaymentAdmin(admin.ModelAdmin):
+    raw_id_fields = ("user",)
     list_display = ['user',
                     'stripe_charge_id',
                     'braintree_charge_id',
@@ -31,7 +33,10 @@ class PaymentAdmin(admin.ModelAdmin):
                     'timestamp',
                     ]
 
+
 class OrderAdmin(admin.ModelAdmin):
+    raw_id_fields = ("user",)
+
     list_display = ['id',
                     'user',
                     'get_cleared_hot',
@@ -62,13 +67,21 @@ class OrderAdmin(admin.ModelAdmin):
     ]
     actions = [make_refund_accepted]
 
+    # def get_queryset(self, request):
+    #     user_search = super(OrderAdmin, self).get_queryset(request)
+    #     user_search = user_search.prefetch_related('user')
+    #     return user_search
+
     def get_cleared_hot(self, obj):
         return obj.user.cleared_hot
+
     get_cleared_hot.boolean = True
     get_cleared_hot.short_description = 'Cleared Hot'
     get_cleared_hot.admin_order_field = 'user__cleared_hot'
 
+
 class OrderItemAdmin(admin.ModelAdmin):
+    raw_id_fields = ("user",)
     list_display = ['user',
                     'get_title',
                     'quantity',
@@ -79,24 +92,25 @@ class OrderItemAdmin(admin.ModelAdmin):
                     'order_id',
                     'ordered_date'
                     ]
-    
+
     list_filter = ['ordered']
 
     def get_email(self, obj):
         return obj.user.email
-    
+
     def order_id(self, obj):
         if obj.orders.all():
             return obj.orders.all()[0].id
         else:
             return 0
-    
+
     def ordered_date(self, obj):
         if obj.orders.all():
             return obj.orders.all()[0].ordered_date
         else:
             return 0
-    
+
+
 class AddressAdmin(admin.ModelAdmin):
     list_display = [
         'user',
@@ -109,6 +123,7 @@ class AddressAdmin(admin.ModelAdmin):
     ]
     list_filter = ['default', 'address_type', 'country']
     search_fields = ['user', 'street_address', 'apartment_address', 'zip']
+
 
 class HistoryAdmin(admin.ModelAdmin):
     list_display = [
@@ -132,7 +147,8 @@ class HistoryAdmin(admin.ModelAdmin):
         else:
             return 0
 
-class  CountingAdmin(admin.ModelAdmin):
+
+class CountingAdmin(admin.ModelAdmin):
     list_display = [
         'user_id',
         'deadline',
@@ -142,7 +158,8 @@ class  CountingAdmin(admin.ModelAdmin):
     list_filter = ['user_id']
     search_fields = ['user_id']
 
-class  ChecktimeAdmin(admin.ModelAdmin):
+
+class ChecktimeAdmin(admin.ModelAdmin):
     list_display = [
         'time',
         'launched',
@@ -153,7 +170,8 @@ class  ChecktimeAdmin(admin.ModelAdmin):
         'launch_code',
     ]
 
-class  SlotitemAdmin(admin.ModelAdmin):
+
+class SlotitemAdmin(admin.ModelAdmin):
     list_display = [
         'title',
         'available',
@@ -164,7 +182,8 @@ class  SlotitemAdmin(admin.ModelAdmin):
         'description',
     ]
 
-class  PaymentAdmin(admin.ModelAdmin):
+
+class PaymentAdmin(admin.ModelAdmin):
     list_display = [
         'user',
         'payment_method',
@@ -172,7 +191,8 @@ class  PaymentAdmin(admin.ModelAdmin):
         'amount',
         'timestamp'
     ]
-    
+
+
 admin.site.register(Item)
 admin.site.register(OrderItem, OrderItemAdmin)
 admin.site.register(Order, OrderAdmin)
