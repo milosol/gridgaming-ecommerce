@@ -176,6 +176,7 @@ class SlotitemAdmin(admin.ModelAdmin):
         'title',
         'available',
         'available_count',
+        'placeholder',
         'total',
         'points',
         'value',

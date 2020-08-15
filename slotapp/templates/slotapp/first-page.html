@@ -219,7 +219,7 @@
 
                     <!-- Modal Header -->
                     <div class="modal-header">
-                        <h4 class="modal-title">Enter username</h4>
+                        <h4 class="modal-title">Please add accurate social handles & links</h4>
                         <button type="button" class="close" data-dismiss="modal">&times;</button>
                     </div>
 
@@ -259,8 +259,13 @@
         <template id="username_row">
             <div class="form-group d-flex align-items-center username-div" id="ur_id">
                 <label for="label_id" style="min-width: 100px; text-align: center;">label_text</label>
-                <input type="text" class="form-control ml-3" id="label_id" placeholder="Enter username" name="label_id"
+                {% if s.placeholder %}
+                <input type="text" class="form-control ml-3" id="label_id" placeholder="{{ s.placeholder }}" name="label_id"
                        required>
+                {% else %}
+                <input type="text" class="form-control ml-3" id="label_id" placeholder="Enter Username or URL" name="label_id"
+                       required>
+                {% endif %}
             </div>
         </template>
     {% endif %}

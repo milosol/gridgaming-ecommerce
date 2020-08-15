@@ -338,6 +338,7 @@ class Slotitem(models.Model):
     available = models.BooleanField(default=True)
     total = models.IntegerField(default=20)
     points = models.IntegerField(default=100)
+    placeholder = models.CharField(default='Enter username', blank=True, null=True, max_length=250)
     value = models.IntegerField(default=25)
     image = models.ImageField()
     description = models.TextField(blank=True)
