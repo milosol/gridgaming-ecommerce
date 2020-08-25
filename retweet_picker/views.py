@@ -135,7 +135,6 @@ def retrieve_tweets_choose_winner(request, existing_tweet_url):
 
 def queue_launch(queue_id):
     try:
-        print("==== launching queue :", queue_id )
         row = GiveawayQueue.objects.get(id=queue_id)
         user = User.objects.get(id=row.user_id)
         if user.username == 'GridGamingIO':
@@ -153,7 +152,6 @@ def queue_launch(queue_id):
         row.start_time = timezone.now()
         row.tweet_url = tweet_url
         row.save()
-        print(" ===== queue launched : ", tweet_url)
         return True
     except Exception as e:
         print(e)
@@ -161,7 +159,6 @@ def queue_launch(queue_id):
     
 def queue_retrieve(queue_id):
     try:
-        print("===== retrieving :", queue_id)
         row = GiveawayQueue.objects.get(id=queue_id)
         print("======== retrieve_url:",queue_id, row.tweet_url)
         retrieve_tweets_choose_winner_job(existing_tweet_url=row.tweet_url, user_id=row.user_id)
@@ -192,11 +189,9 @@ def process_queue(queue_type):
 
 def queue_thread(name):
     while (1):
-        break
         process_queue('H')
         process_queue('D')
         time.sleep(3)
-        print("==== queue is running")
 
 
 def launch_thread():
