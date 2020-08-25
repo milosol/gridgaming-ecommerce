@@ -3,7 +3,6 @@ import time
 from retweet_picker.manager import GiveawayManager
 
 
-@job
 def start_giveaway_bg(user_id=None,
                       order_id=None,
                       sponsors=None,
@@ -20,9 +19,8 @@ def start_giveaway_bg(user_id=None,
         duration=duration)
 
     gm.run_pipeline()
+    return gm.tweet_url
 
-
-@job
 def retrieve_tweets_choose_winner_job(existing_tweet_url=None,
                                      user_id=None):
     from django.db import connection

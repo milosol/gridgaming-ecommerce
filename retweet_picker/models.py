@@ -5,6 +5,17 @@ from django.conf import settings
 from django.db import models
 import uuid
 
+STATUS_CHOICES = (
+    ('W', 'Waiting'),
+    ('L', 'Live'),
+    ('R', 'Retrieve'),
+    ('C', 'Choosed Winner'),
+    ('E', 'End')
+)
+TYPE_CHOICES = (
+    ('H', 'High'),
+    ('D', 'Default'),
+)
 
 class ContestUserAccounts(models.Model):
     """ Store all users within a single table and reference"""
@@ -96,3 +107,23 @@ class GiveawayResults(models.Model):
             return str(self.winner)
         # else:
         #     return str(self.giveaway_id.giveaway_id)
+
+
+class GiveawayQueue(models.Model):
+    user_id = models.IntegerField(default=0)
+    order_id = models.IntegerField(default=0)
+    item_id = models.IntegerField(default=0)
+    status = models.CharField(choices=STATUS_CHOICES, max_length=1)
+    queue_type = models.CharField(choices=TYPE_CHOICES, max_length=1)
+    duration = models.IntegerField(default=0)
+    tweet_url = models.URLField(max_length=500, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    start_time = models.DateTimeField(auto_now=False, null=True)
+    end_time = models.DateTimeField(auto_now=False, null=True)
+    
+    class Meta:
+        ordering = ['id']
+        
+    def __str__(self):
+        return str(self.tweet_url)
+    

@@ -1,5 +1,8 @@
 import logging
 import sys
+import threading
+from datetime import timedelta
+from django.utils import timezone
 
 from django.contrib import messages
 from django.db.models import Prefetch
@@ -8,14 +11,15 @@ from django.shortcuts import redirect
 from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView
+from django.views.decorators.csrf import csrf_exempt
 
 from core.decorators import account_type_check, cleared_hot_check
 from core.models import Order, OrderItem
 from .forms import RetweetChooserForm
-from .models import GiveawayResults, TwitterGiveawayID, TwitterGiveaway, GiveawayStats
+from .models import GiveawayResults, TwitterGiveawayID, TwitterGiveaway, GiveawayStats, GiveawayQueue
 from .process import ProcessRetrievedTweets
 from .tasks import start_giveaway_bg, retrieve_tweets_choose_winner_job
-
+from users.models import User
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 import time
@@ -129,42 +133,127 @@ def retrieve_tweets_choose_winner(request, existing_tweet_url):
     #return redirect("retweet_picker:giveaway-list")
     return render(request, template_name='launch.html', context=context)
 
+def queue_launch(queue_id):
+    try:
+        print("==== launching queue :", queue_id )
+        row = GiveawayQueue.objects.get(id=queue_id)
+        user = User.objects.get(id=row.user_id)
+        if user.username == 'GridGamingIO':
+            sponsors = ['@GridGamingIO']
+        else:
+            sponsors = ['@GridGamingIO', '@' + user.username]
+        order_item = OrderItem.objects.get(id=row.item_id)
+        tweet_url = start_giveaway_bg(user_id=row.user_id,
+                                order_id=row.order_id,
+                                sponsors=sponsors,
+                                giveaway_amount=int(order_item.item.giveaway_value),
+                                duration=row.duration)
+        
+        row.status = 'L'
+        row.start_time = timezone.now()
+        row.tweet_url = tweet_url
+        row.save()
+        print(" ===== queue launched : ", tweet_url)
+        return True
+    except Exception as e:
+        print(e)
+        return False
+    
+def queue_retrieve(queue_id):
+    try:
+        print("===== retrieving :", queue_id)
+        row = GiveawayQueue.objects.get(id=queue_id)
+        print("======== retrieve_url:",queue_id, row.tweet_url)
+        retrieve_tweets_choose_winner_job(existing_tweet_url=row.tweet_url, user_id=row.user_id)
+        row.status = 'E'
+        row.end_time = timezone.now()
+        row.save()
+        return True
+    except Exception as e:
+        print(e)
+        return False
+    
+def process_queue(queue_type):
+    try:
+        rows = GiveawayQueue.objects.filter(queue_type=queue_type, status='L')
+        if rows.exists():
+            row = rows[0]
+            end_time = row.start_time + timedelta(minutes=row.duration)
+            if end_time < timezone.now():
+                queue_retrieve(row.id)    
+        else:
+            items = GiveawayQueue.objects.filter(queue_type=queue_type, status='W')
+            if items.exists():
+                queue_launch(items[0].id)
+        return True
+    except Exception as e:
+        print(e)
+        return False
+
+def queue_thread(name):
+    while (1):
+        break
+        process_queue('H')
+        process_queue('D')
+        time.sleep(3)
+        print("==== queue is running")
+
+
+def launch_thread():
+    x = threading.Thread(target=queue_thread, args=(999999,))
+    x.start()
+
+launch_thread()
+
+def add_queue(request, order_id, item_id):
+    res = {'success':True, 'msg':''}
+    try:
+        queue_type = 'D'
+        order_item = OrderItem.objects.get(id=item_id)
+        run_time = int(order_item.item.duration_to_run * request.user.account_type.time_quantifier)
+        GiveawayQueue.objects.create(user_id=request.user.id, order_id=order_id, item_id=item_id, duration=run_time, status='W', queue_type=queue_type)
+        count = GiveawayQueue.objects.filter(queue_type=queue_type).count()
+        if count == 1:
+            res['msg'] = "Your giveaway is live soon!"
+        else:
+            res['msg'] = f"Your giveaway is in queue. Current position: {count}"
+    except Exception as e:
+        print(e)
+        res['success'] = False
+    return res
+
+
 @cleared_hot_check
 def launch_giveaway(request, order_id, item_id):
     context = {}
     try:
         order_item = OrderItem.objects.get(id=item_id)
-        if request.user.username == 'GridGamingIO':
-            sponsors = ['@GridGamingIO']
-        else:
-            sponsors = ['@GridGamingIO', '@' + request.user.username]
-        run_time = int(order_item.item.duration_to_run * request.user.account_type.time_quantifier)
-        start_giveaway_bg.delay(user_id=request.user.id,
-                                order_id=order_id,
-                                sponsors=sponsors,
-                                giveaway_amount=int(order_item.item.giveaway_value),
-                                duration=run_time)
-
-        status = decrease_available_giveaways(item_id)
-        if 'error' not in status:
-            queue = django_rq.get_queue('default')
-            position_in_queue = len(queue.get_job_ids())
-            if position_in_queue:
-                messages.success(request, f"Your giveaway is in queue. Current position: {position_in_queue}")
-            else:
-                messages.success(request, f"Your giveaway is live!")
-            # TODO Create queueing system and let user know what position they are in
-            redirect("retweet_picker:giveaway-list")
-            #return redirect(request.path)
-        else:
+        if order_item.available_to_run < 1:
             messages.error(request, "This order has already been redeemed.")
-
+        else:
+            res = add_queue(request, order_id, item_id)
+            if res['success'] == True:
+                decrease_available_giveaways(item_id)
+                messages.success(request, res['msg'])
+            else:
+                messages.error(request, "Failed in adding into queue.")
     except Exception as e:
         messages.error(request, "Your giveaway could not be launched!")
         print(f"ERROR: {e}")
-    #return redirect("retweet_picker:giveaway-list")
-    return render(request, template_name='launch.html', context=context)
+    return redirect("retweet_picker:giveaway-list")
+    # return render(request, template_name='launch.html', context=context)
 
+@csrf_exempt
+def delete_queue(request):
+    res = {'success': True, 'msg': 'Deleted successfully.'}
+    queue_id = request.POST['queue_id']
+    try:
+        GiveawayQueue.objects.filter(id=queue_id).delete()
+    except Exception as e:
+        print(e)
+        res['success'] = False
+        res['msg'] = 'Error occured while deleting queue.'
+    return JsonResponse(res)
 
 def prelaunch_validator(request, order_id, item_id):
     queryset = Order.objects.filter(ordered=True,
@@ -190,6 +279,41 @@ def order_details(request, order_id):
 
 
 @method_decorator(account_type_check, name='dispatch')
+class QueueListView(ListView):
+    template_name = "queue_list.html"
+    model = GiveawayQueue
+
+    def get_context_data(self, **kwargs):
+        # Call the base implementation first to get a context
+        context = super().get_context_data(**kwargs)
+        rows = GiveawayQueue.objects.all()
+        for row in rows:
+            try:
+                u = User.objects.get(id=row.user_id)
+                row.username = u.username
+            except Exception as e:
+                print(e)
+                row.username = ""
+            try:
+                order_item = OrderItem.objects.get(id=row.item_id)
+                row.itemname = order_item.get_title()
+            except Exception as e:
+                print(e)
+                row.itemname = ""
+            if row.start_time == None:
+                row.start_time = ''
+            if row.end_time == None:
+                row.end_time = ''
+            if row.tweet_url == None:
+                row.tweet_url = ''
+                row.tweet_id = ''
+            else:
+                row.tweet_id = row.tweet_url.split('status/')[1]
+                
+        context['items'] = rows
+        return context
+
+@method_decorator(account_type_check, name='dispatch')
 class OrdersListView(ListView):
     template_name = "command_center.html"
     model = Order
@@ -199,8 +323,7 @@ class OrdersListView(ListView):
         context = super().get_context_data(**kwargs)
         context['order_items'] = order_items_prefetch_related_efficient(self.request.user.id)
         return context
-
-
+    
 def decoder_ring(request, secret_code):
     winner = False
     msg = {}
