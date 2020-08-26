@@ -2,6 +2,7 @@
 import tweepy
 from decouple import config
 from retweet_picker.utils import id_from_url
+import urllib
 
 TWITTER_CONSUMER_KEY = config('TWITTER_CONSUMER_KEY')
 TWITTER_CONSUMER_SECRET = config('TWITTER_CONSUMER_SECRET')
@@ -79,9 +80,11 @@ class GridGiveawayTweetRetriever(TwitterInteract):
         # Take 70% of the tweet to reduce length
         split = int(self.tweet_ratio * len(self.tweet.full_text.split()))
         tweet_text = ' '.join(self.tweet.full_text.split()[:split])
+        # encoded_tweet_text = urllib.parse.quote_plus(tweet_text)
         searchQuery = 'RT @{author} '.format(author=self.author) + tweet_text
         tweetCount = 0
         tweetsPerQry = 100
+        print(searchQuery)
         print('[+] Retrieving all contest tweets for TWEET ID: {tweet_id}\n Tweet text: {text}'.format(
             tweet_id=self.tweet.id,
             text=self.tweet.full_text))

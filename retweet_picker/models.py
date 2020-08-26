@@ -126,4 +126,4 @@ class GiveawayQueue(models.Model):
         
     def __str__(self):
         return str(self.tweet_url)
-    
+

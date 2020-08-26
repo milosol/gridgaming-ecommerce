@@ -128,7 +128,8 @@ class GiveawayManager:
         giveaway_id = str(uuid.uuid4())[0:8]
         sponsor_text = self.build_sponsors(sponsors)
         beautiful_time = display_time(duration)
-        tweet_text = f"I'll give ${amount} to a random user who retweets this tweet within the next {beautiful_time}.\n\nMust be following {sponsor_text}\n\nSponsor a giveaway like this at gridgaming.io/shop\n\nID:{giveaway_id}"
+        #tweet_text = f"I'll give ${amount} to a random user who retweets this tweet within the next {beautiful_time}.\n\nMust be following {sponsor_text}\n\nSponsor a giveaway like this at gridgaming.io/shop\n\nID:{giveaway_id}"
+        tweet_text = f"I'll give ${amount} to a random user who retweets this tweet within the next {beautiful_time}.\n\nMust be following {sponsor_text}\n\nID:{giveaway_id}"
         return tweet_text
 
     def create_giveaway_entry(self):
