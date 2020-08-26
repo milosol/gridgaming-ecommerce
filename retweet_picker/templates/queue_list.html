@@ -1,0 +1,139 @@
+{% extends 'core/base.html' %}
+{% load mathfilters %}
+
+{% block extra_head_tags %}
+{% endblock %}
+
+{% block content %}
+
+    <div class="container-fluid">
+    {% if items %}
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title text-center">Default Queue</h4>
+                        <div class="table-responsive">
+                            <table id="zero_config" class="table table-striped table-bordered">
+                                <thead>
+                                <tr >
+                                    <th>User</th>
+                                    <th>Package</th>
+                                    <th>Duration</th>
+                                    <th>Status</th>
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                    <th>Tweet Url</th>
+                                    <th>Queue Type</th>
+                                    <th>Action</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+
+                                {% for item in items %}
+                                    <tr id='qr_{{item.id}}'>
+                                        <td>{{item.username}}</td>
+                                        <td>{{item.itemname}}</td>
+                                        <td>{{item.duration}} min</td>
+                                        {% if item.status == "W" %}
+                                            <td><span
+                                                    class="badge badge-primary">Waiting</span>
+                                            </td>
+                                        {% elif item.status == "L" %}
+                                            <td><span
+                                                    class="badge badge-danger">Live</span>
+                                            </td>
+                                        {% elif item.status == "E" %}
+                                            <td><span
+                                                    class="badge badge-dark">Ended</span>
+                                            </td>
+                                        {% endif %}
+                                        <td>{{item.start_time}}</td>
+                                        <td>{{item.end_time}}</td>
+                                        <td><a href="{{item.tweet_url}}" target="blank">{{item.tweet_id}}</a></td>
+                                        {% if item.queue_type == "D" %}
+                                            <td>Default</td>
+                                        {% else %}
+                                            <td>High</td>
+                                        {% endif %}
+                                        <td style="text-align: center;"><a href="javascript:void(0);" onclick="queue_trash({{item.id}})" ><span class="fas fa-trash"></span></a></td>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+    <div class="row">
+        <h2>No giveaways launching!</h2>
+    </div>
+    {% endif %}
+    </div>
+
+<script>
+
+function confirmLaunch(order_id, item_id) {
+    swal.fire({
+        title: 'Are you sure?',
+        text: "This will start your giveaway for @{{ request.user.username }}!",
+        icon: 'warning',
+        showCancelButton: true,
+        background: '#e9ecef',
+        confirmButtonColor: '#21c1d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, send it!'
+    }).then((result) => {
+        if (result.value) {
+            window.location.href = "/contests/launch/" + order_id + "/" + item_id;
+        } else if (
+            /* Read more about handling dismissals below */
+            result.dismiss === Swal.DismissReason.cancel
+        ) {
+            swal.fire(
+                'Cancelled',
+                'Launch aborted!',
+                'error'
+            )
+        }
+    })
+
+}
+
+function queue_trash(queue_id) {
+    swal.fire({
+        title: 'Are you sure?',
+        text: "This will delete giveaway from queue!",
+        icon: 'warning',
+        showCancelButton: true,
+        background: '#e9ecef',
+        confirmButtonColor: '#21c1d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, i am sure!'
+    }).then((result) => {
+        if (result.value) {
+            $.ajax({
+                type: "POST",
+                url: "../delqueue",
+                data: {'queue_id': queue_id},
+                success: function (data) {
+                    if (data.success == true) {
+                        $("#qr_" + queue_id).remove()
+                    } else {
+                        swal.fire(
+                            'Failed',
+                            'Error occured while deleting',
+                            'error'
+                        )
+                    }
+                }
+            })
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+            
+        }
+    })
+    
+    }
+    </script>
+{% endblock %}

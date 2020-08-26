@@ -120,6 +120,7 @@ class GiveawayManager:
             author = self.process_retrieved_tweets.author
             self.tweet_id = self.process_retrieved_tweets.tweet_id
         tweet_url = f'https://twitter.com/{author}/status/{self.tweet_id}'
+        self.tweet_url = tweet_url
         self.tweet_id_key, created = TwitterGiveawayID.objects.get_or_create(tweet_url=tweet_url)
         return tweet_url
 
@@ -256,24 +257,26 @@ class GiveawayManager:
         if self.new_giveaway:
             self.launch_giveaway()
             self.create_giveaway_entry()
-            if not self.scheduled_task:
-                self.sleep_for_duration()
-        self.retrieve_tweets()
-        eligible_to_win = False
-        rerolls = []
-        while not eligible_to_win:
-            winner_obj = self.choose_winner()
-            reason, eligible_to_win = self.perform_winner_analysis(self.winner)
-            if not eligible_to_win:
-                logging.info(f'{self.winner} is not eligible... rerolling: Reason: {reason}')
-                reroll_record, created = get_user(winner_obj)
-                rerolls.append(reroll_record)
-        # Add people who got rerolled
-        self.results.save()
-        if rerolls:
-            logging.info("Adding {rerolls} rerolls to db".format(rerolls=len(rerolls)))
-            self.results.re_rolls.add(*rerolls)
-        self.populate_giveaway_stats()
-        if self.new_giveaway:
+            # if not self.scheduled_task:
+            #     self.sleep_for_duration()
+        else:
+            self.retrieve_tweets()
+            eligible_to_win = False
+            rerolls = []
+            while not eligible_to_win:
+                winner_obj = self.choose_winner()
+                reason, eligible_to_win = self.perform_winner_analysis(self.winner)
+                if not eligible_to_win:
+                    logging.info(f'{self.winner} is not eligible... rerolling: Reason: {reason}')
+                    reroll_record, created = get_user(winner_obj)
+                    rerolls.append(reroll_record)
+            # Add people who got rerolled
+            self.results.save()
+            if rerolls:
+                logging.info("Adding {rerolls} rerolls to db".format(rerolls=len(rerolls)))
+                self.results.re_rolls.add(*rerolls)
+            self.populate_giveaway_stats()
+            
+        # if self.new_giveaway:
             self.reply_to_original_tweet()
             self.notify_winner()
