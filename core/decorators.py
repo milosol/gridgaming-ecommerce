@@ -5,10 +5,11 @@ from django.contrib import messages
 
 def account_type_check(function):
     def _function(request,*args, **kwargs):
-        if request.user.account_type is None:
-            messages.info(request, "Please select role before using the grid.")
-            return HttpResponseRedirect(reverse('frontend:account_type'))
-        return function(request, *args, **kwargs)
+        if hasattr(request.user, 'account_type'):
+            if request.user.account_type is None:
+                messages.info(request, "Please select role before using the grid.")
+                return HttpResponseRedirect(reverse('frontend:account_type'))
+            return function(request, *args, **kwargs)
     return _function
 
 
