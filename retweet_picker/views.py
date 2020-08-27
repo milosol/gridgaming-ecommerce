@@ -136,6 +136,10 @@ def retrieve_tweets_choose_winner(request, existing_tweet_url):
 def queue_launch(queue_id):
     try:
         row = GiveawayQueue.objects.get(id=queue_id)
+        if row.status == 'L':
+            return False
+        row.status = 'L'
+        row.save()
         user = User.objects.get(id=row.user_id)
         if user.username == 'GridGamingIO':
             sponsors = ['@GridGamingIO']
@@ -148,7 +152,6 @@ def queue_launch(queue_id):
                                 giveaway_amount=row.giveaway_amount,
                                 duration=row.duration)
         
-        row.status = 'L'
         row.start_time = timezone.now()
         row.tweet_url = tweet_url
         row.save()
@@ -182,9 +185,10 @@ def process_queue(queue_type):
         rows = GiveawayQueue.objects.filter(queue_type=queue_type, status='L')
         if rows.exists():
             row = rows[0]
-            end_time = row.start_time + timedelta(minutes=row.duration)
-            if end_time < timezone.now():
-                queue_retrieve(row.id)    
+            if row.start_time is not None:
+                end_time = row.start_time + timedelta(minutes=row.duration)
+                if end_time < timezone.now():
+                    queue_retrieve(row.id)    
         else:
             r_count = GiveawayQueue.objects.filter(queue_type=queue_type, status='R').count()
             if r_count == 0:
