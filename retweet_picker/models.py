@@ -1,6 +1,6 @@
 # from django.contrib.auth.models import User
 # from users.models import GridUser as User
-from core.models import Order
+from core.models import Order, OrderItem
 from django.conf import settings
 from django.db import models
 import uuid
@@ -31,7 +31,7 @@ class ContestUserAccounts(models.Model):
 
 
 class GiveawayStats(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True, blank=True)
+    order = models.ForeignKey(OrderItem, on_delete=models.CASCADE, null=True, blank=True)
     # Reference user object through order
     giveaway_id = models.ForeignKey('TwitterGiveawayID', related_name='giveaway_stats', on_delete=models.CASCADE)
     giveaway_start_time = models.DateTimeField(null=True, blank=True)

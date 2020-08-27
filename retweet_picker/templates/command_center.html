@@ -155,15 +155,15 @@
                                                 <i class="fa fa-calendar"></i>
                                                 </button>
                                             {% elif item.status == "T" %}
-                                                <a href="{% url "retweet_picker:contest_results" order.order.id %}"><button type="button" class="btn btn-info btn-circle-lg" data-toggle="tooltip" data-placement="right" title="" data-original-title="Winner Selected!">
+                                                <a href="{% url "retweet_picker:contest_results" item.id %}"><button type="button" class="btn btn-info btn-circle-lg" data-toggle="tooltip" data-placement="right" title="" data-original-title="Winner Selected!">
                                                 <i class="fa fa-trophy"></i>
                                                 </button></a>
                                             {% elif item.status == "C" %}
-                                                <a href="{% url "retweet_picker:contest_results" order.order.id %}"><button type="button" class="btn btn-outline-success btn-circle-lg" data-toggle="tooltip" data-placement="right" title="" data-original-title="Winner Contacted">
+                                                <a href="{% url "retweet_picker:contest_results" item.id %}"><button type="button" class="btn btn-outline-success btn-circle-lg" data-toggle="tooltip" data-placement="right" title="" data-original-title="Winner Contacted">
                                                 <i class="fas fa-mobile-alt"></i>
                                                 </button></a>
                                             {% elif item.status == "D" %}
-                                                <a href="{% url "retweet_picker:contest_results" order.order.id %}"><button type="button" class="btn btn-outline-success btn-add-todo" data-toggle="tooltip" data-placement="right" title="" data-original-title="Winner Paid">
+                                                <a href="{% url "retweet_picker:contest_results" item.id %}"><button type="button" class="btn btn-outline-success btn-add-todo" data-toggle="tooltip" data-placement="right" title="" data-original-title="Winner Paid">
                                                 <i class="fas fa-dollar-sign"></i>
                                                 </button></a>
                                             {% endif %}

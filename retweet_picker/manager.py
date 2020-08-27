@@ -182,12 +182,12 @@ class GiveawayManager:
         # TODO Add following sponsors relationship
         eligibility = True
         reason = None
-        bc = BotCheck(username=winner)
-        logging.info(bc.user_analysis)
-        bot = bc.bot_prediction()
-        if bot:
-            eligibility = False
-            reason = "User is a bot"
+        # bc = BotCheck(username=winner)
+        # logging.info(bc.user_analysis)
+        # bot = bc.bot_prediction()
+        # if bot:
+        #     eligibility = False
+        #     reason = "User is a bot"
         following, member_not_followed = self.contestant_following_sponsors(winner)
         if not following:
             eligibility = False
@@ -281,8 +281,10 @@ class GiveawayManager:
                 if rerolls:
                     logging.info("Adding {rerolls} rerolls to db".format(rerolls=len(rerolls)))
                     self.results.re_rolls.add(*rerolls)
-                self.populate_giveaway_stats()
-                
+                try:
+                    self.populate_giveaway_stats()
+                except Exception as e:
+                    print(e)
             # if self.new_giveaway:
                 self.reply_to_original_tweet()
                 self.notify_winner()
