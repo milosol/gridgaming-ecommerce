@@ -223,8 +223,8 @@ class GiveawayManager:
 
     def reply_to_original_tweet(self):
         self.end_time = datetime.datetime.now()
-        # self.twitter_interact.api.update_status(f"WINNER: @{self.winner} 🏆", in_reply_to_status_id=self.tweet_id)
-        self.twitter_interact.api.update_status(f"WINNER: @test 🏆", in_reply_to_status_id=self.tweet_id)
+        self.twitter_interact.api.update_status(f"WINNER: @{self.winner} 🏆", in_reply_to_status_id=self.tweet_id)
+        # self.twitter_interact.api.update_status(f"WINNER: @test 🏆", in_reply_to_status_id=self.tweet_id)
 
 
     def notify_winner(self):
@@ -232,7 +232,7 @@ class GiveawayManager:
         logging.info(f'[*] Notifying winner with this text: {winner_message}')
         change_order_status(self.order_id, 'C')
         GiveawayQueue.objects.filter(status='R', item_id=self.order_id).update(status='E', end_time=timezone.now())
-        # self.twitter_interact.send_user_message(self.winner, winner_message)
+        self.twitter_interact.send_user_message(self.winner, winner_message)
 
     def remove_tweet(self):
         # Possible feature to remove tweet and keep clean timeline
