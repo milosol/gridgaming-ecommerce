@@ -18,7 +18,7 @@ def payment_notification(sender, **kwargs):
         kind =ipn.invoice.split("_")[1]
         order = get_object_or_404(Order, id=order_id)
         order_items = order.items.all()
-        order_items.update(ordered=True)
+        order_items.update(ordered=True, status='P')
         for item in order_items:
             item.save()
             

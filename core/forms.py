@@ -7,7 +7,7 @@ import pytz
 
 PAYMENT_CHOICES = (
     ('P', 'Paypal'),
-    ('C', 'Bitcoin'),
+    # ('C', 'Bitcoin'),
     ('S', 'Stripe'),
 )
 

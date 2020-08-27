@@ -4,12 +4,13 @@ import random
 import sys
 import time
 import uuid
+from django.utils import timezone
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
-from core.models import Order
+from core.models import Order, OrderItem
 from retweet_picker.bot_check import BotCheck
-from retweet_picker.models import GiveawayResults, GiveawayStats, TwitterGiveawayID, ContestUserAccounts
+from retweet_picker.models import GiveawayResults, GiveawayStats, TwitterGiveawayID, ContestUserAccounts, GiveawayQueue
 from retweet_picker.process import ProcessRetrievedTweets
 from retweet_picker.twitter_interact import TwitterInteract
 from .utils import display_time, giveaway_ends
@@ -32,7 +33,7 @@ class TwitterUser(TwitterInteract):
 def change_order_status(order_id, status=None):
     if order_id and status:
         try:
-            order = Order.objects.get(id=order_id)
+            order = OrderItem.objects.get(id=order_id)
             order.status = status
             order.save()
         except Exception as e:
@@ -222,13 +223,16 @@ class GiveawayManager:
 
     def reply_to_original_tweet(self):
         self.end_time = datetime.datetime.now()
-        self.twitter_interact.api.update_status(f"WINNER: @{self.winner} 🏆", in_reply_to_status_id=self.tweet_id)
+        # self.twitter_interact.api.update_status(f"WINNER: @{self.winner} 🏆", in_reply_to_status_id=self.tweet_id)
+        self.twitter_interact.api.update_status(f"WINNER: @test 🏆", in_reply_to_status_id=self.tweet_id)
+
 
     def notify_winner(self):
         winner_message = f'Congratulations! You won ${self.giveaway_amount}! What is your cashapp or paypal?'
         logging.info(f'[*] Notifying winner with this text: {winner_message}')
         change_order_status(self.order_id, 'C')
-        self.twitter_interact.send_user_message(self.winner, winner_message)
+        GiveawayQueue.objects.filter(status='R', item_id=self.order_id).update(status='E', end_time=timezone.now())
+        # self.twitter_interact.send_user_message(self.winner, winner_message)
 
     def remove_tweet(self):
         # Possible feature to remove tweet and keep clean timeline
@@ -261,23 +265,29 @@ class GiveawayManager:
             # if not self.scheduled_task:
             #     self.sleep_for_duration()
         else:
-            self.retrieve_tweets()
-            eligible_to_win = False
-            rerolls = []
-            while not eligible_to_win:
-                winner_obj = self.choose_winner()
-                reason, eligible_to_win = self.perform_winner_analysis(self.winner)
-                if not eligible_to_win:
-                    logging.info(f'{self.winner} is not eligible... rerolling: Reason: {reason}')
-                    reroll_record, created = get_user(winner_obj)
-                    rerolls.append(reroll_record)
-            # Add people who got rerolled
-            self.results.save()
-            if rerolls:
-                logging.info("Adding {rerolls} rerolls to db".format(rerolls=len(rerolls)))
-                self.results.re_rolls.add(*rerolls)
-            self.populate_giveaway_stats()
-            
-        # if self.new_giveaway:
-            self.reply_to_original_tweet()
-            self.notify_winner()
+            try:
+                self.retrieve_tweets()
+                eligible_to_win = False
+                rerolls = []
+                while not eligible_to_win:
+                    winner_obj = self.choose_winner()
+                    reason, eligible_to_win = self.perform_winner_analysis(self.winner)
+                    if not eligible_to_win:
+                        logging.info(f'{self.winner} is not eligible... rerolling: Reason: {reason}')
+                        reroll_record, created = get_user(winner_obj)
+                        rerolls.append(reroll_record)
+                # Add people who got rerolled
+                self.results.save()
+                if rerolls:
+                    logging.info("Adding {rerolls} rerolls to db".format(rerolls=len(rerolls)))
+                    self.results.re_rolls.add(*rerolls)
+                self.populate_giveaway_stats()
+                
+            # if self.new_giveaway:
+                self.reply_to_original_tweet()
+                self.notify_winner()
+            except Exception as e:
+                print(e)
+                logging.info("Could not retrieve any retweets!")
+                change_order_status(self.order_id, 'C')
+                GiveawayQueue.objects.filter(status='R', item_id=self.order_id).update(status='E', end_time=timezone.now())

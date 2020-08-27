@@ -310,7 +310,7 @@ class PaymentView(View):
             # assign the payment to the order
 
             order_items = order.items.all()
-            order_items.update(ordered=True)
+            order_items.update(ordered=True, status='P')
             for item in order_items:
                 item.save()
 
@@ -421,7 +421,7 @@ class BitpayView(View):
                     # assign the payment to the order
 
                     order_items = order.items.all()
-                    order_items.update(ordered=True)
+                    order_items.update(ordered=True, status='P')
                     for item in order_items:
                         item.save()
 
@@ -468,7 +468,7 @@ def bitpay_notify(request):
                 payment.save()
 
                 order_items = order.items.all()
-                order_items.update(ordered=True)
+                order_items.update(ordered=True, status='P')
                 for item in order_items:
                     item.save()
 

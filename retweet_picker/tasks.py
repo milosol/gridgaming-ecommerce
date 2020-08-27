@@ -22,12 +22,12 @@ def start_giveaway_bg(user_id=None,
     return gm.tweet_url
 
 def retrieve_tweets_choose_winner_job(existing_tweet_url=None,
-                                     user_id=None):
+                                     user_id=None, order_id=None, giveaway_amount=0):
     from django.db import connection
     connection.close()
-    gm = GiveawayManager(user_id=user_id,
-                         existing_tweet_url=existing_tweet_url,
-                         new_giveaway=False)
+    gm = GiveawayManager(user_id=user_id, order_id=order_id,
+                         existing_tweet_url=existing_tweet_url, 
+                         new_giveaway=False, giveaway_amount=giveaway_amount)
     gm.run_pipeline()
 
 

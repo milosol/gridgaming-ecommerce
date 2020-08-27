@@ -17,6 +17,7 @@ urlpatterns = [
     path('new_contest/', views.new_retweet_contest, name='retweet_picker'),
     path('launch/<int:order_id>/<int:item_id>', launch_giveaway, name='launch_giveaway'),
     path('queue/', QueueListView.as_view() , name='queue_view'),
+    # path('queue/<str:queue_type>/', QueueListView.as_view() , name='queue_view'),
     path('delqueue', delete_queue , name='del_queue'),
     path('order/<int:order_id>', order_details, name="order_details"),
     path('results/<int:order_id>', views.contest_results, name='contest_results'),

@@ -143,9 +143,9 @@ def queue_launch(queue_id):
             sponsors = ['@GridGamingIO', '@' + user.username]
         order_item = OrderItem.objects.get(id=row.item_id)
         tweet_url = start_giveaway_bg(user_id=row.user_id,
-                                order_id=row.order_id,
+                                order_id=row.item_id,
                                 sponsors=sponsors,
-                                giveaway_amount=int(order_item.item.giveaway_value),
+                                giveaway_amount=row.giveaway_amount,
                                 duration=row.duration)
         
         row.status = 'L'
@@ -160,11 +160,18 @@ def queue_launch(queue_id):
 def queue_retrieve(queue_id):
     try:
         row = GiveawayQueue.objects.get(id=queue_id)
-        print("======== retrieve_url:",queue_id, row.tweet_url)
-        retrieve_tweets_choose_winner_job(existing_tweet_url=row.tweet_url, user_id=row.user_id)
-        row.status = 'E'
-        row.end_time = timezone.now()
+        row.status = 'R'
         row.save()
+        print("======== retrieving:",queue_id, ":", row.queue_type, ":", row.tweet_url, )
+        if row.queue_type == 'H':
+            queue = django_rq.get_queue('high')
+        elif row.queue_type == 'L':
+            queue = django_rq.get_queue('low') 
+        else:
+            queue = django_rq.get_queue('default') 
+            
+        queue.enqueue(retrieve_tweets_choose_winner_job, existing_tweet_url=row.tweet_url, user_id=row.user_id, order_id=row.item_id, giveaway_amount=row.giveaway_amount)
+        # retrieve_tweets_choose_winner_job(existing_tweet_url=row.tweet_url, user_id=row.user_id, order_id=row.item_id, giveaway_amount=row.giveaway_amount)
         return True
     except Exception as e:
         print(e)
@@ -179,9 +186,11 @@ def process_queue(queue_type):
             if end_time < timezone.now():
                 queue_retrieve(row.id)    
         else:
-            items = GiveawayQueue.objects.filter(queue_type=queue_type, status='W')
-            if items.exists():
-                queue_launch(items[0].id)
+            r_count = GiveawayQueue.objects.filter(queue_type=queue_type, status='R').count()
+            if r_count == 0:
+                items = GiveawayQueue.objects.filter(queue_type=queue_type, status='W')
+                if items.exists():
+                    queue_launch(items[0].id)
         return True
     except Exception as e:
         print(e)
@@ -191,6 +200,7 @@ def queue_thread(name):
     while (1):
         process_queue('H')
         process_queue('D')
+        process_queue('L')
         time.sleep(3)
 
 
@@ -203,11 +213,12 @@ launch_thread()
 def add_queue(request, order_id, item_id):
     res = {'success':True, 'msg':''}
     try:
-        queue_type = 'D'
         order_item = OrderItem.objects.get(id=item_id)
+        queue_type = order_item.item.priority
         run_time = int(order_item.item.duration_to_run * request.user.account_type.time_quantifier)
-        GiveawayQueue.objects.create(user_id=request.user.id, order_id=order_id, item_id=item_id, duration=run_time, status='W', queue_type=queue_type)
-        count = GiveawayQueue.objects.filter(queue_type=queue_type).count()
+        giveaway_amount = int(order_item.item.giveaway_value)
+        GiveawayQueue.objects.create(user_id=request.user.id, order_id=order_id, item_id=item_id, duration=run_time, status='W', queue_type=queue_type, giveaway_amount=giveaway_amount)
+        count = GiveawayQueue.objects.filter(queue_type=queue_type, status__in=['W', 'L', 'R']).count()
         if count == 1:
             res['msg'] = "Your giveaway is live soon!"
         else:
@@ -278,9 +289,11 @@ class QueueListView(ListView):
     template_name = "queue_list.html"
     model = GiveawayQueue
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, *args, **kwargs):
         # Call the base implementation first to get a context
         context = super().get_context_data(**kwargs)
+        # queue_type = self.kwargs.get('queue_type', 'default')
+        # print("================ queue_type:", queue_type)
         rows = GiveawayQueue.objects.all()
         for row in rows:
             try:

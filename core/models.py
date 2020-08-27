@@ -125,6 +125,7 @@ class OrderItem(models.Model):
     slot = models.ForeignKey("Slotitem", on_delete=models.CASCADE, null=True)
     username = models.CharField(max_length=200, default='')
     launch_code = models.CharField(max_length=200, blank=True, null=True)
+    status = models.CharField(max_length=20, choices=GIVEAWAY_STATUS_CHOICES, default='I', blank=True, null=True)
     
     class Meta:
         ordering = ['-orders__id']

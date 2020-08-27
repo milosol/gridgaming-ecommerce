@@ -13,8 +13,9 @@ STATUS_CHOICES = (
     ('E', 'End')
 )
 TYPE_CHOICES = (
-    ('H', 'High'),
     ('D', 'Default'),
+    ('L', 'Low'),
+    ('H', 'High')
 )
 
 class ContestUserAccounts(models.Model):
@@ -114,6 +115,7 @@ class GiveawayQueue(models.Model):
     order_id = models.IntegerField(default=0)
     item_id = models.IntegerField(default=0)
     status = models.CharField(choices=STATUS_CHOICES, max_length=1)
+    giveaway_amount = models.IntegerField(default=0)
     queue_type = models.CharField(choices=TYPE_CHOICES, max_length=1)
     duration = models.IntegerField(default=0)
     tweet_url = models.URLField(max_length=500, blank=True, null=True)
