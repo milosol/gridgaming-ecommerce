@@ -97,7 +97,7 @@
                                                         <a href="{% url "retweet_picker:contest_results" item.id %}"><h4 class="font-weight-medium text-success">See Results</h4></a>
                                                         <a href="{{ item.item.get_absolute_url }}" class="h4 font-weight-medium badge badge-primary">PURCHASE AGAIN</a>
                                                         <br>
-                                                        <small class="font-weight-light mb-0 text-secondary">ID: {{ order.order.ref_code }}</small>
+                                                        <small class="font-weight-light mb-0 text-secondary">Ordered {{ order.order.ordered_date|date }}</small>
 {#                                                        <a href="{% url "retweet_picker:contest_results" item.id %}" class="btn waves-effect waves-light btn-lg btn-outline-success">See Results</a>#}
 {#                                                        <h4 class="font-weight-medium badge badge-secondary">{{ item.get_status_display }}</h4>#}
 

@@ -341,7 +341,7 @@ class QueueListView(ListView):
 class OrdersListView(ListView):
     template_name = "command_center.html"
     model = Order
-    ordering = ['-status']
+    ordering = ['-ordered_date']
 
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
