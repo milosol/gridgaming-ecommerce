@@ -59,6 +59,7 @@ class OrderAdmin(admin.ModelAdmin):
                    'status',
                    'ordered_date',
                    'refund_requested',
+                   'kind',
                    'refund_granted']
     search_fields = [
         'id',
@@ -93,7 +94,8 @@ class OrderItemAdmin(admin.ModelAdmin):
                     'ordered_date'
                     ]
 
-    list_filter = ['ordered']
+    list_filter = ['ordered', 'kind']
+    search_fields = ('username',)
 
     def get_email(self, obj):
         return obj.user.email

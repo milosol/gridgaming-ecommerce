@@ -3,32 +3,145 @@
 {% load i18n %}
 {% load account socialaccount %}
 {% load crispy_forms_tags %}
+{% load static %}
 
 {% block content %}
 
+<div class="main-wrapper">
+        <!-- ============================================================== -->
+        <!-- Preloader - style you can find in spinners.css -->
+        <!-- ============================================================== -->
+        <div class="preloader" style="display: none;">
+            <div class="lds-ripple">
+                <div class="lds-pos"></div>
+                <div class="lds-pos"></div>
+            </div>
+        </div>
+        <!-- ============================================================== -->
+        <!-- Preloader - style you can find in spinners.css -->
+        <!-- ============================================================== -->
+        <!-- ============================================================== -->
+        <!-- Login box.scss -->
+        <!-- ============================================================== -->
+        <div class="auth-wrapper d-flex no-block justify-content-center align-items-center">
+            <div class="auth-box p-4 bg-white rounded">
+                <div id="loginform">
+                    <div class="logo text-center">
+                        <h2 class="box-title mb-3 text-center">{% trans "Sign In" %}</h2>
+                        <img class="img-fluid" style="width:60%" src="{% static 'img/icon_w.png' %}">
+                    </div>
 
-    <main>
-        <div class="container">
-            <section class="mb-4">
-                <div class="row wow fadeIn">
-                    <div class='col-6 offset-3 text-center'>
-                        <h1>{% trans "Sign In" %}</h1>
-
+                    <!-- Form -->
+                    <div class="row">
+                        <div class="col-12">
                         {% load socialaccount %}
 
                         {% get_providers as socialaccount_providers %}
+                            <div class="form-horizontal mt-3 form-material" id="loginform" action="index.html">
+{#                                <div class="form-group mb-3">#}
+{#                                    <div class="">#}
+{#                                        <input class="form-control" type="text" required="" placeholder="Username"> </div>#}
+{#                                </div>#}
+{#                                <div class="form-group mb-4">#}
+{#                                    <div class="">#}
+{#                                        <input class="form-control" type="password" required="" placeholder="Password"> </div>#}
+{#                                </div>#}
+{#                                <div class="form-group">#}
+{#                                    <div class="d-flex">#}
+{#                                        <div class="checkbox checkbox-info pt-0">#}
+{#                                            <input id="checkbox-signup" type="checkbox" class="material-inputs chk-col-indigo">#}
+{#                                            <label for="checkbox-signup"> Remember me </label>#}
+{#                                        </div>#}
+{#                                        <div class="ml-auto">#}
+{#                                            <a href="javascript:void(0)" id="to-recover" class="text-muted float-right"><i class="fa fa-lock mr-1"></i> Forgot pwd?</a>#}
+{#                                        </div>#}
+{#                                    </div>#}
+{#                                </div>#}
+                                <div class="form-group text-center mt-4">
+                                    <div class="col-xs-12">
+
 
                         {% for provider in socialaccount_providers %}
                                 <a title="{{ provider.name }}" class="socialaccount_provider {{ provider.id }}"
                                    href="{% provider_login_url provider.id process=process scope=scope auth_params=auth_params %}">
-                                <button type="button" class="btn waves-effect waves-light btn-lg btn-rounded btn-twitter"><i class="fab fa-twitter"></i> Connect Twitter</button></span>
+                                <button class="btn btn-info btn-lg btn-block text-uppercase waves-effect waves-light" type="submit"><i class="fab fa-twitter"></i> Connect Twitter</button></span>
                                 </a>
                         {% endfor %}
 
+                                    </div>
+                                </div>
+                                <div class="form-group mb-0 mt-4">
+                                    <div class="col-sm-12 justify-content-center d-flex">
+                                        <p>Login with the account you would like to promote. We require minimal permissions and it is only used for authentication and to verify you own the account.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </section>
+{#                <div id="recoverform">#}
+{#                    <div class="logo">#}
+{#                        <h3 class="font-weight-medium mb-3">Recover Password</h3>#}
+{#                        <span class="text-muted">Enter your Email and instructions will be sent to you!</span>#}
+{#                    </div>#}
+{#                    <div class="row mt-3 form-material">#}
+{#                        <!-- Form -->#}
+{#                        <form class="col-12" action="index.html">#}
+{#                            <!-- email -->#}
+{#                            <div class="form-group row">#}
+{#                                <div class="col-12">#}
+{#                                    <input class="form-control" type="email" required="" placeholder="Username">#}
+{#                                </div>#}
+{#                            </div>#}
+{#                            <!-- pwd -->#}
+{#                            <div class="row mt-3">#}
+{#                                <div class="col-12">#}
+{#                                    <button class="btn btn-block btn-lg btn-primary text-uppercase" type="submit" name="action">Reset</button>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                        </form>#}
+{#                    </div>#}
+{#                </div>#}
+            </div>
         </div>
-    </main>
+        <!-- ============================================================== -->
+        <!-- Login box.scss -->
+        <!-- ============================================================== -->
+        <!-- ============================================================== -->
+        <!-- Page wrapper scss in scafholding.scss -->
+        <!-- ============================================================== -->
+        <!-- ============================================================== -->
+        <!-- Page wrapper scss in scafholding.scss -->
+        <!-- ============================================================== -->
+        <!-- ============================================================== -->
+        <!-- Right Sidebar -->
+        <!-- ============================================================== -->
+        <!-- ============================================================== -->
+        <!-- Right Sidebar -->
+        <!-- ============================================================== -->
+    </div>
+{#    <main>#}
+{#        <div class="container">#}
+{#            <section class="mb-4">#}
+{#                <div class="row wow fadeIn">#}
+{#                    <div class='col-6 offset-3 text-center'>#}
+{#                        <h1>{% trans "Sign In" %}</h1>#}
+{##}
+{#                        {% load socialaccount %}#}
+{##}
+{#                        {% get_providers as socialaccount_providers %}#}
+{##}
+{#                        {% for provider in socialaccount_providers %}#}
+{#                                <a title="{{ provider.name }}" class="socialaccount_provider {{ provider.id }}"#}
+{#                                   href="{% provider_login_url provider.id process=process scope=scope auth_params=auth_params %}">#}
+{#                                <button type="button" class="btn waves-effect waves-light btn-lg btn-rounded btn-twitter"><i class="fab fa-twitter"></i> Connect Twitter</button></span>#}
+{#                                </a>#}
+{#                        {% endfor %}#}
+{##}
+{#                    </div>#}
+{#                </div>#}
+{#            </section>#}
+{#        </div>#}
+{#    </main>#}
 
 {% endblock %}
