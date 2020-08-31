@@ -165,6 +165,8 @@ def queue_launch(queue_id):
 def queue_retrieve(queue_id):
     try:
         row = GiveawayQueue.objects.get(id=queue_id)
+        if row.status == 'R':
+             return False
         row.status = 'R'
         row.save()
         print("======== retrieving:", queue_id, ":", row.queue_type, ":", row.tweet_url, )
