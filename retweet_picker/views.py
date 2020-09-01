@@ -342,11 +342,13 @@ class OrdersListView(ListView):
     template_name = "command_center.html"
     model = Order
     ordering = ['-ordered_date']
+    paginate_by = 20
 
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
         context = super().get_context_data(**kwargs)
         context['order_items'] = order_items_prefetch_related_efficient(self.request.user.id)
+        print(context)
         return context
 
 
