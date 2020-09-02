@@ -6,8 +6,51 @@ from .models import (
     ContestUserAccounts,
     TwitterGiveawayID,
     GiveawayResults,
-    GiveawayStats
+    GiveawayStats,
+    GiveawayQueue
 )
+
+#TODO Add to giveaway queue eventually
+
+# def get_context_data(self, *args, **kwargs):
+#     # Call the base implementation first to get a context
+#     context = super().get_context_data(**kwargs)
+#     # queue_type = self.kwargs.get('queue_type', 'default')
+#     # print("================ queue_type:", queue_type)
+#     rows = GiveawayQueue.objects.all()
+#     for row in rows:
+#         try:
+#             u = User.objects.get(id=row.user_id)
+#             row.username = u.username
+#         except Exception as e:
+#             print(e)
+#             row.username = ""
+#         try:
+#             order_item = OrderItem.objects.get(id=row.item_id)
+#             row.itemname = order_item.get_title()
+#         except Exception as e:
+#             print(e)
+#             row.itemname = ""
+#         if row.start_time == None:
+#             row.start_time = ''
+#         if row.end_time == None:
+#             row.end_time = ''
+#         if row.tweet_url == None:
+#             row.tweet_url = ''
+#             row.tweet_id = ''
+#         else:
+#             row.tweet_id = row.tweet_url.split('status/')[1]
+
+class GiveawayQueueAdmin(admin.ModelAdmin):
+    list_display = [
+        'user_id',
+        'giveaway_amount',
+        'status',
+        'tweet_url',
+        'created_at',
+        'start_time',
+        'end_time'
+    ]
 
 # Register your models here.
 class GiveawayStatsAdmin(admin.ModelAdmin):
@@ -45,4 +88,5 @@ admin.site.register(TwitterGiveawayID)
 admin.site.register(GiveawayResults)
 admin.site.register(ContestUserParticipation)
 admin.site.register(GiveawayStats, GiveawayStatsAdmin)
+admin.site.register(GiveawayQueue, GiveawayQueueAdmin)
 
