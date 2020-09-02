@@ -13,7 +13,10 @@
                 <div class="card">
                     <div class="card-body">
                         <h4 class="card-title text-center">Queue List</h4>
-                        <div class="table-responsive">
+                        <div>
+                            <button class='btn btn-danger' onclick="clear_jobs()">Clear all ended jobs</button>
+                        </div>
+                        <div class="table-responsive mt-3">
                             <table id="zero_config" class="table table-striped table-bordered">
                                 <thead>
                                 <tr >
@@ -142,6 +145,25 @@ function queue_trash(queue_id) {
         }
     })
     
-    }
-    </script>
+}
+
+function clear_jobs() {
+    swal.fire({
+        title: 'Are you sure?',
+        text: "This will delete all ended jobs from list!",
+        icon: 'warning',
+        showCancelButton: true,
+        background: '#e9ecef',
+        confirmButtonColor: '#21c1d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, i am sure!'
+    }).then((result) => {
+        if (result.value) {
+            location.href = '../clearqueue'
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+            
+        }
+    })
+}
+</script>
 {% endblock %}

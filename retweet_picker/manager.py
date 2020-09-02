@@ -266,6 +266,7 @@ class GiveawayManager:
             #     self.sleep_for_duration()
         else:
             try:
+                
                 self.retrieve_tweets()
                 eligible_to_win = False
                 rerolls = []
@@ -285,6 +286,7 @@ class GiveawayManager:
                     self.populate_giveaway_stats()
                 except Exception as e:
                     print(e)
+                
             # if self.new_giveaway:
                 self.reply_to_original_tweet()
                 self.notify_winner()

@@ -170,15 +170,16 @@ def queue_retrieve(queue_id):
         row.status = 'R'
         row.save()
         print("======== retrieving:", queue_id, ":", row.queue_type, ":", row.tweet_url, )
+        
         if row.queue_type == 'H':
             queue = django_rq.get_queue('high')
         elif row.queue_type == 'L':
             queue = django_rq.get_queue('low')
         else:
             queue = django_rq.get_queue('default')
-
         queue.enqueue(retrieve_tweets_choose_winner_job, existing_tweet_url=row.tweet_url, user_id=row.user_id,
                       order_id=row.item_id, giveaway_amount=row.giveaway_amount)
+        
         # retrieve_tweets_choose_winner_job(existing_tweet_url=row.tweet_url, user_id=row.user_id, order_id=row.item_id, giveaway_amount=row.giveaway_amount)
         return True
     except Exception as e:
@@ -276,6 +277,15 @@ def delete_queue(request):
         res['msg'] = 'Error occured while deleting queue.'
     return JsonResponse(res)
 
+@csrf_exempt
+def clear_queue(request):
+    try:
+        GiveawayQueue.objects.filter(status='E').delete()
+        messages.success(request, 'Cleared successfully')
+    except Exception as e:
+        print(e)
+        messages.error(request, "Failed to clear ended jobs")
+    return redirect("retweet_picker:queue_view")
 
 def prelaunch_validator(request, order_id, item_id):
     queryset = Order.objects.filter(ordered=True,
