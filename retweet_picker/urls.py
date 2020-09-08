@@ -8,6 +8,7 @@ from .views import (
     order_details,
     QueueListView,
     delete_queue,
+    clear_queue,
 )
 
 app_name = 'retweet_picker'
@@ -19,6 +20,7 @@ urlpatterns = [
     path('queue/', QueueListView.as_view() , name='queue_view'),
     # path('queue/<str:queue_type>/', QueueListView.as_view() , name='queue_view'),
     path('delqueue', delete_queue , name='del_queue'),
+    path('clearqueue', clear_queue , name='clear_queue'),
     path('order/<int:order_id>', order_details, name="order_details"),
     path('results/<int:order_id>', views.contest_results, name='contest_results'),
     #path('results/<uuid:giveaway_id>', views.contest_results, name='contest_results'),
