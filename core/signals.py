@@ -12,7 +12,7 @@ def create_ref_code():
 def payment_notification(sender, **kwargs):
     ipn = sender
     print("------ pay note: " , ipn.payment_status)
-    if ipn.payment_status == 'Completed':
+    if ipn.payment_status == 'Completed' or ipn.payment_status == 'Pending':
         # payment was successful
         order_id = ipn.invoice.split("_")[0]
         kind =ipn.invoice.split("_")[1]
@@ -30,6 +30,7 @@ def payment_notification(sender, **kwargs):
 
         order.ordered = True
         order.status = 'P'
+        order.notes = ipn.payment_status
         order.payment = payment
         order.ref_code = create_ref_code()
         order.save()
