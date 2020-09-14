@@ -1,4 +1,5 @@
 from django.urls import path
+from django.contrib.auth.decorators import login_required
 
 from . import views
 from .views import (
@@ -9,6 +10,7 @@ from .views import (
     QueueListView,
     delete_queue,
     clear_queue,
+    pick
 )
 
 app_name = 'retweet_picker'
@@ -26,5 +28,6 @@ urlpatterns = [
     #path('results/<uuid:giveaway_id>', views.contest_results, name='contest_results'),
     path('results/', views.contest_results, name='all_contest_results'),
     path('bubble_rescue/decoder_ring/<slug:secret_code>/', views.decoder_ring, name='decoder'),
-    path('bubble_rescue/', views.bubble_rescue, name='bubble-rescue-5000')
+    path('bubble_rescue/', views.bubble_rescue, name='bubble-rescue-5000'),
+    path('pick/', login_required(views.pick), name='pick')
 ]

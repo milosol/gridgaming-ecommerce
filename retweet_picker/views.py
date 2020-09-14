@@ -401,6 +401,15 @@ def contest_results(request, order_id):
 
     return render(request, "contest_results.html", context)
 
+def pick(request):
+    context = {}
+    try:
+        context['giveaway_details'] = 'test'
+    except Exception as e:
+        pass
+
+    return render(request, "pick.html", context)
+
 # def get_ipaddress(request):
 #     # if this is a POST request we need to process the form data
 #     if request.method == 'POST':

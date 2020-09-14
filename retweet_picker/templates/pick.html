@@ -1,0 +1,293 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% load mathfilters %}
+
+{% block extra_head_tags %}
+<!-- <link href="{% static 'taginput/stylesheets/inputTag.css' %}" rel="stylesheet"> -->
+<link href="{% static 'taginput/jquery.tagsinput-revisited.css' %}" rel="stylesheet">
+<!-- <link rel="stylesheet" href="http://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"> -->
+
+<style>
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 40px;
+      height: 22px;
+    }
+    
+    .switch input { 
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      -webkit-transition: .4s;
+      transition: .4s;
+    }
+    
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 2px;
+      bottom: 2px;
+      background-color: white;
+      -webkit-transition: .4s;
+      transition: .4s;
+    }
+    
+    input:checked + .slider {
+      background-color: #2196F3;
+    }
+    
+    input:focus + .slider {
+      box-shadow: 0 0 1px #2196F3;
+    }
+    
+    input:checked + .slider:before {
+      -webkit-transform: translateX(18px);
+      -ms-transform: translateX(18px);
+      transform: translateX(18px);
+    }
+    
+    /* Rounded sliders */
+    .slider.round {
+      border-radius: 18px;
+      height: 22px;
+      width: 40px;
+    }
+    
+    .slider.round:before {
+      border-radius: 50%;
+    }
+    .option-container{
+        border-top: 2px solid #5a686c;
+        border-spacing: 40px;
+        display: block;
+    }
+    .option-label{
+        width: fit-content;
+        background-color: #272b34;
+        font-weight: bold;
+        font-size: 1rem;
+        /* color: #0cc0f6; */
+        text-shadow: 1px 1px 4px #5a686c;
+        margin-top:-20px;
+        margin-left: 40px;
+        border-radius: 40%;
+        border: 2px solid #5a686c;
+    }
+    </style>
+{% endblock %}
+
+{% block content %}
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <nav>
+                            <div class="nav nav-tabs" style="width: 50%;" id="nav-tab" role="tablist">
+                              <a class="nav-item nav-link" id="nav-home-tab" data-toggle="tab" href="#nav-home" role="tab" aria-controls="nav-home" aria-selected="true">Pick Retweet</a>
+                              <a class="nav-item nav-link active" id="nav-profile-tab" data-toggle="tab" href="#nav-profile" role="tab" aria-controls="nav-profile" aria-selected="false">Actions</a>
+                            </div>
+                          </nav>
+                          <div class="tab-content" id="nav-tabContent">
+                            <div class="tab-pane fade" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
+                                <div class='px-md-5 py-md-5 px-1 py-4'>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <h2>TWEET LINK</h2>
+                                            <div class='row'>
+                                                <div class='col-sm-6 my-2'>
+                                                    <input type="text" class="form-control" placeholder="Enter your Tweet link">
+                                                </div>
+                                                <div class='col-sm-6 my-2'>
+                                                    <input type="number" class="form-control" placeholder="Number of Winners">
+                                                </div>
+                                                <div class='col-sm-12 mt-2' >
+                                                    <button class='btn  btn-success mx-2 my-2' style="min-width: 200px;">DRAW WINNER</button>
+                                                    <button class='btn  btn-success mx-2 my-2' style="min-width: 200px;">RE-DRAW</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12 mt-5">
+                                            <h2>DRAW VERIFY</h2>
+                                            <div class='row'>
+                                                <div class='col-sm-12 my-2'>
+                                                    <input type="text" class="form-control" placeholder="Enter the draw ID">
+                                                </div>
+                                                <div class='col-sm-12 mt-2'>
+                                                    <button class='btn  btn-success' style="min-width: 200px;">VERIFY</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade show active" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
+                                <div class="px-md-5 py-md-5 px-1 py-4">
+                                    <div class="my-2 option-container">
+                                        <div class="option-label px-4 py-1">Follow</div>
+                                        <div style="display: flex;" class="px-2 mt-4">
+                                            <div class="mx-2">
+                                                <label class="switch">
+                                                    <input type="checkbox" id="chk_follow">
+                                                    <span class="slider round"></span>
+                                                </label>
+                                            </div>
+                                            <div class="mx-2">
+                                                <h5>Enable action</h5>
+                                                <div>
+                                                    The user will need to subscribe to your account in order for their participation to be valid.
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div id="follow_show" style="display: none;">
+                                            <div  style="display: flex;" class="px-2 mt-4">
+                                                <div class="mx-2">
+                                                    <label class="switch">
+                                                        <input type="checkbox" checked disabled>
+                                                        <span class="slider round"></span>
+                                                    </label>
+                                                </div>
+                                                <div class="mx-2">
+                                                    <h5>Follow the main account</h5>
+                                                    <div>
+                                                        The user must follow the account that published the contest.
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div style="display: flex;" class="px-2 mt-4">
+                                                <div class="mx-2">
+                                                    <label class="switch">
+                                                        <input type="checkbox" id="chk_followother">
+                                                        <span class="slider round"></span>
+                                                    </label>
+                                                </div>
+                                                <div class="mx-2">
+                                                    <h5>Follow other accounts</h5>
+                                                    <div>
+                                                        The user will have to follow other accounts for his participation to be valid.
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div style="display: none;" class="px-2 mt-4" id="followother_show">
+                                                <div class="mx-2">
+                                                    <h5>List of additional accounts to follow</h5>
+                                                    <div>   
+                                                        The user will have to follow all these additional accounts (they need to be mentionned in the main publication).                                                
+                                                    </div>
+                                                </div>
+                                                <div id="tags" class="mt-3 px-3">
+                                                    <input id="add_tags" name="tags-1" type="text" value="">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    
+                                    <div class="my-5 option-container">
+                                        <div class="option-label px-4 py-1">Retweet</div>
+                                        <div style="display: flex;" class="px-2 mt-4">
+                                            <div class="mx-2">
+                                                <label class="switch">
+                                                    <input type="checkbox" id="chk_retweet">
+                                                    <span class="slider round"></span>
+                                                </label>
+                                            </div>
+                                            <div class="mx-2">
+                                                <h5>Enable action</h5>
+                                                <div>
+                                                    The user will have to retweet the publication in order for his participation to be valid.
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div id="retweet_show" style="display: none;">
+                                            <div style="display: flex;" class="px-2 mt-4">
+                                                <div class="mx-2">
+                                                    <label class="switch">
+                                                        <input type="checkbox" checked disabled>
+                                                        <span class="slider round"></span>
+                                                    </label>
+                                                </div>
+                                                <div class="mx-2">
+                                                    <h5>Retweet the publication</h5>
+                                                    <div>
+                                                        The user must have retweeted the publication of the contest.
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div style="display: flex;" class="px-2 mt-4">
+                                                <div class="mx-2">
+                                                    <label class="switch">
+                                                        <input type="checkbox">
+                                                        <span class="slider round"></span>
+                                                    </label>
+                                                </div>
+                                                <div class="mx-2">
+                                                    <h5>Accept retweets of type "Retweet with a comment"</h5>
+                                                    <div>
+                                                        By activating this option, this type of entry will be taken into account.
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                
+                                 
+                            </div>
+                          </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+{% endblock %}
+{% block extra_scripts %}
+    <!-- <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script> -->
+<!-- <script src="http://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script> -->
+<script src="{% static 'taginput/jquery.tagsinput-revisited.js' %}"></script>
+<script  type="text/javascript">
+    $(function(){
+        $('#add_tags').tagsInput();
+        $("#chk_follow").change(function(e){
+            fe = $(e.target).prop("checked");
+            if(fe){
+                $("#follow_show").fadeIn();
+            }else{
+                $("#follow_show").fadeOut();
+            }
+        })
+        $("#chk_followother").change(function(e){
+            fe = $(e.target).prop("checked");
+            if(fe){
+                $("#followother_show").fadeIn();
+            }else{
+                $("#followother_show").fadeOut();
+            }
+        })
+        $("#chk_retweet").change(function(e){
+            fe = $(e.target).prop("checked");
+            if(fe){
+                $("#retweet_show").fadeIn();
+            }else{
+                $("#retweet_show").fadeOut();
+            }
+        })
+    })
+</script>
+{% endblock extra_scripts %}
