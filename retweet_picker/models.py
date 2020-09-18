@@ -91,8 +91,23 @@ class TwitterGiveaway(models.Model):
 
 class GiveawayWinners(models.Model):
     """ Table to track all winners - might not need if we use M2M"""
-    winner = models.ManyToManyField(ContestUserAccounts)
+    giveaway_id = models.ForeignKey('TwitterGiveawayID', related_name='draw_giveaway_details', null=True, on_delete=models.SET_NULL)
+    winner = models.ManyToManyField(ContestUserAccounts, related_name='draw_giveaway_winner')
+    re_rolls = models.ManyToManyField('ContestUserAccounts', related_name='draw_rerolled_user')
+    participants = models.IntegerField(null=True)  # Count of total entries
+    created_at = models.DateTimeField(auto_now_add=True)
 
+    def get_winners(self):
+        win_names = []
+        for w in self.winner.all():
+            win_names.append(w.user_screen_name)
+        return win_names
+
+    def get_rerolls(self):
+        reroll_names = []
+        for r in self.re_rolls.all():
+            reroll_names.append(r.user_screen_name)
+        return reroll_names
 
 class GiveawayResults(models.Model):
     """ Results of a giveaway - """

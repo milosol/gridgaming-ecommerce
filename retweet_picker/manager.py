@@ -10,7 +10,7 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
 from core.models import Order, OrderItem
 from retweet_picker.bot_check import BotCheck
-from retweet_picker.models import GiveawayResults, GiveawayStats, TwitterGiveawayID, ContestUserAccounts, GiveawayQueue
+from retweet_picker.models import GiveawayResults, GiveawayStats, TwitterGiveawayID, ContestUserAccounts, GiveawayQueue, GiveawayWinners, ContestUserParticipation
 from retweet_picker.process import ProcessRetrievedTweets
 from retweet_picker.twitter_interact import TwitterInteract
 from .utils import display_time, giveaway_ends
@@ -53,7 +53,8 @@ class GiveawayManager:
                  new_giveaway=True,
                  scheduled_task=False,
                  existing_tweet_url=None,
-                 tweet_text=None):
+                 tweet_text=None,
+                 winner_count=1):
         """
 
         :param user_id: user_id
@@ -78,6 +79,7 @@ class GiveawayManager:
         self.tweet_text = tweet_text
         self.new_giveaway = new_giveaway
         self.winner = None
+        self.winner_count = winner_count
         self.scheduled_task = scheduled_task # When True it will skip sleep mechanism
         self.tweet_id = None
         self.twitter_interact = TwitterInteract()
@@ -182,12 +184,12 @@ class GiveawayManager:
         # TODO Add following sponsors relationship
         eligibility = True
         reason = None
-        bc = BotCheck(username=winner)
-        logging.info(bc.user_analysis)
-        bot = bc.bot_prediction()
-        if bot:
-            eligibility = False
-            reason = "User is a bot"
+        # bc = BotCheck(username=winner)
+        # logging.info(bc.user_analysis)
+        # bot = bc.bot_prediction()
+        # if bot:
+        #     eligibility = False
+        #     reason = "User is a bot"
         following, member_not_followed = self.contestant_following_sponsors(winner)
         if not following:
             eligibility = False
@@ -295,3 +297,55 @@ class GiveawayManager:
                 logging.info("Could not retrieve any retweets!")
                 change_order_status(self.order_id, 'C')
                 GiveawayQueue.objects.filter(status='R', item_id=self.order_id).update(status='E', end_time=timezone.now())
+
+
+    def drawwinner(self, actions):
+        res = {'success': False, 'msg': '', 'winners': [], 'participants': 0, 'rerolls': []}
+        try:
+            if actions['draw_type'] == 'draw':
+                self.retrieve_tweets()
+                logging.info("=== retrieve_tweets finished")
+                results, created = GiveawayWinners.objects.get_or_create(giveaway_id=self.tweet_id_key)
+                self.results = results
+                self.results.participants = len(self.participants)
+                self.results.winner.clear()
+                self.results.re_rolls.clear()
+                self.results.save()
+            else:
+                results, created = GiveawayWinners.objects.get_or_create(giveaway_id=self.tweet_id_key)
+                if created:
+                    res['msg'] = "There is no contest drawed before."
+                    return res
+                self.results = results
+                self.participants = list(ContestUserParticipation.objects.get(contest=self.tweet_id_key).contestants.all())
+            logging.info(f'participants count : {self.results.participants}')
+            if self.results.participants == 0:
+                res['msg'] = "There is no participants."
+                return res
+            res['participants'] = self.results.participants
+            for i in range(self.winner_count):
+                eligible_to_win = False
+                while not eligible_to_win:
+                    if len(self.participants) == 0:
+                        break
+                    winner = random.choice(self.participants)
+                    self.winner = winner.user_screen_name
+                    reason, eligible_to_win = self.perform_winner_analysis(self.winner)
+                    if not eligible_to_win:
+                        logging.info(f'{self.winner} is not eligible... rerolling: Reason: {reason}')
+                        reroll_record, created = get_user(winner)
+                        self.results.re_rolls.add(reroll_record)
+                        res['rerolls'].append(winner.user_screen_name)
+                # Add people who got rerolled
+                if eligible_to_win == True:
+                    winner.save()
+                    self.results.winner.add(winner)
+                    self.participants.remove(winner)
+                    res['winners'].append(winner.user_screen_name)
+        except Exception as e:
+            print(e)
+            logging.info("Could not draw winner!")
+            res['msg'] = "Could not draw winner!"
+            return res
+        res['success'] = True
+        return res

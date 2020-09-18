@@ -110,14 +110,14 @@
                                             <h2>TWEET LINK</h2>
                                             <div class='row'>
                                                 <div class='col-sm-6 my-2'>
-                                                    <input type="text" class="form-control" placeholder="Enter your Tweet link">
+                                                    <input type="text" class="form-control" placeholder="Enter your Tweet link" id="in_link">
                                                 </div>
                                                 <div class='col-sm-6 my-2'>
-                                                    <input type="number" class="form-control" placeholder="Number of Winners">
+                                                    <input type="number" class="form-control" placeholder="Number of Winners" id="in_winner">
                                                 </div>
                                                 <div class='col-sm-12 mt-2' >
-                                                    <button class='btn  btn-success mx-2 my-2' style="min-width: 200px;">DRAW WINNER</button>
-                                                    <button class='btn  btn-success mx-2 my-2' style="min-width: 200px;">RE-DRAW</button>
+                                                    <button class='btn  btn-success mx-2 my-2' style="min-width: 200px;" id="btn_draw">DRAW WINNER</button>
+                                                    <button class='btn  btn-success mx-2 my-2' style="min-width: 200px;" id="btn_redraw">RE-DRAW</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -125,10 +125,10 @@
                                             <h2>DRAW VERIFY</h2>
                                             <div class='row'>
                                                 <div class='col-sm-12 my-2'>
-                                                    <input type="text" class="form-control" placeholder="Enter the draw ID">
+                                                    <input type="text" class="form-control" placeholder="Enter the draw ID" id="in_drawid">
                                                 </div>
                                                 <div class='col-sm-12 mt-2'>
-                                                    <button class='btn  btn-success' style="min-width: 200px;">VERIFY</button>
+                                                    <button class='btn  btn-success' style="min-width: 200px;" id="btn_verify">VERIFY</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -255,6 +255,28 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="myModal">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Draw</h4>
+                    <!-- <button type="button" class="close" data-dismiss="modal">&times;</button> -->
+                </div>
+                <div class="modal-body">
+                    <h6  id="label_status">Please wait while choosing winner...</h6>
+                    <h6 id="label_participants"></h6>
+                    <h6 id="label_winner"></h6>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" >Show Detail</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     {% else %}
     <div class="container-fluid">
     <div class="row">
@@ -294,6 +316,85 @@
             }else{
                 $("#retweet_show").fadeOut();
             }
+        })
+        function draw_winner(type){
+            link = $("#in_link").val();
+            winner = $("#in_winner").val();
+            follow_enable = $("#chk_follow").prop("checked");
+            follow_other = $("#chk_followother").prop("checked");
+            tags = $('#add_tags').val();
+            msg = ""
+            if(link == ""){
+                msg = 'link'
+            }
+            if(winner < 1){
+                if(msg == "")
+                    msg = "winner count"
+                else
+                    msg += " and winner count"
+            }
+            if(msg != ""){
+                msg = "Please input correct " + msg;
+                Swal.fire({
+                    title: "Warning",
+                    text: msg,
+                    showConfirmButton: true
+                });
+                return;
+            }
+            if(type == 'draw'){
+                msg = 'This will find all participants from the first and will take some time.'
+            }else{
+                msg = "This will choose winner from participants already found before."
+            }
+            swal.fire({
+                title: 'Are you sure?',
+                icon: 'warning',
+                text: msg,
+                showCancelButton: true,
+                background: '#e9ecef',
+                confirmButtonColor: '#21c1d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, i am sure!'
+            }).then((result) => {
+                if (result.value) {
+                    $("#label_status").html("Please wait while choosing winner...")
+                    $("#label_winner").html("")
+                    $("#label_participants").html("")
+                    $(".modal-footer").hide()
+                    $("#myModal").modal({backdrop: 'static', keyboard: false})
+                    $.ajax({
+                        type: "POST",
+                        url: "../draw",
+                        data: {'link': link, 'winner': winner, 'follow_enable': follow_enable,
+                                'follow_other': follow_other, 'tags': tags, 'draw_type': type},
+                        success: function (data) {
+                            console.log(data);
+                            if (data.success == true) {
+                                $("#label_status").html("Draw is finished.")
+                                $("#label_winner").html("winners : " + data.winners)
+                                $("#label_participants").html("participants : " + data.participants)
+                                $(".modal-footer").show()
+                            } else {
+                                setTimeout(function () { $("#myModal").modal("hide"); }, 500);
+                                swal.fire(
+                                    'Failed',
+                                    data.msg,
+                                    'error'
+                                )
+                            }
+                        }
+                    })
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    
+                }
+            })
+        }
+        $("#btn_redraw").click(function(){
+            draw_winner('redraw')
+        })
+        $("#btn_draw").click(function(){
+            draw_winner('draw')
         })
     })
 </script>

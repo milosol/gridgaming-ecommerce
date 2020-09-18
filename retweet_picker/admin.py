@@ -7,7 +7,8 @@ from .models import (
     TwitterGiveawayID,
     GiveawayResults,
     GiveawayStats,
-    GiveawayQueue
+    GiveawayQueue,
+    GiveawayWinners
 )
 
 #TODO Add to giveaway queue eventually
@@ -89,4 +90,5 @@ admin.site.register(GiveawayResults)
 admin.site.register(ContestUserParticipation)
 admin.site.register(GiveawayStats, GiveawayStatsAdmin)
 admin.site.register(GiveawayQueue, GiveawayQueueAdmin)
+admin.site.register(GiveawayWinners)
 

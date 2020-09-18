@@ -18,7 +18,7 @@ from core.models import Order, OrderItem
 from .forms import RetweetChooserForm
 from .models import GiveawayResults, TwitterGiveawayID, TwitterGiveaway, GiveawayStats, GiveawayQueue
 from .process import ProcessRetrievedTweets
-from .tasks import start_giveaway_bg, retrieve_tweets_choose_winner_job
+from .tasks import start_giveaway_bg, retrieve_tweets_choose_winner_job, draw_winner
 from users.models import User
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
@@ -177,10 +177,17 @@ def queue_retrieve(queue_id):
             queue = django_rq.get_queue('low')
         else:
             queue = django_rq.get_queue('default')
+            
+        user = User.objects.get(id=row.user_id)
+        if user.username == 'GridGamingIO':
+            sponsors = ['@GridGamingIO']
+        else:
+            sponsors = ['@GridGamingIO', '@' + user.username]
+        print("======== sponsors : ", sponsors)    
         queue.enqueue(retrieve_tweets_choose_winner_job, existing_tweet_url=row.tweet_url, user_id=row.user_id,
-                      order_id=row.item_id, giveaway_amount=row.giveaway_amount)
+                      order_id=row.item_id, giveaway_amount=row.giveaway_amount, sponsors=sponsors)
         
-        # retrieve_tweets_choose_winner_job(existing_tweet_url=row.tweet_url, user_id=row.user_id, order_id=row.item_id, giveaway_amount=row.giveaway_amount)
+        # retrieve_tweets_choose_winner_job(existing_tweet_url=row.tweet_url, user_id=row.user_id, order_id=row.item_id, giveaway_amount=row.giveaway_amount, sponsors=sponsors)
         return True
     except Exception as e:
         print(e)
@@ -210,6 +217,7 @@ def process_queue(queue_type):
 
 def queue_thread(name):
     while (1):
+        # break
         process_queue('H')
         process_queue('D')
         process_queue('L')
@@ -409,6 +417,38 @@ def pick(request):
         pass
 
     return render(request, "pick.html", context)
+
+@csrf_exempt
+def draw(request):
+    res = {'success': True, 'msg': ''}
+    try:
+        print(" === drawing .... ")
+        link = request.POST['link']
+        wc = int(request.POST['winner'])
+        actions = {'follow_enable': False, 'follow_other': False}
+        actions['draw_type'] = request.POST['draw_type']
+        
+        if request.POST['follow_enable'] == 'true':
+            actions['follow_enable'] = True
+        if request.POST['follow_other'] == 'true':
+            actions['follow_other'] = True
+        tags = request.POST['tags']
+        sponsors = []
+        if actions['follow_enable'] == True:
+            username = request.user.username
+            sponsors.append('@GridGamingIO')
+            if actions['follow_other'] == True:
+                user_list = tags.split(',')
+                for tag in user_list:
+                    sponsors.append("@" + tag)
+        actions['sponsors'] = sponsors
+        print("======== actions : ", actions)
+        res = draw_winner(existing_tweet_url=link, winner_count=wc, actions=actions, user_id=request.user.id)
+    except Exception as e:
+        print(e)
+        res['success'] = False
+        res['msg'] = 'Error occured while drawing.'
+    return JsonResponse(res)
 
 # def get_ipaddress(request):
 #     # if this is a POST request we need to process the form data
