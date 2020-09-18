@@ -184,12 +184,12 @@ class GiveawayManager:
         # TODO Add following sponsors relationship
         eligibility = True
         reason = None
-        # bc = BotCheck(username=winner)
-        # logging.info(bc.user_analysis)
-        # bot = bc.bot_prediction()
-        # if bot:
-        #     eligibility = False
-        #     reason = "User is a bot"
+        bc = BotCheck(username=winner)
+        logging.info(bc.user_analysis)
+        bot = bc.bot_prediction()
+        if bot:
+            eligibility = False
+            reason = "User is a bot"
         following, member_not_followed = self.contestant_following_sponsors(winner)
         if not following:
             eligibility = False
