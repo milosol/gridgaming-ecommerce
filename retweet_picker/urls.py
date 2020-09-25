@@ -10,8 +10,8 @@ from .views import (
     QueueListView,
     delete_queue,
     clear_queue,
-    pick, 
-    draw
+    pick, draw, fetch_data, import_contest, pick_entries, load_entries, load_entry_progress,
+    load_all_entries
 )
 
 app_name = 'retweet_picker'
@@ -24,6 +24,12 @@ urlpatterns = [
     # path('queue/<str:queue_type>/', QueueListView.as_view() , name='queue_view'),
     path('delqueue', delete_queue , name='del_queue'),
     path('draw', draw , name='draw'),
+    path('fetch_data', fetch_data , name='fetch_data'),
+    path('import_contest', import_contest , name='import_contest'),
+    path('load_entries', load_entries , name='load_entries'),
+    path('load_entry_progress', load_entry_progress , name='load_entry_progress'),
+    path('load_all_entries', load_all_entries , name='load_all_entries'),
+    path('<int:gwid>/entries', login_required(pick_entries) , name='pick_entries'),
     path('clearqueue', clear_queue , name='clear_queue'),
     path('order/<int:order_id>', order_details, name="order_details"),
     path('results/<int:order_id>', views.contest_results, name='contest_results'),

@@ -10,6 +10,7 @@ from .models import (
     GiveawayQueue,
     GiveawayWinners
 )
+from users.models import User
 
 #TODO Add to giveaway queue eventually
 
@@ -83,6 +84,39 @@ class GiveawayStatsAdmin(admin.ModelAdmin):
 
     #search_fields = ['order__user']
 
+class GiveawayWinnersAdmin(admin.ModelAdmin):
+    list_display = [
+        'id',
+        'user_id',
+        'user_name',
+        'status',
+        'retweet_count',
+        'toload_count',
+        'loaded_count',
+        'winners',
+        'tweet_url',
+    ]
+    
+    list_display_links = [
+        'id',
+        'tweet_url'
+    ]
+    
+    def user_name(self, obj):
+        u = User.objects.get(id=obj.user_id)
+        return u.username
+        
+    def tweet_url(self, obj):
+        return obj.get_tweet_url()
+    
+    def winners(self, obj):
+        wins = obj.get_winners()
+        if len(wins) > 0:
+            return ', '.join(wins)
+        else:
+            return ''
+        
+    
 admin.site.register(TwitterGiveaway)
 admin.site.register(ContestUserAccounts)
 admin.site.register(TwitterGiveawayID)
@@ -90,5 +124,5 @@ admin.site.register(GiveawayResults)
 admin.site.register(ContestUserParticipation)
 admin.site.register(GiveawayStats, GiveawayStatsAdmin)
 admin.site.register(GiveawayQueue, GiveawayQueueAdmin)
-admin.site.register(GiveawayWinners)
+admin.site.register(GiveawayWinners, GiveawayWinnersAdmin)
 

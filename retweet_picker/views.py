@@ -16,10 +16,11 @@ from django.views.decorators.csrf import csrf_exempt
 from core.decorators import account_type_check, cleared_hot_check
 from core.models import Order, OrderItem
 from .forms import RetweetChooserForm
-from .models import GiveawayResults, TwitterGiveawayID, TwitterGiveaway, GiveawayStats, GiveawayQueue
+from .models import GiveawayResults, TwitterGiveawayID, TwitterGiveaway, GiveawayStats, GiveawayQueue, DrawPrice, GiveawayWinners, ContestUserParticipation, ContestUserAccounts
 from .process import ProcessRetrievedTweets
-from .tasks import start_giveaway_bg, retrieve_tweets_choose_winner_job, draw_winner
+from .tasks import start_giveaway_bg, retrieve_tweets_choose_winner_job, draw_winner, fetch_content_from_url
 from users.models import User
+from retweet_picker.manager import GiveawayManager
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
@@ -217,7 +218,7 @@ def process_queue(queue_type):
 
 def queue_thread(name):
     while (1):
-        # break
+        break
         process_queue('H')
         process_queue('D')
         process_queue('L')
@@ -368,7 +369,7 @@ class OrdersListView(ListView):
         # Call the base implementation first to get a context
         context = super().get_context_data(**kwargs)
         context['order_items'] = order_items_prefetch_related_efficient(self.request.user.id)
-        print(context)
+        # print(context)
         return context
 
 
@@ -419,20 +420,135 @@ def pick(request):
     return render(request, "pick.html", context)
 
 @csrf_exempt
+def fetch_data(request):
+    res = {'success': True, 'msg': ''}
+    try:
+        print(" === fetching data .... ")
+        link = request.POST['link']
+        res = fetch_content_from_url(existing_tweet_url=link)
+        if DrawPrice.objects.all().count() == 0:
+            DrawPrice.objects.create(price=1)
+        price = DrawPrice.objects.all()[0]
+        res['free_max'] = price.free_max
+    except Exception as e:
+        print(e)
+        res['success'] = False
+        res['msg'] = 'Error occured while fetching data. Please input correct url.'
+    return JsonResponse(res)
+
+@csrf_exempt
+def import_contest(request):
+    res = {'success': True, 'msg': ''}
+    try:
+        link = request.POST['link']
+        tgid, created = TwitterGiveawayID.objects.get_or_create(tweet_url=link)
+        gw, created = GiveawayWinners.objects.get_or_create(giveaway_id=tgid, user_id=request.user.id)
+        res['gwid'] = gw.id
+    except Exception as e:
+        print(e)
+        res['success'] = False
+        res['msg'] = 'Error occured while fetching data. Please input correct url.'
+    return JsonResponse(res)
+
+def pick_entries(request, gwid):
+    context = {}
+    try:
+        gw = GiveawayWinners.objects.get(id=gwid)
+        tgid = TwitterGiveawayID.objects.get(id=gw.giveaway_id_id)
+        tweet_url = tgid.tweet_url
+        dp = DrawPrice.objects.all().first()
+        gm = GiveawayManager(new_giveaway=False, existing_tweet_url=tweet_url)
+        ret_count = gm.tweet.retweet_count
+        # ret_count = 10
+        context['drawprice'] = dp
+        context['ret_count'] = ret_count
+        context['tweet_url'] = tweet_url
+        context['status'] = gw.status
+        context['gwid'] = gwid
+    except Exception as e:
+        print(e)
+    
+    return render(request, "contest.html", context)
+
+@csrf_exempt
+def load_entries(request):
+    res = {'success': True, 'msg': ''}
+    try:
+        gwid = request.POST['gwid']
+        gw = GiveawayWinners.objects.get(id=gwid)
+        tgid = TwitterGiveawayID.objects.get(id=gw.giveaway_id_id)
+        tweet_url = tgid.tweet_url
+        print("==== load entries :", tweet_url)
+        gm = GiveawayManager(new_giveaway=False, existing_tweet_url=tweet_url, user_id=request.user.id)
+        ret_count = gm.tweet.retweet_count
+        dp = DrawPrice.objects.all().first()
+        gw.retweet_count = ret_count
+        gw.loaded_count = 0
+        ContestUserParticipation.objects.get(contest=tgid, user_id=gw.user_id).contestants.clear()
+        if ret_count <= dp.free_max or gw.status == 'P':
+            gw.toload_count = ret_count
+            gw.save()
+            gm.retrieve_tweets(gwid=gwid)
+            gw = GiveawayWinners.objects.get(id=gwid)
+            gw.status = 'L'
+            gw.save()
+        else:
+            gw.toload_count = dp.free_max
+            gw.save()
+            gm.retrieve_tweets(gwid=gwid, max_tweets=dp.free_max)
+            gw = GiveawayWinners.objects.get(id=gwid)
+            gw.status = 'F'
+            gw.save()
+    except Exception as e:
+        print(e)
+        res['success'] = False
+        res['msg'] = 'Error occured while fetching data. Please input correct url.'
+    return JsonResponse(res)
+
+@csrf_exempt
+def load_entry_progress(request):
+    res = {'success': True, 'msg': ''}
+    try:
+        gwid = request.POST['gwid']
+        gw = GiveawayWinners.objects.get(id=gwid)
+        if gw.toload_count != 0:
+            res['progress'] = int(gw.loaded_count / gw.toload_count * 100)
+        else:
+            res['progress'] = 0
+    except Exception as e:
+        print(e)
+        res['success'] = False
+        res['msg'] = 'Error occured while fetching data. Please input correct url.'
+    return JsonResponse(res)
+
+@csrf_exempt
+def load_all_entries(request):
+    res = {'success': True, 'msg': '', 'participants': []}
+    try:
+        gwid = request.POST['gwid']
+        gw = GiveawayWinners.objects.get(id=gwid)
+        tgid = TwitterGiveawayID.objects.get(id=gw.giveaway_id_id)
+        tweet_url = tgid.tweet_url
+        participants = ContestUserParticipation.objects.get(contest=tgid, user_id=gw.user_id).contestants.all()
+        for p in participants:
+            temp = {'user_id': p.user_id, 'screen_name': p.user_screen_name, 'account_created': p.account_created}
+            res['participants'].append(temp)
+    except Exception as e:
+        print(e)
+        res['success'] = False
+        res['msg'] = 'Error occured while loading all entries.'
+    return JsonResponse(res)
+
+
+@csrf_exempt
 def draw(request):
     res = {'success': True, 'msg': ''}
     try:
-        print(" === drawing .... ")
         link = request.POST['link']
         wc = int(request.POST['winner'])
         actions = {'follow_enable': False, 'follow_other': False}
         actions['draw_type'] = request.POST['draw_type']
         
-        if request.POST['follow_enable'] == 'true':
-            actions['follow_enable'] = True
-        if request.POST['follow_other'] == 'true':
-            actions['follow_other'] = True
-        tags = request.POST['tags']
         sponsors = []
         if actions['follow_enable'] == True:
             username = request.user.username

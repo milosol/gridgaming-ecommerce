@@ -86,191 +86,91 @@
         border-radius: 40%;
         border: 2px solid #5a686c;
     }
+    #div_link label, #div_verify label{
+        display: none;
+        margin-top: 5px;
+        margin-bottom: 0;
+        text-align: center;
+    }
+    #div_link.error label, #div_verify.error label{
+        color: #ff399e;
+        display: block;
+        animation: fadein 0.5s;
+    }
+    @keyframes fadein {
+        from { max-height: 0; }
+        to   { max-height: 50px; }
+    }
+    @keyframes fadeout {
+        from { max-height: 50; }
+        to   { max-height: 0; }
+    }
+    #tweet_content, #tweet_content iframe{
+        transition-duration: 0.5s;
+        transition-property: all;
+        animation: fadeIn ease 0.5s;
+    }
     </style>
 {% endblock %}
 
 {% block content %}
 {% if request.user.is_staff %}
     <div class="container-fluid">
-        <div class="row">
-            <div class="col-12">
                 <div class="card">
                     <div class="card-body">
-                        <nav>
-                            <div class="nav nav-tabs" style="width: 50%;" id="nav-tab" role="tablist">
-                              <a class="nav-item nav-link active" id="nav-home-tab" data-toggle="tab" href="#nav-home" role="tab" aria-controls="nav-home" aria-selected="true">Pick Retweet</a>
-                              <a class="nav-item nav-link" id="nav-profile-tab" data-toggle="tab" href="#nav-profile" role="tab" aria-controls="nav-profile" aria-selected="false">Actions</a>
-                            </div>
-                          </nav>
-                          <div class="tab-content" id="nav-tabContent">
-                            <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
-                                <div class='px-md-5 py-md-5 px-1 py-4'>
-                                    <div class="row">
-                                        <div class="col-md-12">
-                                            <h2>TWEET LINK</h2>
-                                            <div class='row'>
-                                                <div class='col-sm-6 my-2'>
-                                                    <input type="text" class="form-control" placeholder="Enter your Tweet link" id="in_link">
-                                                </div>
-                                                <div class='col-sm-6 my-2'>
-                                                    <input type="number" class="form-control" placeholder="Number of Winners" id="in_winner">
-                                                </div>
-                                                <div class='col-sm-12 mt-2' >
-                                                    <button class='btn  btn-success mx-2 my-2' style="min-width: 200px;" id="btn_draw">DRAW WINNER</button>
-                                                    <button class='btn  btn-success mx-2 my-2' style="min-width: 200px;" id="btn_redraw">RE-DRAW</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-12 mt-5">
-                                            <h2>DRAW VERIFY</h2>
-                                            <div class='row'>
-                                                <div class='col-sm-12 my-2'>
-                                                    <input type="text" class="form-control" placeholder="Enter the draw ID" id="in_drawid">
-                                                </div>
-                                                <div class='col-sm-12 mt-2'>
-                                                    <button class='btn  btn-success' style="min-width: 200px;" id="btn_verify">VERIFY</button>
-                                                </div>
-                                            </div>
-                                        </div>
+                        <div class="row px-md-5 px-sm-2">
+                            <div class="col-sm-12 mt-5">
+                                <h2 style="text-align: center;">TWEET LINK</h2>
+                                <h6 style="text-align: center;">Type or paste content link</h6>
+                                <div class='row'>
+                                    <div class='col-sm-12 my-2 px-sm-5' id="div_link">
+                                        <input type="text" class="form-control" placeholder="https://twitter.com/ ... /status/ ..." id="in_link">
+                                        <label>Please fill this link field!</label>
+                                    </div>
+                                    
+                                    <div class='col-sm-12 mt-2 text-center' >
+                                        <button class="btn btn-primary mx-2 my-2 px-5" disabled id="btn_fetching" style="display: none;">
+                                            <span class="spinner-border spinner-border-sm"></span>
+                                             Fetching data ...
+                                        </button>
+                                        <button class='btn  btn-primary mx-2 my-2 px-5' id="btn_draw">DRAW WINNER</button>
                                     </div>
                                 </div>
                             </div>
-                            <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
-                                <div class="px-md-5 py-md-5 px-1 py-4">
-                                    <div class="my-2 option-container">
-                                        <div class="option-label px-4 py-1">Follow</div>
-                                        <div style="display: flex;" class="px-2 mt-4">
-                                            <div class="mx-2">
-                                                <label class="switch">
-                                                    <input type="checkbox" id="chk_follow">
-                                                    <span class="slider round"></span>
-                                                </label>
-                                            </div>
-                                            <div class="mx-2">
-                                                <h5>Enable action</h5>
-                                                <div>
-                                                    The user will need to subscribe to your account in order for their participation to be valid.
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div id="follow_show" style="display: none;">
-                                            <div  style="display: flex;" class="px-2 mt-4">
-                                                <div class="mx-2">
-                                                    <label class="switch">
-                                                        <input type="checkbox" checked disabled>
-                                                        <span class="slider round"></span>
-                                                    </label>
-                                                </div>
-                                                <div class="mx-2">
-                                                    <h5>Follow the main account</h5>
-                                                    <div>
-                                                        The user must follow the account that published the contest.
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div style="display: flex;" class="px-2 mt-4">
-                                                <div class="mx-2">
-                                                    <label class="switch">
-                                                        <input type="checkbox" id="chk_followother">
-                                                        <span class="slider round"></span>
-                                                    </label>
-                                                </div>
-                                                <div class="mx-2">
-                                                    <h5>Follow other accounts</h5>
-                                                    <div>
-                                                        The user will have to follow other accounts for his participation to be valid.
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div style="display: none;" class="px-2 mt-4" id="followother_show">
-                                                <div class="mx-2">
-                                                    <h5>List of additional accounts to follow</h5>
-                                                    <div>   
-                                                        The user will have to follow all these additional accounts (they need to be mentionned in the main publication).                                                
-                                                    </div>
-                                                </div>
-                                                <div id="tags" class="mt-3 px-3">
-                                                    <input id="add_tags" name="tags-1" type="text" value="">
-                                                </div>
-                                            </div>
-                                        </div>
+                            <div class="col-sm-12 mt-5">
+                                <h2 class="text-center">DRAW VERIFY</h2>
+                                <div class='row'>
+                                    <div class='col-sm-12 my-2 px-sm-5' id="div_verify">
+                                        <input type="text" class="form-control" placeholder="Enter the draw ID" id="in_drawid">
+                                        <label>Please fill this link field!</label>
                                     </div>
-                                    
-                                    
-                                    <div class="my-5 option-container">
-                                        <div class="option-label px-4 py-1">Retweet</div>
-                                        <div style="display: flex;" class="px-2 mt-4">
-                                            <div class="mx-2">
-                                                <label class="switch">
-                                                    <input type="checkbox" id="chk_retweet">
-                                                    <span class="slider round"></span>
-                                                </label>
-                                            </div>
-                                            <div class="mx-2">
-                                                <h5>Enable action</h5>
-                                                <div>
-                                                    The user will have to retweet the publication in order for his participation to be valid.
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div id="retweet_show" style="display: none;">
-                                            <div style="display: flex;" class="px-2 mt-4">
-                                                <div class="mx-2">
-                                                    <label class="switch">
-                                                        <input type="checkbox" checked disabled>
-                                                        <span class="slider round"></span>
-                                                    </label>
-                                                </div>
-                                                <div class="mx-2">
-                                                    <h5>Retweet the publication</h5>
-                                                    <div>
-                                                        The user must have retweeted the publication of the contest.
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div style="display: flex;" class="px-2 mt-4">
-                                                <div class="mx-2">
-                                                    <label class="switch">
-                                                        <input type="checkbox">
-                                                        <span class="slider round"></span>
-                                                    </label>
-                                                </div>
-                                                <div class="mx-2">
-                                                    <h5>Accept retweets of type "Retweet with a comment"</h5>
-                                                    <div>
-                                                        By activating this option, this type of entry will be taken into account.
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                    <div class='col-sm-12 mt-2 text-center'>
+                                        <button class='btn  btn-success px-5' id="btn_verify">VERIFY</button>
                                     </div>
-
                                 </div>
-                                
-                                 
                             </div>
-                          </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
     </div>
 
     <div class="modal fade" id="myModal">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title">Draw</h4>
+                    <h4 class="modal-title" id="label_title">Import contest</h4>
                     <!-- <button type="button" class="close" data-dismiss="modal">&times;</button> -->
                 </div>
                 <div class="modal-body">
-                    <h6  id="label_status">Please wait while choosing winner...</h6>
-                    <h6 id="label_participants"></h6>
-                    <h6 id="label_winner"></h6>
+                    <h6 id="label_status">Content preview</h6>
+                    <div id="tweet_content">
+
+                    </div>
+                    <h6 class="mt-3 px-3" id="label_retweetcount" style="color: white"></h6>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" >Show Detail</button>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" id="btn_close">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="btn_import">Import contest</button>
                 </div>
             </div>
         </div>
@@ -290,8 +190,15 @@
     <!-- <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script> -->
 <!-- <script src="http://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script> -->
 <script src="{% static 'taginput/jquery.tagsinput-revisited.js' %}"></script>
+<script sync src="https://platform.twitter.com/widgets.js"></script>
 <script  type="text/javascript">
     $(function(){
+        $("#div_link input").change(function(){
+            $("#div_link").removeClass('error')
+        })
+        $("#div_verify input").change(function(){
+            $("#div_verify").removeClass('error')
+        })
         $('#add_tags').tagsInput();
         $("#chk_follow").change(function(e){
             fe = $(e.target).prop("checked");
@@ -317,84 +224,70 @@
                 $("#retweet_show").fadeOut();
             }
         })
-        function draw_winner(type){
-            link = $("#in_link").val();
-            winner = $("#in_winner").val();
-            follow_enable = $("#chk_follow").prop("checked");
-            follow_other = $("#chk_followother").prop("checked");
-            tags = $('#add_tags').val();
-            msg = ""
-            if(link == ""){
-                msg = 'link'
-            }
-            if(winner < 1){
-                if(msg == "")
-                    msg = "winner count"
-                else
-                    msg += " and winner count"
-            }
-            if(msg != ""){
-                msg = "Please input correct " + msg;
-                Swal.fire({
-                    title: "Warning",
-                    text: msg,
-                    showConfirmButton: true
-                });
-                return;
-            }
-            if(type == 'draw'){
-                msg = 'This will find all participants from the first and will take some time.'
-            }else{
-                msg = "This will choose winner from participants already found before."
-            }
-            swal.fire({
-                title: 'Are you sure?',
-                icon: 'warning',
-                text: msg,
-                showCancelButton: true,
-                background: '#e9ecef',
-                confirmButtonColor: '#21c1d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, i am sure!'
-            }).then((result) => {
-                if (result.value) {
-                    $("#label_status").html("Please wait while choosing winner...")
-                    $("#label_winner").html("")
-                    $("#label_participants").html("")
-                    $(".modal-footer").hide()
-                    $("#myModal").modal({backdrop: 'static', keyboard: false})
-                    $.ajax({
-                        type: "POST",
-                        url: "../draw",
-                        data: {'link': link, 'winner': winner, 'follow_enable': follow_enable,
-                                'follow_other': follow_other, 'tags': tags, 'draw_type': type},
-                        success: function (data) {
-                            console.log(data);
-                            if (data.success == true) {
-                                $("#label_status").html("Draw is finished.")
-                                $("#label_winner").html("winners : " + data.winners)
-                                $("#label_participants").html("participants : " + data.participants)
-                                $(".modal-footer").show()
-                            } else {
-                                setTimeout(function () { $("#myModal").modal("hide"); }, 500);
-                                swal.fire(
-                                    'Failed',
-                                    data.msg,
-                                    'error'
-                                )
-                            }
-                        }
-                    })
-                } else if (result.dismiss === Swal.DismissReason.cancel) {
-                    
+        $("#btn_import").click(function(){
+            $.ajax({
+                type: "POST",
+                url: "../import_contest",
+                data: {'link': link},
+                success: function (data) {
+                    console.log(data);
+                    if (data.success == true) {
+                        location.href = "../" + data.gwid + "/entries"
+                    } else {
+                    }
                 }
             })
-        }
-        $("#btn_redraw").click(function(){
-            draw_winner('redraw')
         })
         $("#btn_draw").click(function(){
-            draw_winner('draw')
+            link = $("#in_link").val();
+            valid = true
+            if(link.trim() == "" || link.indexOf('https://twitter.com/') == -1){
+                $("#div_link label").html('Please fill this link field!')
+                $("#div_link").addClass('error')
+                valid = false
+            }
+            if(valid == false){
+                return
+            }
+            $("#btn_draw").hide()
+            $("#btn_fetching").show()
+            $.ajax({
+                type: "POST",
+                url: "../fetch_data",
+                data: {'link': link},
+                success: function (data) {
+                    $("#btn_fetching").hide()
+                    $("#btn_draw").show()
+                    $("#tweet_content").html("")
+
+                    var tweet = document.getElementById("tweet_content");
+                    console.log(data);
+                    if (data.success == true) {
+                        twttr.widgets.createTweet(
+                            data.tweet_id, tweet,
+                            {
+                                conversation : 'none',    // or all
+                                cards        : 'hidden',  // or visible
+                                linkColor    : '#cc0000', // default is blue
+                                theme        : 'light'    // or dark
+                            })
+                            .then (function (el) {
+                                el.contentDocument.querySelector(".footer").style.display = "none";
+                        });
+                        $("#label_retweetcount").html("You can load entries upto " + data.free_max + " as free.  If you are sure, please click below button.")
+                        $("#myModal").modal({backdrop: 'static', keyboard: false})
+                    } else {
+                        $("#div_link label").html(data.msg)
+                        $("#div_link").addClass('error')
+                        // setTimeout(function () { $("#myModal").modal("hide"); }, 500);
+                        // swal.fire(
+                        //     'Failed',
+                        //     data.msg,
+                        //     'error'
+                        // )
+                    }
+                }
+            })
         })
     })
 </script>

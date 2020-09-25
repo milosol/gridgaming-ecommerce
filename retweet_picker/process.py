@@ -10,8 +10,8 @@ from retweet_picker.twitter_interact import GridGiveawayTweetRetriever
 
 
 # Prep to just retrieve tweets and upload in chunks of 1000 instead of holding all in memory
-class ProcessRetrievedTweets(GridGiveawayTweetRetriever):
 
+class ProcessRetrievedTweets(GridGiveawayTweetRetriever):
     def __init__(self, user_id=None, tweet_url=None, process_tweets=True):
         super(ProcessRetrievedTweets, self).__init__(tweet_url)
         try:
@@ -20,6 +20,8 @@ class ProcessRetrievedTweets(GridGiveawayTweetRetriever):
             self.user_ids = None
             self.participants = None
             self.user_id = user_id
+            self.max_tweets = 10000000
+            self.gwid = 0
         except Exception as e:
             print(f'[!] ERROR: Could not initialize TweetRetriever. Reason: {e}')
 
@@ -73,7 +75,7 @@ class ProcessRetrievedTweets(GridGiveawayTweetRetriever):
         giveaway_results, created = GiveawayResults.objects.get_or_create(giveaway_id=twitter_giveaway)
         giveaway_results.participants = len(participants)
         # Create m2m mapping
-        contest, created = ContestUserParticipation.objects.get_or_create(contest=twitter_giveaway)
+        contest, created = ContestUserParticipation.objects.get_or_create(contest=twitter_giveaway, user_id=self.user_id)
         contest.save()
         contest.contestants.add(*participants)
 

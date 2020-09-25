@@ -29,10 +29,27 @@ def retrieve_tweets_choose_winner_job(existing_tweet_url=None,
                          existing_tweet_url=existing_tweet_url, 
                          new_giveaway=False, giveaway_amount=giveaway_amount, sponsors=sponsors)
     gm.run_pipeline()
+    
+def fetch_content_from_url(existing_tweet_url=None):
+    # from django.db import connection
+    # connection.close()
+    res = {'success': True, 'msg': ''}
+    try:
+        gm = GiveawayManager(new_giveaway=False, existing_tweet_url=existing_tweet_url)
+        if gm.tweet_id:
+            res['tweet_id'] = gm.tweet_id
+        else:
+            res['success'] = False
+            res['msg'] = "Can't process this url. Are you sure this url is correct?"
+    except Exception as e:
+        print(e)
+        res['success'] = False
+        res['msg'] = "Can't process this url. Are you sure this url is correct?"
+    return res
 
 def draw_winner(existing_tweet_url=None, winner_count=1, actions=None, user_id=None):
-    from django.db import connection
-    connection.close()
+    # from django.db import connection
+    # connection.close()
     gm = GiveawayManager(new_giveaway=False, existing_tweet_url=existing_tweet_url, winner_count=winner_count, sponsors=actions['sponsors'], user_id=user_id)
     res = gm.drawwinner(actions=actions)
     print(" == draw result:", res)

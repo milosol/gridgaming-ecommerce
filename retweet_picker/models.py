@@ -18,6 +18,15 @@ TYPE_CHOICES = (
     ('H', 'High')
 )
 
+DRAWSTATUS_CHOICES = (
+    ('C', 'Created'),
+    ('F', 'Loaded free'),
+    ('P', 'Paid'),
+    ('L', 'Loaded entries'),
+    ('D', 'Drawed free'),
+    ('W', 'Drawed finally')
+)
+
 class ContestUserAccounts(models.Model):
     """ Store all users within a single table and reference"""
     user_id = models.CharField(max_length=100, primary_key=True)
@@ -60,7 +69,8 @@ class TwitterGiveawayID(models.Model):
 
 class ContestUserParticipation(models.Model):
     contestants = models.ManyToManyField(ContestUserAccounts)
-    contest = models.OneToOneField('TwitterGiveawayID', unique=True, on_delete=models.CASCADE)
+    contest = models.ForeignKey('TwitterGiveawayID', on_delete=models.CASCADE)
+    user_id = models.IntegerField(default=0)
 
     def __str__(self):
         return str(self.contest.tweet_url)
@@ -88,15 +98,29 @@ class TwitterGiveaway(models.Model):
     def __str__(self):
         return str(f'{self.contest_name} by {self.owner}')
 
-
+class DrawPrice(models.Model):
+    free_max = models.IntegerField(default=500)
+    price = models.IntegerField(default=1)
+    per_amount = models.IntegerField(default=100)
+    
+class Rerolls(models.Model):
+    reason = models.CharField(max_length=200, blank=True)
+    contestant = models.ForeignKey(ContestUserAccounts, on_delete=models.CASCADE)
+    
 class GiveawayWinners(models.Model):
     """ Table to track all winners - might not need if we use M2M"""
     giveaway_id = models.ForeignKey('TwitterGiveawayID', related_name='draw_giveaway_details', null=True, on_delete=models.SET_NULL)
+    price = models.IntegerField(default=0)
+    status = models.CharField(choices=DRAWSTATUS_CHOICES, max_length=1, default='C')
     winner = models.ManyToManyField(ContestUserAccounts, related_name='draw_giveaway_winner')
-    re_rolls = models.ManyToManyField('ContestUserAccounts', related_name='draw_rerolled_user')
+    re_rolls = models.ManyToManyField(Rerolls)
     participants = models.IntegerField(null=True)  # Count of total entries
     created_at = models.DateTimeField(auto_now_add=True)
-
+    retweet_count = models.IntegerField(default=0)
+    toload_count = models.IntegerField(default=0)
+    loaded_count = models.IntegerField(default=0)
+    user_id = models.IntegerField(default=0)
+    
     def get_winners(self):
         win_names = []
         for w in self.winner.all():
@@ -108,6 +132,10 @@ class GiveawayWinners(models.Model):
         for r in self.re_rolls.all():
             reroll_names.append(r.user_screen_name)
         return reroll_names
+
+    def get_tweet_url(self):
+        tgid = TwitterGiveawayID.objects.get(id=self.giveaway_id_id)
+        return tgid.tweet_url
 
 class GiveawayResults(models.Model):
     """ Results of a giveaway - """

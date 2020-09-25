@@ -10,7 +10,7 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
 from core.models import Order, OrderItem
 from retweet_picker.bot_check import BotCheck
-from retweet_picker.models import GiveawayResults, GiveawayStats, TwitterGiveawayID, ContestUserAccounts, GiveawayQueue, GiveawayWinners, ContestUserParticipation
+from retweet_picker.models import GiveawayResults, GiveawayStats, TwitterGiveawayID, ContestUserAccounts, GiveawayQueue, GiveawayWinners, ContestUserParticipation, Rerolls
 from retweet_picker.process import ProcessRetrievedTweets
 from retweet_picker.twitter_interact import TwitterInteract
 from .utils import display_time, giveaway_ends
@@ -93,6 +93,7 @@ class GiveawayManager:
         self.tweet_url = None
         self.results = None
         self.existing_tweet_url = None
+        self.tweet = None
         if existing_tweet_url:
             self.existing_tweet_url = existing_tweet_url
             self.process_retrieved_tweets = ProcessRetrievedTweets(tweet_url=existing_tweet_url, user_id=self.user_id)
@@ -122,6 +123,7 @@ class GiveawayManager:
         if self.existing_tweet_url:
             author = self.process_retrieved_tweets.author
             self.tweet_id = self.process_retrieved_tweets.tweet_id
+            self.tweet = self.process_retrieved_tweets.tweet
         tweet_url = f'https://twitter.com/{author}/status/{self.tweet_id}'
         self.tweet_url = tweet_url
         self.tweet_id_key, created = TwitterGiveawayID.objects.get_or_create(tweet_url=tweet_url)
@@ -159,9 +161,11 @@ class GiveawayManager:
         # TODO Add sponsor initial follower count
         self.launched_tweet = self.twitter_interact.api.update_status(self.giveaway_text)
 
-    def retrieve_tweets(self):
+    def retrieve_tweets(self, gwid=0, max_tweets=10000000):
         self.tweet_url = self.build_tweet_url()
         contest = ProcessRetrievedTweets(tweet_url=self.tweet_url, user_id=self.user_id)
+        contest.max_tweets = max_tweets
+        contest.gwid = gwid
         contest.run_pipeline()
         self.participants = contest.participants
 
@@ -204,6 +208,7 @@ class GiveawayManager:
             if not following_sponsors:
                 member_not_followed = sponsor
                 following_sponsors = False
+                break
         return following_sponsors, member_not_followed
 
 
@@ -268,7 +273,6 @@ class GiveawayManager:
             #     self.sleep_for_duration()
         else:
             try:
-                
                 self.retrieve_tweets()
                 eligible_to_win = False
                 rerolls = []
@@ -305,19 +309,19 @@ class GiveawayManager:
             if actions['draw_type'] == 'draw':
                 self.retrieve_tweets()
                 logging.info("=== retrieve_tweets finished")
-                results, created = GiveawayWinners.objects.get_or_create(giveaway_id=self.tweet_id_key)
+                results, created = GiveawayWinners.objects.get_or_create(giveaway_id=self.tweet_id_key, user_id=self.user_id)
                 self.results = results
                 self.results.participants = len(self.participants)
                 self.results.winner.clear()
                 self.results.re_rolls.clear()
                 self.results.save()
             else:
-                results, created = GiveawayWinners.objects.get_or_create(giveaway_id=self.tweet_id_key)
+                results, created = GiveawayWinners.objects.get_or_create(giveaway_id=self.tweet_id_key, user_id=self.user_id)
                 if created:
                     res['msg'] = "There is no contest drawed before."
                     return res
                 self.results = results
-                self.participants = list(ContestUserParticipation.objects.get(contest=self.tweet_id_key).contestants.all())
+                self.participants = list(ContestUserParticipation.objects.get(contest=self.tweet_id_key, user_id=self.user_id).contestants.all())
             logging.info(f'participants count : {self.results.participants}')
             if self.results.participants == 0:
                 res['msg'] = "There is no participants."
@@ -334,7 +338,8 @@ class GiveawayManager:
                     if not eligible_to_win:
                         logging.info(f'{self.winner} is not eligible... rerolling: Reason: {reason}')
                         reroll_record, created = get_user(winner)
-                        self.results.re_rolls.add(reroll_record)
+                        reroller = Rerolls.objects.create(reason=reason, contestant=reroll_record)
+                        self.results.re_rolls.add(reroller)
                         res['rerolls'].append(winner.user_screen_name)
                 # Add people who got rerolled
                 if eligible_to_win == True:

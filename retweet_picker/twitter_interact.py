@@ -3,6 +3,7 @@ import tweepy
 from decouple import config
 from retweet_picker.utils import id_from_url
 import urllib
+from .models import GiveawayWinners
 
 TWITTER_CONSUMER_KEY = config('TWITTER_CONSUMER_KEY')
 TWITTER_CONSUMER_SECRET = config('TWITTER_CONSUMER_SECRET')
@@ -75,7 +76,8 @@ class GridGiveawayTweetRetriever(TwitterInteract):
         sinceId = None
         max_id = max_id
         # //however many you want to limit your collection to.  how much storage space do you have?
-        maxTweets = max_tweets
+        # maxTweets = self.max_tweets
+        maxTweets = 10000000
         # Remove last element in tweet to account for URLs
         # Take 70% of the tweet to reduce length
         split = int(self.tweet_ratio * len(self.tweet.full_text.split()))
@@ -84,10 +86,12 @@ class GridGiveawayTweetRetriever(TwitterInteract):
         searchQuery = 'RT @{author} '.format(author=self.author) + tweet_text
         tweetCount = 0
         tweetsPerQry = 100
-        print(searchQuery)
+        print(searchQuery)    
         print('[+] Retrieving all contest tweets for TWEET ID: {tweet_id}\n Tweet text: {text}'.format(
             tweet_id=self.tweet.id,
             text=self.tweet.full_text))
+        
+        # printing the screen names of the retweeters 
         print("[*] Downloading max {0} tweets".format(maxTweets))
         while tweetCount < maxTweets:
             try:
@@ -112,6 +116,7 @@ class GridGiveawayTweetRetriever(TwitterInteract):
                 for tweet in new_tweets:
                     self.all_tweets.append(tweet._json)
                 tweetCount += len(new_tweets)
+                GiveawayWinners.objects.filter(id=self.gwid).update(loaded_count=tweetCount)
                 print("[*] Downloaded {0} tweets".format(tweetCount), end='\r', flush=True)
                 max_id = new_tweets[-1].id
             except tweepy.TweepError as e:
