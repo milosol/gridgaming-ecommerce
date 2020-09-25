@@ -524,7 +524,7 @@
             data: {'gwid': gwid},
             success: function (data) {
                 console.log(data);
-                $("#div_progress").hide()
+                $("#progress").hide()
                 if (data.success == true) {
                     draw_table(data.participants)
                 } else {
