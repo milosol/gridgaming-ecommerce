@@ -218,7 +218,7 @@ def process_queue(queue_type):
 
 def queue_thread(name):
     while (1):
-        break
+        # break
         process_queue('H')
         process_queue('D')
         process_queue('L')
