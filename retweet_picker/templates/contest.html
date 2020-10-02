@@ -684,7 +684,8 @@
             progress_handle = setInterval(() => {
                 load_entry_progress()
             }, 4000);
-            entry_table.clear().draw();
+            if(entry_table)
+                entry_table.clear().draw();
             $.ajax({
                 type: "POST",
                 url: "/contests/load_entries",
