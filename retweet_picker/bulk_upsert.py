@@ -42,24 +42,25 @@ def populate_temp_table(cursor: CursorWrapper, retweet_users: List[ContestUserAc
                    retweet_user.user_handle,
                    retweet_user.user_screen_name,
                    retweet_user.location,
+                   retweet_user.profile_img,
                    str(retweet_user.account_created))
 
     tsv_file = create_tsv_file(generate_rows_from_retweet_users())
     cursor.copy_from(
         tsv_file,
         'temp_retweet_users',
-        columns=('user_id', 'user_handle', 'user_screen_name', 'location', 'account_created')
+        columns=('user_id', 'user_handle', 'user_screen_name', 'location', 'profile_img', 'account_created')
     )
 
 
 def copy_from_temp_table(cursor: CursorWrapper):
     cursor.execute(
         '''
-        INSERT INTO retweet_picker_contestuseraccounts (user_id, user_handle, user_screen_name, location, account_created)
-        SELECT tru.user_id, tru.user_handle, tru.user_screen_name, tru.location, tru.account_created
+        INSERT INTO retweet_picker_contestuseraccounts (user_id, user_handle, user_screen_name, location, profile_img, account_created)
+        SELECT tru.user_id, tru.user_handle, tru.user_screen_name, tru.location, tru.profile_img, tru.account_created
         FROM temp_retweet_users tru
         ON CONFLICT(user_id) 
-        DO UPDATE SET (user_handle, user_screen_name, location, account_created) = (EXCLUDED.user_handle, EXCLUDED.user_screen_name, EXCLUDED.location, EXCLUDED.account_created)
+        DO UPDATE SET (user_handle, user_screen_name, location, profile_img, account_created) = (EXCLUDED.user_handle, EXCLUDED.user_screen_name, EXCLUDED.location, EXCLUDED.profile_img, EXCLUDED.account_created)
         '''
     )
 

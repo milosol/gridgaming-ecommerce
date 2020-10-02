@@ -27,12 +27,13 @@ class ProcessRetrievedTweets(GridGiveawayTweetRetriever):
 
     def filter_and_rename_fields(self):
         # Assumes all_tweets has tweets retrieved
+        # print("=== photo_img :", self.all_tweets[0].user.profile_image_url)
         tweets = json_normalize(self.all_tweets)
-        filter_df = tweets[['user.id_str', 'user.name', 'user.screen_name', 'user.location', 'user.created_at']]
-        filter_df.columns = ['user_id', 'user_handle', 'user_screen_name', 'location', 'account_created']
+        filter_df = tweets[['user.id_str', 'user.name', 'user.screen_name', 'user.location','user.profile_image_url', 'user.created_at']]
+        filter_df.columns = ['user_id', 'user_handle', 'user_screen_name', 'location', 'profile_img', 'account_created']
 
         filter_df.loc[:, 'account_created'] = pd.to_datetime(filter_df['account_created'])
-        filter_df.replace(r'\s+|\\n|\\|/|,', ' ', regex=True, inplace=True)
+        # filter_df.replace(r'\s+|\\n|\\|/|,', ' ', regex=True, inplace=True)
         filter_df.drop_duplicates('user_id', inplace=True)
         return filter_df
 
@@ -45,8 +46,12 @@ class ProcessRetrievedTweets(GridGiveawayTweetRetriever):
         """Responsible for building data and creating or uploading to database"""
         if self.process_tweets:
             self.get_all_tweets()  # creates self.all_tweets
-            filtered_tweets = self.filter_and_rename_fields()
-            return filtered_tweets
+            if len(self.all_tweets) > 0:
+                print("=== all_tweets len: ", len(self.all_tweets))
+                filtered_tweets = self.filter_and_rename_fields()
+                return filtered_tweets
+            else:
+                return []
 
     def build_record_objs(self, df):
         record_objs = []
@@ -57,6 +62,7 @@ class ProcessRetrievedTweets(GridGiveawayTweetRetriever):
                          user_handle=row['user_handle'],
                          user_screen_name=row['user_screen_name'],
                          location=row['location'],
+                         profile_img=row['profile_img'],
                          account_created=row['account_created'])
                  ), axis=1)
         return record_objs
@@ -80,9 +86,14 @@ class ProcessRetrievedTweets(GridGiveawayTweetRetriever):
         contest.contestants.add(*participants)
 
     def run_pipeline(self):
+        res = {'success': True, 'msg': ''}
         # Get all tweets and clean DF
         print('Retrieving and filtering tweets')
         contest_df = self.retrieve_filter_tweets()
+        if len(self.all_tweets) == 0:
+            res['success'] = False
+            res['msg'] = 'No tweets found'
+            return res
         # Build a list of objects for bulk insert
         print('Building participants')
         self.participants = self.build_record_objs(contest_df)
@@ -97,3 +108,6 @@ class ProcessRetrievedTweets(GridGiveawayTweetRetriever):
         except Exception as e:
             print('users could not be added to db for this contest')
             print(f'Reason: {e}')
+            res['success'] = False
+            res['msg'] = 'users could not be added to db for this contest'
+        return res

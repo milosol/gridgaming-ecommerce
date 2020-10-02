@@ -76,8 +76,8 @@ class GridGiveawayTweetRetriever(TwitterInteract):
         sinceId = None
         max_id = max_id
         # //however many you want to limit your collection to.  how much storage space do you have?
-        # maxTweets = self.max_tweets
-        maxTweets = 10000000
+        maxTweets = self.max_tweets
+        # maxTweets = 10000000
         # Remove last element in tweet to account for URLs
         # Take 70% of the tweet to reduce length
         split = int(self.tweet_ratio * len(self.tweet.full_text.split()))
@@ -85,7 +85,7 @@ class GridGiveawayTweetRetriever(TwitterInteract):
         # encoded_tweet_text = urllib.parse.quote_plus(tweet_text)
         searchQuery = 'RT @{author} '.format(author=self.author) + tweet_text
         tweetCount = 0
-        tweetsPerQry = 100
+        tweetsPerQry = 50
         print(searchQuery)    
         print('[+] Retrieving all contest tweets for TWEET ID: {tweet_id}\n Tweet text: {text}'.format(
             tweet_id=self.tweet.id,

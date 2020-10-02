@@ -13,7 +13,7 @@ from .models import (
     Checktime,
     History,
     Counting,
-    Cartget
+    Cartget,
 )
 
 

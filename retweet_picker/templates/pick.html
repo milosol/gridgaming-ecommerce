@@ -110,6 +110,16 @@
         transition-property: all;
         animation: fadeIn ease 0.5s;
     }
+
+    .user_avatar{
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        margin-right: 10px;
+    }
+    #tbl_drawing td{
+        padding: 5px 20px 2px 30px;
+    }
     </style>
 {% endblock %}
 
@@ -142,7 +152,7 @@
                                 <div class='row'>
                                     <div class='col-sm-12 my-2 px-sm-5' id="div_verify">
                                         <input type="text" class="form-control" placeholder="Enter the draw ID" id="in_drawid">
-                                        <label>Please fill this link field!</label>
+                                        <label>Please fill this Draw ID field!</label>
                                     </div>
                                     <div class='col-sm-12 mt-2 text-center'>
                                         <button class='btn  btn-success px-5' id="btn_verify">VERIFY</button>
@@ -176,6 +186,29 @@
         </div>
     </div>
 
+    <div class="modal fade" id="verifyModal">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="label_title">Draw Verify</h4>
+                    <!-- <button type="button" class="close" data-dismiss="modal">&times;</button> -->
+                </div>
+                <div class="modal-body">
+                    <h6  id="label_verifystatus">Drawed Result : </h6>
+                    <h6  id="label_entries">Entries : <span id="spn_entries">_</span></h6>
+                    <h6  id="label_drawdate">Draw date : <span id="spn_drawdate">_</span></h6>
+                    <table id="tbl_drawing" class="mt-3">
+                        <tbody>
+                            
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" id="btn_close">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     {% else %}
     <div class="container-fluid">
@@ -289,6 +322,64 @@
                 }
             })
         })
+
+        $("#btn_verify").click(function(){
+            draw_id = $("#in_drawid").val().trim()
+            if(draw_id == ''){
+                $("#div_verify").addClass('error');
+                return;
+            }
+            $("#label_verifystatus").html("Please wait while getting data...")
+            $("#spn_drawdate").html("_")
+            $("#spn_entries").html("_")
+            $("#label_drawdate").show()
+            $("#label_entries").show()
+            $("#tbl_drawing tbody").html("")
+            $("#verifyModal").modal({backdrop: 'static', keyboard: false})
+            $.ajax({
+                type: "POST",
+                url: "/contests/draw_verify",
+                data: {'draw_id': draw_id},
+                success: function (data) {
+                    console.log(data);
+                    if (data.success == true) {
+                        if(data.draw_info.draw_status != 'W'){
+                            $("#label_verifystatus").html("This conest is not finished yet.")
+                            $("#label_drawdate").hide()
+                            $("#label_entries").hide()
+                        }else{
+                            $("#label_verifystatus").html("Drawed Results")
+                            f_drawdate = new Date(data.draw_info.drawed_at).toLocaleString()
+                            $("#spn_drawdate").html(f_drawdate)
+                            $("#spn_entries").html(data.draw_info.entries)
+                            show_rerolls(data.draw_info.rerolls);
+                        }
+                    } else {
+                        $("#label_verifystatus").html(data.msg)
+                        $("#label_drawdate").hide()
+                        $("#label_entries").hide()
+                    }
+                }
+            })
+        })
     })
+    function show_rerolls(data){
+        for(i=0;i<data.length;i++){
+            r = data[i]
+            if(r.kind == 0){
+                reason = r.reason;
+            }else if(r.kind == 2){
+                reason = "choosen as winner!";
+            }else{
+                continue;
+            }
+            if($("#rtr_" + r.id).length == 0){
+                str = "<tr id='rtr_" + r.id + "'><td><img class='user_avatar' src='" + r.user_info.profile_img + "'>"
+                str += r.user_info.screen_name + "</td><td>" + reason +"</td></tr>";
+                $("#tbl_drawing tbody").append(str);
+            }
+            
+        }
+    }
 </script>
 {% endblock extra_scripts %}
