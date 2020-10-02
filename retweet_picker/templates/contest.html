@@ -543,6 +543,7 @@
         $("table.dataTable tbody tr").css("background-color", 'none');
     }
     function load_all_entries(){
+        $('#zero_config').show()
         $.ajax({
             type: "POST",
             url: "/contests/load_all_entries",
@@ -581,7 +582,6 @@
             $("#h_loadentry").html("You can download only " + (paid_amount + free_max) + " entries");
         }
         if(draw_status != 'C'){
-            $('#zero_config').show()
             load_all_entries()
         }else{
             $('#zero_config').hide()
