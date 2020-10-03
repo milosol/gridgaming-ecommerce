@@ -15,17 +15,6 @@
         </library>
       </libraries>
     </data-source>
-    <data-source source="LOCAL" name="desqujcf1aj7pq@ec2-54-211-210-149.compute-1.amazonaws.com" uuid="7d236a6b-eba1-4196-beec-2e1cc6419298">
-      <driver-ref>postgresql</driver-ref>
-      <synchronize>true</synchronize>
-      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
-      <jdbc-url>jdbc:postgresql://ec2-54-211-210-149.compute-1.amazonaws.com:5432/desqujcf1aj7pq</jdbc-url>
-      <driver-properties>
-        <property name="ssl" value="true" />
-        <property name="sslmode" value="verify-ca" />
-        <property name="sslfactory" value="org.postgresql.ssl.NonValidatingFactory" />
-      </driver-properties>
-    </data-source>
     <data-source source="LOCAL" name="postgres@localhost" uuid="a27e8dcd-bda8-44eb-94c4-186131d11506">
       <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
@@ -37,12 +26,6 @@
       <synchronize>true</synchronize>
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
       <jdbc-url>jdbc:postgresql://ec2-54-164-121-218.compute-1.amazonaws.com/demdhbrqfjdd1r</jdbc-url>
-    </data-source>
-    <data-source source="LOCAL" name="GG - Staging PG" uuid="bd0881d7-98e7-40bf-8d56-c6ec2ccf2489">
-      <driver-ref>postgresql</driver-ref>
-      <synchronize>true</synchronize>
-      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
-      <jdbc-url>jdbc:postgresql://ec2-54-236-169-55.compute-1.amazonaws.com/d54lo74dvil0jg</jdbc-url>
     </data-source>
   </component>
 </project>
