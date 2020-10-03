@@ -52,7 +52,6 @@ def draw_winner(existing_tweet_url=None, winner_count=1, actions=None, user_id=N
     # connection.close()
     gm = GiveawayManager(new_giveaway=False, existing_tweet_url=existing_tweet_url, winner_count=winner_count, sponsors=actions['sponsors'], user_id=user_id)
     res = gm.drawwinner(actions=actions)
-    print(" == draw result:", res)
     return res
         
 @job('default')

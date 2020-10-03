@@ -166,8 +166,10 @@ class GiveawayManager:
         contest = ProcessRetrievedTweets(tweet_url=self.tweet_url, user_id=self.user_id)
         contest.max_tweets = max_tweets
         contest.gwid = gwid
-        contest.run_pipeline()
-        self.participants = contest.participants
+        res = contest.run_pipeline()
+        if res['success'] == True:
+            self.participants = contest.participants
+        return res
 
     def choose_winner(self):
         logging.info(f'[*] Randomly selecting from {len(self.participants)} users')
@@ -304,16 +306,22 @@ class GiveawayManager:
 
 
     def drawwinner(self, actions):
-        res = {'success': False, 'msg': '', 'winners': [], 'participants': 0, 'rerolls': []}
+        res = {'success': False, 'msg': '', 'stop': False}
         try:
+            gwid = actions['gwid']
+            
+            if actions['follow_enable'] == True:
+                author = self.process_retrieved_tweets.author
+                self.sponsors.append('@' + author)
+                
             if actions['draw_type'] == 'draw':
-                self.retrieve_tweets()
-                logging.info("=== retrieve_tweets finished")
-                results, created = GiveawayWinners.objects.get_or_create(giveaway_id=self.tweet_id_key, user_id=self.user_id)
+                results = GiveawayWinners.objects.get(id=gwid)
                 self.results = results
+                self.participants = list(ContestUserParticipation.objects.get(contest=self.tweet_id_key, user_id=self.user_id).contestants.all())
                 self.results.participants = len(self.participants)
                 self.results.winner.clear()
                 self.results.re_rolls.clear()
+                self.results.drawed_at = timezone.now()
                 self.results.save()
             else:
                 results, created = GiveawayWinners.objects.get_or_create(giveaway_id=self.tweet_id_key, user_id=self.user_id)
@@ -326,27 +334,40 @@ class GiveawayManager:
             if self.results.participants == 0:
                 res['msg'] = "There is no participants."
                 return res
-            res['participants'] = self.results.participants
             for i in range(self.winner_count):
                 eligible_to_win = False
                 while not eligible_to_win:
                     if len(self.participants) == 0:
                         break
+                    gw = GiveawayWinners.objects.get(id=gwid)
+                    if gw.command == 1:
+                        print("=== stop command received ")
+                        res['stop'] = True
+                        gw.command = 0
+                        gw.status = 'S'
+                        gw.save()
+                        break
                     winner = random.choice(self.participants)
+                    reroll_record, created = get_user(winner)
+                    reroller = Rerolls.objects.create(contestant=reroll_record, kind=1)
+                    self.results.re_rolls.add(reroller)
                     self.winner = winner.user_screen_name
                     reason, eligible_to_win = self.perform_winner_analysis(self.winner)
                     if not eligible_to_win:
                         logging.info(f'{self.winner} is not eligible... rerolling: Reason: {reason}')
-                        reroll_record, created = get_user(winner)
-                        reroller = Rerolls.objects.create(reason=reason, contestant=reroll_record)
-                        self.results.re_rolls.add(reroller)
-                        res['rerolls'].append(winner.user_screen_name)
-                # Add people who got rerolled
-                if eligible_to_win == True:
-                    winner.save()
-                    self.results.winner.add(winner)
-                    self.participants.remove(winner)
-                    res['winners'].append(winner.user_screen_name)
+                        # reroller = Rerolls.objects.create(reason=reason, contestant=reroll_record)
+                        reroller.reason = reason
+                        reroller.kind = 0
+                        reroller.save()
+                    else:
+                        reroller.kind = 2
+                        reroller.save()
+                        winner.save()
+                        self.results.winner.add(winner)
+                        self.participants.remove(winner)
+                if res['stop'] == True:
+                    print("=== stop drawing")
+                    break
         except Exception as e:
             print(e)
             logging.info("Could not draw winner!")

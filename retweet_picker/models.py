@@ -20,11 +20,10 @@ TYPE_CHOICES = (
 
 DRAWSTATUS_CHOICES = (
     ('C', 'Created'),
-    ('F', 'Loaded free'),
-    ('P', 'Paid'),
     ('L', 'Loaded entries'),
-    ('D', 'Drawed free'),
-    ('W', 'Drawed finally')
+    ('D', 'Drawing'),
+    ('S', 'Drawing stoped'),
+    ('W', 'Drawed')
 )
 
 class ContestUserAccounts(models.Model):
@@ -33,6 +32,7 @@ class ContestUserAccounts(models.Model):
     user_handle = models.CharField(max_length=250, blank=True, null=True)
     user_screen_name = models.CharField(max_length=250)  # This is where winner will be pulled from
     location = models.CharField(max_length=200, blank=True, null=True)
+    profile_img = models.URLField(max_length=500, blank=True, null=True)
     account_created = models.DateTimeField()
 
     def __str__(self):
@@ -105,7 +105,8 @@ class DrawPrice(models.Model):
     
 class Rerolls(models.Model):
     reason = models.CharField(max_length=200, blank=True)
-    contestant = models.ForeignKey(ContestUserAccounts, on_delete=models.CASCADE)
+    contestant = models.ForeignKey(ContestUserAccounts, on_delete=models.CASCADE)  
+    kind = models.IntegerField(default=0)
     
 class GiveawayWinners(models.Model):
     """ Table to track all winners - might not need if we use M2M"""
@@ -116,11 +117,14 @@ class GiveawayWinners(models.Model):
     re_rolls = models.ManyToManyField(Rerolls)
     participants = models.IntegerField(null=True)  # Count of total entries
     created_at = models.DateTimeField(auto_now_add=True)
+    drawed_at = models.DateTimeField(null=True)
     retweet_count = models.IntegerField(default=0)
     toload_count = models.IntegerField(default=0)
     loaded_count = models.IntegerField(default=0)
+    paid_count = models.IntegerField(default=0)
     user_id = models.IntegerField(default=0)
-    
+    command = models.IntegerField(default=0)
+    draw_id = models.CharField(max_length=50, blank=True)
     def get_winners(self):
         win_names = []
         for w in self.winner.all():

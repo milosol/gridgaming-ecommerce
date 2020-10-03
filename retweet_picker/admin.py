@@ -8,7 +8,8 @@ from .models import (
     GiveawayResults,
     GiveawayStats,
     GiveawayQueue,
-    GiveawayWinners
+    GiveawayWinners,
+    DrawPrice
 )
 from users.models import User
 
@@ -90,6 +91,7 @@ class GiveawayWinnersAdmin(admin.ModelAdmin):
         'user_id',
         'user_name',
         'status',
+        'draw_id',
         'retweet_count',
         'toload_count',
         'loaded_count',
@@ -121,6 +123,7 @@ admin.site.register(TwitterGiveaway)
 admin.site.register(ContestUserAccounts)
 admin.site.register(TwitterGiveawayID)
 admin.site.register(GiveawayResults)
+admin.site.register(DrawPrice)
 admin.site.register(ContestUserParticipation)
 admin.site.register(GiveawayStats, GiveawayStatsAdmin)
 admin.site.register(GiveawayQueue, GiveawayQueueAdmin)

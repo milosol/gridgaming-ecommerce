@@ -117,6 +117,9 @@
     table.dataTable th, table.dataTable tbody tr td{
         text-align: center;
     }
+    table.dataTable th:nth-child(3), table.dataTable tbody tr td:nth-child(3){
+        text-align: left;
+    }
     #zero_config_filter label, .paginate_button, .dataTables_info{
         color: #b2b9bf!important;
     }
@@ -166,6 +169,15 @@
         50%  {background-color: #691ed4}
         100% {background-color: #272b34;}
     }
+    .user_avatar{
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        margin-right: 10px;
+    }
+    #tbl_drawing td{
+        padding: 5px 20px 2px 30px;
+    }
     </style>
 {% endblock %}
 
@@ -192,15 +204,17 @@
                                         </div>
                                         <div class="col-sm-5 col-md-5 my-2 py-2 px-3 text-center">
                                             <div class="card text-white mb-3 px-3 py-4 rounded-lg" style="border: 1px solid #24332a; box-shadow: 2px 2px 5px #21222d;">
-                                                <h6 style="width: fit-content">Entries count of tweet: {{ret_count}}</h6>
-                                                <h6 style="width: fit-content">Free amount : {{drawprice.free_max}}</h6>
-                                                <h6 style="width: fit-content">You should pay ${{drawprice.price}} per more {{drawprice.per_amount}} entries</h6>
+                                                <h6 style="width: fit-content" id="h_retcount">Entries count of tweet: {{ret_count}}</h6>
+                                                <h6 style="width: fit-content" id="h_freeamount">Free amount : {{drawprice.free_max}}</h6>
+                                                <h6 style="width: fit-content" id="h_paid">Paid amount {{paid_amount}}</h6>
+                                                <h6 style="width: fit-content" id="h_pay">You should pay ${{drawprice.price}} per more {{drawprice.per_amount}} entries</h6>
                                                 <button id="btn_pay" class="btn btn-primary mt-4 py-2 font-18" disabled>Free</button>
                                             </div>
                                         </div>
                                         <div class="col-sm-7 col-md-7 my-2 py-2 px-3 text-center">
-                                            <h5 class="mt-3" style="line-height: normal;">You are free to load entries. Click below button to load entries.</h5>
+                                            <h5 class="mt-3" style="line-height: normal;" id="h_loadentry">You are free to load entries. Click below button to load entries.</h5>
                                             <button class="btn btn-success mt-3" id="btn_loadentry">Load entries</button>
+                                            <h5 class="mt-5 text-danger" id="h_loadresult" style="display: none;">No tweets found</h5>
                                             <div class="mt-4" id="progress" style="display: none;">
                                                 <h6>Loading entries...</h6>
                                                 <div class="progress" style="height: 10px;" id="div_progress">
@@ -395,7 +409,7 @@
                                                     <h6>Retweet Enable: <span id="spn_retweetenable">true</span></h6>
                                                     <div id="div_chkactions" class="form-check mt-4 px-3 py-2" style="border: 1px solid #8a8686; border-radius: 15px; box-shadow: 0px 0px 2px #7a967ab5;">
                                                         <input type="checkbox" class="form-check-input" id="chk_actions" hidden>
-                                                        <label class="form-check-label" for="chk_actions">Are sure  with these actions?</label>
+                                                        <label class="form-check-label" for="chk_actions">Are you sure with these actions?</label>
                                                     </div>
                                                 </div>
                                             </div>
@@ -406,11 +420,11 @@
                                                     DRAW DETAIL
                                                 </div>
                                                 <div class="card-body">
-                                                    <h6>Status : _</h6>
-                                                    <h6>Entries : _</h6>
-                                                    <h6>Winners : _</h6>
-                                                    <h6>Draw date : _</h6>
-                                                    <h6>Draw ID : _</h6>
+                                                    <h6>Status : <span id="spn_status">_</span></h6>
+                                                    <h6>Entries : <span id="spn_entries">_</span></h6>
+                                                    <h6>Winners : <span id="spn_drawwinners">_</span></h6>
+                                                    <h6>Draw date : <span id="spn_drawdate">_</span></h6>
+                                                    <h6>Draw ID : <span id="spn_drawid">_</span></h6>
                                                 </div>
                                             </div>
                                         </div>
@@ -428,17 +442,19 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title" id="label_title">Draw</h4>
+                    <h4 class="modal-title" id="label_title">Draw winner</h4>
                     <!-- <button type="button" class="close" data-dismiss="modal">&times;</button> -->
                 </div>
                 <div class="modal-body">
                     <h6  id="label_status">Please wait while choosing winner...</h6>
-                    <h6 id="label_participants"></h6>
-                    <h6 id="label_winner"></h6>
+                    <table id="tbl_drawing" class="mt-3">
+                        <tbody>
+                            
+                        </tbody>
+                    </table>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" id="btn_finaldraw">Show Detail</button>
-                    <button type="button" class="btn btn-primary" id="btn_detail">Show Detail</button>
+                    <button type="button" class="btn btn-secondary" id="btn_drawstop">Stop drawing</button>
                     <button type="button" class="btn btn-secondary" data-dismiss="modal" id="btn_close">Close</button>
                 </div>
             </div>
@@ -467,25 +483,32 @@
     
     <script src="{% static 'taginput/jquery.tagsinput-revisited.js' %}"></script>
 <script  type="text/javascript">
-    var gwid = {{ gwid }}
-    var ret_count = {{ ret_count }}
-    var draw_status = "{{ status }}"
-    var free_max = {{drawprice.free_max}}
-    var per_amount = {{drawprice.per_amount}}
-    var price = {{drawprice.price}}
-    var progress_handle = 0
+    var gwid = '{{ gwid }}'
+    var pay_status = '{{ pay_status }}'
+    var pay_price = {{ pay_price }};
+    var ret_count = {{ ret_count }};
+    var paid_amount = {{ paid_amount }};
+    var draw_status = "{{ status }}";
+    var free_max = {{drawprice.free_max}};
+    var per_amount = {{drawprice.per_amount}};
+    var price = {{drawprice.price}};
+    var draw_winners = JSON.parse("{{draw_winners|escapejs}}");
+    var draw_date = '{{draw_date}}';
+    var draw_id = '{{draw_id}}';
+    var progress_handle = 0;
+    var entry_table = 0;
     function load_entry_progress(){
         $.ajax({
             type: "POST",
             url: "/contests/load_entry_progress",
             data: {'gwid': gwid},
             success: function (data) {
-                console.log(data);
                 if (data.success == true) {
+                    console.log("progress : ", data.progress)
                     $("#div_progress div").attr('aria-valuenow', data.progress);
                     $("#div_progress div").css('width', data.progress + '%');
                     if(data.progress >= 100){
-                        clearInterval(progress_handle);
+                        // clearInterval(progress_handle);
                     }
                 } else {
                 }
@@ -493,39 +516,44 @@
         })
     }
     function draw_table(data){
+        if(!entry_table){
+            entry_table = $('#zero_config').DataTable( {
+                dom: 'Bfrtip',
+                lengthMenu: [
+                    [ 10, 25, 50, -1 ],
+                    [ '10 rows', '25 rows', '50 rows', 'Show all' ]
+                ],
+                ordering: false,
+                buttons: [
+                    'pageLength'
+                ]
+            } );
+        } 	
+        entry_table.clear();
         var str = "";
-        console.log(data)
         for(i=0;i<data.length;i++){
-            str += "<tr role='row'><td>" + (i+1) + "</td>";
-            str += "<td>twitter</td>";
-            str += "<td>" + data[i].screen_name + "</td>";
-            str += "<td>" + data[i].account_created.split('T')[0] + "</td>";
-            str += "</tr>";
+            str = "<img class='user_avatar' src='" + data[i].profile_img + "'>  " + data[i].screen_name
+            entry_table.row.add( [
+                i+1,
+                "twitter",
+                str,
+                data[i].account_created.split('T')[0],
+            ] ).draw();
         }
-        $("#participants_tbody").html(str);
-        
-        $('#zero_config').DataTable( {
-            dom: 'Bfrtip',
-            lengthMenu: [
-                [ 10, 25, 50, -1 ],
-                [ '10 rows', '25 rows', '50 rows', 'Show all' ]
-            ],
-            ordering: false,
-            buttons: [
-                'pageLength'
-            ]
-        } );
         $("table.dataTable tbody tr").css("background-color", 'none');
     }
     function load_all_entries(){
+        $('#zero_config').show()
         $.ajax({
             type: "POST",
             url: "/contests/load_all_entries",
             data: {'gwid': gwid},
             success: function (data) {
-                console.log(data);
-                $("#progress").hide()
+                setTimeout(() => {
+                    $("#progress").hide()
+                }, 4000);
                 if (data.success == true) {
+                    $("#spn_entries").html(data.participants.length);
                     draw_table(data.participants)
                 } else {
                 }
@@ -533,8 +561,49 @@
         })
     }
     function initialize(){
-        if(draw_status == 'F' || draw_status == 'L'){
+        if(pay_status == 0){
+            $("#btn_pay").html("Free")
+            $("#h_paid").hide()
+            $("#h_pay").hide()
+            $("#btn_pay").prop('disabled', true);
+            $("#h_loadentry").html("You are free to load entries. Click below button to load entries.")
+        }else if(pay_status == 1){
+            $("#btn_pay").html("You already paid")
+            $("#btn_pay").prop('disabled', true);
+            $("#h_paid").show()
+            $("#h_pay").hide()
+            $("#h_loadentry").html("You can download all entries now. Click below button to load entries.")
+        }else{
+            $("#h_paid").show()
+            $("#h_pay").show()
+            str = "Pay $" + pay_price;
+            $("#btn_pay").html(str)
+            $("#btn_pay").prop('disabled', false);
+            $("#h_loadentry").html("You can download only " + (paid_amount + free_max) + " entries");
+        }
+        if(draw_status != 'C'){
             load_all_entries()
+        }else{
+            $('#zero_config').hide()
+        }
+        // draw initialize
+        if(draw_status == 'C' || draw_status == 'L'){
+            $("#spn_status").html('to draw');
+        }else if (draw_status == 'D'){
+            $("#spn_status").html('Drawing');
+        }else if(draw_status == 'S'){
+            $("#spn_status").html('Stoped');
+        }else if(draw_status == 'W'){
+            $("#spn_status").html('draw finished');
+        }
+        if(draw_status != 'C'){
+            $("#spn_entries").html(paid_amount + free_max);
+        }
+        if(draw_status == 'W'){
+            str = get_winners_names(draw_winners);
+            $("#spn_drawwinners").html(str);
+            $("#spn_drawdate").html(draw_date);
+            $("#spn_drawid").html(draw_id);
         }
     }
     function get_actions(){
@@ -556,29 +625,86 @@
         $("#spn_followenable").html(String(res.fe));
         $("#spn_followers").html(res.tags);
     }
+    function get_winners_names(winners){
+        if(winners.length > 0){
+            str = ''
+            for(i=0;i<winners.length;i++){
+                if(i != 0) str += ', ';
+                str += winners[i].screen_name
+            }
+            return str
+        }else{
+            return '_'
+        }
+    }
+    function get_drawing_progress(){
+        $.ajax({
+            type: "POST",
+            url: "/contests/drawing_progress",
+            data: {'gwid': gwid},
+            success: function (data) {
+                if (data.success == true) {
+                    show_rerolls(data.rerolls);
+                } else {
+                }
+            }
+        })
+    }
+    function show_rerolls(data){
+        rids = []
+        for(i=0;i<data.length;i++){
+            r = data[i]
+            if($("#rtr_" + r.id).length == 0){
+                str = "<tr id='rtr_" + r.id + "'><td><img class='user_avatar' src='" + r.user_info.profile_img + "'>"
+                str += r.user_info.screen_name + "</td><td id='rtd_" + r.id + "'>Analyzing...</td></tr>";
+                $("#tbl_drawing tbody").append(str);
+            }
+            rids.push(r.id.toString());
+            if(r.kind == 0){
+                $("#rtd_" + r.id).html(r.reason);
+            }else if(r.kind == 2){
+                $("#rtd_" + r.id).html("choosen as winner!");
+            }
+        }
+        rows = $("#tbl_drawing tbody tr").toArray();
+        rows.forEach(function(row){
+            row_id = $(row).attr('id').split("_")[1];
+            if(rids.indexOf(row_id) == -1){
+                $("#rtr_" + row_id).remove();
+            }
+        })
+    }
     $(function(){
         initialize()
         $("#btn_loadentry").click(function(){
+            $("#h_loadresult").hide();
             $("#btn_loadentry").attr("disabled", true);
             $("#div_progress div").css('width', '0');
             $("#progress").show()
             progress_handle = setInterval(() => {
                 load_entry_progress()
-            }, 2000);
+            }, 4000);
+            if(entry_table)
+                entry_table.clear().draw();
             $.ajax({
                 type: "POST",
                 url: "/contests/load_entries",
                 data: {'gwid': gwid},
                 success: function (data) {
-                    console.log(data);
                     $("#btn_loadentry").attr("disabled", false);
                     clearInterval(progress_handle);
                     if (data.success == true) {
                         $("#div_progress div").css('width', 100 + '%');
                         $("#div_progress div").css('width', 100 + '%');
                         load_all_entries();
+                        draw_status = 'L';
                     } else {
+                        $("#progress").hide()
+                        $("#h_loadresult").html(data.msg);
+                        $("#h_loadresult").show();
                     }
+                }, error: function(data){
+                    clearInterval(progress_handle);
                 }
             })
         })
@@ -624,55 +750,36 @@
             }
             $("#chk_actions").prop('checked', false);
         })
+        
         function draw_winner(type){
+            actions = get_actions();
+            if(actions.winner == ''){
+                Swal.fire({
+                    title: "Warning",
+                    text: "Please enter winner count in actions.",
+                    showConfirmButton: true
+                });
+                return;
+            }
+
             bchk_action = $("#chk_actions").prop("checked");
-            
             if(bchk_action == false){
-                console.log(bchk_action);
                 $("#div_chkactions").addClass("warning");
                 setTimeout(() => {
                     $("#div_chkactions").removeClass("warning");
                 }, 500);
+                return;
             }
-            return;
-            link = $("#in_link").val();
-            winner = $("#in_winner").val();
-            follow_enable = $("#chk_follow").prop("checked");
-            follow_other = $("#chk_followother").prop("checked");
-            tags = $('#add_tags').val();
-            valid = true
-            if(link.trim() == ""){
-                $("#div_link").addClass('error')
-                valid = false
-            }
-            if(winner < 1){
-                $("#div_winner").addClass('error')
-                vaid = false
-            }
-            if(valid == false){
-                return
-            }
-            $("#label_title").html("Draw Winner")
+            
             $("#label_status").html("Please wait while choosing winner...")
-            $("#label_winner").html("")
-            $("#label_participants").html("")
-            $(".modal-footer").hide()
-            $("#myModal").modal({backdrop: 'static', keyboard: false})
-            // Swal.fire({
-            //     title: "Warning",
-            //     text: msg,
-            //     showConfirmButton: true
-            // });
-         
-            if(type == 'draw'){
-                msg = 'This will find all participants from the first and will take some time.'
-            }else{
-                msg = "This will choose winner from participants already found before."
-            }
+            $("#btn_drawstop").prop('disabled', false);
+            $("#btn_drawstop").show()
+            $("#btn_close").hide()
+            
             swal.fire({
                 title: 'Are you sure?',
                 icon: 'warning',
-                text: msg,
+                text: "You will start drawing winner now.",
                 showCancelButton: true,
                 background: '#e9ecef',
                 confirmButtonColor: '#21c1d6',
@@ -680,23 +787,43 @@
                 confirmButtonText: 'Yes, i am sure!'
             }).then((result) => {
                 if (result.value) {
-                    $("#label_status").html("Please wait while choosing winner...")
-                    $("#label_winner").html("")
-                    $("#label_participants").html("")
-                    $(".modal-footer").hide()
+                    $("#tbl_drawing tbody").html("")
                     $("#myModal").modal({backdrop: 'static', keyboard: false})
+                    var drawing_handle = 0;
+                    setTimeout(() => {
+                            drawing_handle = setInterval(() => {
+                            get_drawing_progress()
+                        }, 1000);
+                    }, 2000);
+                    draw_status = 'D'
                     $.ajax({
                         type: "POST",
                         url: "../draw",
-                        data: {'link': link, 'winner': winner, 'follow_enable': follow_enable,
-                                'follow_other': follow_other, 'tags': tags, 'draw_type': type},
+                        data: {'gwid': gwid, 'winner': actions.winner, 'follow_enable': actions.fe,
+                                'follow_other': actions.fo, 'tags': actions.tags, 'draw_type': type},
                         success: function (data) {
-                            console.log(data);
+                            setTimeout(() => {
+                                clearInterval(drawing_handle);
+                            }, 2000);
                             if (data.success == true) {
-                                $("#label_status").html("Draw is finished.")
-                                $("#label_winner").html("winners : " + data.winners)
-                                $("#label_participants").html("participants : " + data.participants)
-                                $(".modal-footer").show()
+                                if(data.stop == true){
+                                    draw_status = 'S'
+                                    $("#spn_status").html('Stoped')
+                                    $("#spn_drawwinners").html('_')
+                                    $("#spn_drawdate").html('_')
+                                    $("#spn_drawid").html('_')
+                                    $("#label_status").html("Draw is stoped")
+                                }else{
+                                    draw_status = 'W'
+                                    $("#label_status").html("Draw is finished")
+                                    str = get_winners_names(data.draw_info.winners);
+                                    $("#spn_drawwinners").html(str)
+                                    f_drawdate = new Date(data.draw_info.drawed_at).toLocaleString()
+                                    $("#spn_drawdate").html(f_drawdate)
+                                    $("#spn_drawid").html(data.draw_info.draw_id)
+                                }
+                                $("#btn_drawstop").hide()
+                                $("#btn_close").show()
                             } else {
                                 setTimeout(function () { $("#myModal").modal("hide"); }, 500);
                                 swal.fire(
@@ -717,6 +844,41 @@
         })
         $("#btn_draw").click(function(){
             draw_winner('draw')
+        })
+        $("#btn_drawstop").click(function(){
+            swal.fire({
+                title: 'Are you sure?',
+                icon: 'warning',
+                text: "This will stop drawing winner.",
+                showCancelButton: true,
+                background: '#e9ecef',
+                confirmButtonColor: '#21c1d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, i am sure!'
+            }).then((result) => {
+                if (result.value) {
+                    $("#btn_drawstop").prop('disabled', true);
+                    $.ajax({
+                        type: "POST",
+                        url: "../drawstop",
+                        data: {'gwid': gwid},
+                        success: function (data) {
+                            if (data.success == true) {
+                                $("#label_status").html("Please wait while stop drawing.")
+                            } else {
+                                $("#btn_drawstop").prop('disabled', false);
+                                swal.fire(
+                                    "Can't stop drawing,",
+                                    data.msg,
+                                    'error'
+                                )
+                            }
+                        }
+                    })
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    
+                }
+            })
         })
     })
 </script>

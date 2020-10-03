@@ -3,6 +3,7 @@ import sys
 import threading
 from datetime import timedelta
 from django.utils import timezone
+from json import dumps
 
 from django.contrib import messages
 from django.db.models import Prefetch
@@ -26,7 +27,11 @@ logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 import time
 import django_rq
+import random
+import string
 
+def create_drawid():
+    return ''.join(random.choices(string.ascii_lowercase + string.digits, k=20))
 
 def new_retweet_contest(request):
     """ Created to pull down results via URL"""
@@ -459,12 +464,31 @@ def pick_entries(request, gwid):
         dp = DrawPrice.objects.all().first()
         gm = GiveawayManager(new_giveaway=False, existing_tweet_url=tweet_url)
         ret_count = gm.tweet.retweet_count
-        # ret_count = 10
+        # ret_count = 1000
+        context['pay_price'] = 0
+        if gw.status == 'C':
+            gw.paid_count = 0
+            gw.save()
+        if ret_count <= dp.free_max:
+            context['pay_status'] = 0             # free to download
+        else:
+            if gw.paid_count + dp.free_max >= ret_count:
+                context['pay_status'] = 1         # you have already paid
+            else:
+                context['pay_status'] = 2         # you must pay more
+                rest = ret_count - gw.paid_count - dp.free_max
+                pay_price = int(rest / dp.per_amount) * dp.price
+                context['pay_price'] = pay_price
+        draw_info = get_drawinformation(gwid)
+        context['paid_amount'] = gw.paid_count
         context['drawprice'] = dp
         context['ret_count'] = ret_count
         context['tweet_url'] = tweet_url
         context['status'] = gw.status
         context['gwid'] = gwid
+        context['draw_winners'] = dumps(draw_info['draw_info']['winners'])
+        context['draw_date'] = draw_info['draw_info']['drawed_at']
+        context['draw_id'] = draw_info['draw_info']['draw_id']
     except Exception as e:
         print(e)
     
@@ -484,25 +508,22 @@ def load_entries(request):
         dp = DrawPrice.objects.all().first()
         gw.retweet_count = ret_count
         gw.loaded_count = 0
-        ContestUserParticipation.objects.get(contest=tgid, user_id=gw.user_id).contestants.clear()
-        if ret_count <= dp.free_max or gw.status == 'P':
-            gw.toload_count = ret_count
-            gw.save()
-            gm.retrieve_tweets(gwid=gwid)
-            gw = GiveawayWinners.objects.get(id=gwid)
-            gw.status = 'L'
-            gw.save()
-        else:
-            gw.toload_count = dp.free_max
-            gw.save()
-            gm.retrieve_tweets(gwid=gwid, max_tweets=dp.free_max)
-            gw = GiveawayWinners.objects.get(id=gwid)
-            gw.status = 'F'
-            gw.save()
+        cups = ContestUserParticipation.objects.filter(contest=tgid, user_id=gw.user_id)
+        if cups.exists():
+            cups[0].contestants.clear()
+            
+        gw.toload_count = gw.paid_count + dp.free_max
+        gw.save()
+        res = gm.retrieve_tweets(gwid=gwid, max_tweets=gw.toload_count)
+        if res['success'] == False:
+            return JsonResponse(res)
+        gw = GiveawayWinners.objects.get(id=gwid)
+        gw.status = 'L'
+        gw.save()
     except Exception as e:
         print(e)
         res['success'] = False
-        res['msg'] = 'Error occured while fetching data. Please input correct url.'
+        res['msg'] = 'Downloading entries failed. Please input correct url.'
     return JsonResponse(res)
 
 @csrf_exempt
@@ -531,7 +552,7 @@ def load_all_entries(request):
         tweet_url = tgid.tweet_url
         participants = ContestUserParticipation.objects.get(contest=tgid, user_id=gw.user_id).contestants.all()
         for p in participants:
-            temp = {'user_id': p.user_id, 'screen_name': p.user_screen_name, 'account_created': p.account_created}
+            temp = {'user_id': p.user_id, 'screen_name': p.user_screen_name, 'profile_img': p.profile_img, 'account_created': p.account_created}
             res['participants'].append(temp)
     except Exception as e:
         print(e)
@@ -539,31 +560,138 @@ def load_all_entries(request):
         res['msg'] = 'Error occured while loading all entries.'
     return JsonResponse(res)
 
-
+def get_drawinformation(gwid):
+    res = {'success:': True, 'msg': '', 'draw_info': {}}
+    try:
+        gw = GiveawayWinners.objects.get(id=gwid)
+        res['draw_info']['draw_status'] = gw.status
+        res['draw_info']['drawed_at'] = gw.drawed_at
+        res['draw_info']['draw_id'] = gw.draw_id
+        res['draw_info']['winners'] = []
+        if gw.status == 'W':
+            winners = gw.winner.all()
+            for w in winners:
+                res['draw_info']['winners'].append({'screen_name': w.user_screen_name, 'profile_img': w.profile_img})
+    except Exception as e:
+        print(e)
+        res['success'] = False
+        res['draw_info'] = {'draw_status':'', 'drawed_at':'', 'draw_id': '', 'winners': []}
+    return res   
 @csrf_exempt
 def draw(request):
-    res = {'success': True, 'msg': ''}
+    res = {'success': True, 'msg': '', 'stop': False}
     try:
-        link = request.POST['link']
+        gwid = request.POST['gwid']
+        gw = GiveawayWinners.objects.get(id=gwid)
+        gw.command = 0
+        gw.status = 'D'
+        gw.save()
+        tgid = TwitterGiveawayID.objects.get(id=gw.giveaway_id_id)
+        tweet_url = tgid.tweet_url
+        
         wc = int(request.POST['winner'])
+        tags = request.POST['tags']
+        fe = request.POST['follow_enable']
+        fo = request.POST['follow_other']
         actions = {'follow_enable': False, 'follow_other': False}
         actions['draw_type'] = request.POST['draw_type']
-        
+        if fe == 'true':
+            actions['follow_enable'] = True
+        if fo == 'true':
+            actions['follow_other'] = True
+            
         sponsors = []
         if actions['follow_enable'] == True:
             username = request.user.username
-            sponsors.append('@GridGamingIO')
+            # sponsors.append('@GridGamingIO')
             if actions['follow_other'] == True:
                 user_list = tags.split(',')
                 for tag in user_list:
                     sponsors.append("@" + tag)
         actions['sponsors'] = sponsors
-        print("======== actions : ", actions)
-        res = draw_winner(existing_tweet_url=link, winner_count=wc, actions=actions, user_id=request.user.id)
+        actions['gwid'] = gwid
+        print(" === actions : ", actions)
+        res = draw_winner(existing_tweet_url=tweet_url, winner_count=wc, actions=actions, user_id=request.user.id)
+        if res['success'] == True and res['stop'] == False:
+            gw = GiveawayWinners.objects.get(id=gwid)
+            gw.status = 'W'
+            gw.draw_id = create_drawid()
+            gw.save()
+            
+        draw_info = get_drawinformation(gwid)
+        res['draw_info'] = draw_info['draw_info']
     except Exception as e:
         print(e)
         res['success'] = False
         res['msg'] = 'Error occured while drawing.'
+    print("== final draw result : ", res)
+    return JsonResponse(res)
+
+@csrf_exempt
+def drawstop(request):
+    res = {'success': True, 'msg': ''}
+    try:
+        gwid = request.POST['gwid']
+        print("=== stop drawing : ", gwid)
+        gw = GiveawayWinners.objects.get(id=gwid)
+        gw.command = 1
+        gw.save()
+    except Exception as e:
+        print(e)
+        res['success'] = False
+        res['msg'] = 'Error occured while stop drawing.'
+    return JsonResponse(res)
+
+@csrf_exempt
+def drawing_progress(request):
+    res = {'success': True, 'msg': '', 'rerolls': []}
+    try:
+        gwid = request.POST['gwid']
+        gw = GiveawayWinners.objects.get(id=gwid)
+        rerolls = gw.re_rolls.all()
+        for reroll in rerolls:
+            cuas = ContestUserAccounts.objects.filter(pk=reroll.contestant_id)
+            temp = {'screen_name': '', 'profile_img': ''}
+            if cuas.exists():
+                cua = cuas[0]
+                temp['screen_name'] = cua.user_screen_name
+                temp['profile_img'] = cua.profile_img
+            res['rerolls'].append({'id': reroll.id, 'reason': reroll.reason, 'kind': reroll.kind, 'user_info': temp})
+    except Exception as e:
+        print(e)
+        res['success'] = False
+        res['msg'] = 'Error occured while stop drawing.'
+    return JsonResponse(res)
+
+@csrf_exempt
+def draw_verify(request):
+    res = {'success': True, 'msg': '', 'draw_info': {}}
+    try:
+        draw_id = request.POST['draw_id']
+        print("=== verifying : ", draw_id)
+        gws = GiveawayWinners.objects.filter(draw_id=draw_id)
+        if not gws.exists():
+            res['success'] = False
+            res['msg'] = 'There is no matching draw ID'
+            return JsonResponse(res)
+        gw = gws[0]
+        res['draw_info']['draw_status'] = gw.status
+        res['draw_info']['drawed_at'] = gw.drawed_at
+        res['draw_info']['entries'] = gw.loaded_count
+        res['draw_info']['rerolls'] = []
+        rerolls = gw.re_rolls.all()
+        for reroll in rerolls:
+            cuas = ContestUserAccounts.objects.filter(pk=reroll.contestant_id)
+            temp = {'screen_name': '', 'profile_img': ''}
+            if cuas.exists():
+                cua = cuas[0]
+                temp['screen_name'] = cua.user_screen_name
+                temp['profile_img'] = cua.profile_img
+            res['draw_info']['rerolls'].append({'id': reroll.id, 'reason': reroll.reason, 'kind': reroll.kind, 'user_info': temp})
+    except Exception as e:
+        print(e)
+        res['success'] = False
+        res['msg'] = 'Error occured while verify.'
     return JsonResponse(res)
 
 # def get_ipaddress(request):
