@@ -12,6 +12,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 from django.urls import reverse_lazy
 from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
 from django.views import View
 
 
@@ -60,7 +61,7 @@ class ProfileHomeView(LoginRequiredMixin, TemplateView):
         context['socials'] = build_socials(self.request.user.id)
         return context
 
-
+@login_required
 def profile(request):
     social_account_extras = SocialAccount.objects.get(user=request.user)
 
