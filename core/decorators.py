@@ -1,4 +1,4 @@
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import reverse
 from django.contrib import messages
 
@@ -11,7 +11,7 @@ def account_type_check(function):
                 return HttpResponseRedirect(reverse('frontend:account_type'))
             return function(request, *args, **kwargs)
         else:
-            pass
+            return HttpResponseRedirect(HttpResponse('Error processing request. Please try again!'))
     return _function
 
 

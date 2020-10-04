@@ -38,12 +38,15 @@ def create_tsv_file(rows: Iterable) -> StringIO:
 def populate_temp_table(cursor: CursorWrapper, retweet_users: List[ContestUserAccounts]):
     def generate_rows_from_retweet_users():
         for retweet_user in retweet_users:
-            yield (str(retweet_user.user_id),
-                   retweet_user.user_handle,
-                   retweet_user.user_screen_name,
-                   retweet_user.location,
-                   retweet_user.profile_img,
-                   str(retweet_user.account_created))
+            try:
+                yield (str(retweet_user.user_id),
+                       retweet_user.user_handle,
+                       retweet_user.user_screen_name,
+                       retweet_user.location,
+                       retweet_user.profile_img,
+                       str(retweet_user.account_created))
+            except Exception as e:
+                print(f'[!] Error populating table: {e}')
 
     tsv_file = create_tsv_file(generate_rows_from_retweet_users())
     cursor.copy_from(
