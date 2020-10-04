@@ -55,16 +55,19 @@ class ProcessRetrievedTweets(GridGiveawayTweetRetriever):
 
     def build_record_objs(self, df):
         record_objs = []
-        df.apply(lambda row:
-                 record_objs.append(
-                     ContestUserAccounts(
-                         user_id=row['user_id'],
-                         user_handle=row['user_handle'],
-                         user_screen_name=row['user_screen_name'],
-                         location=row['location'],
-                         profile_img=row['profile_img'],
-                         account_created=row['account_created'])
-                 ), axis=1)
+        try:
+            df.apply(lambda row:
+                     record_objs.append(
+                         ContestUserAccounts(
+                             user_id=row['user_id'],
+                             user_handle=row['user_handle'],
+                             user_screen_name=row['user_screen_name'],
+                             location=row['location'],
+                             profile_img=row['profile_img'],
+                             account_created=row['account_created'])
+                     ), axis=1)
+        except Exception as e:
+            print(f'Could not add record obj. Reason {e}')
         return record_objs
 
     def associate_user_participation_with_contest(self):
