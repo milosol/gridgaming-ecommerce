@@ -29,11 +29,20 @@ class ProcessRetrievedTweets(GridGiveawayTweetRetriever):
         # Assumes all_tweets has tweets retrieved
         # print("=== photo_img :", self.all_tweets[0].user.profile_image_url)
         tweets = json_normalize(self.all_tweets)
-        filter_df = tweets[['user.id_str', 'user.name', 'user.screen_name', 'user.location','user.profile_image_url', 'user.created_at']]
+        filter_df = tweets[['user.id_str', 'user.name', 'user.screen_name', 'user.location', 'user.profile_image_url',
+                            'user.created_at']]
         filter_df.columns = ['user_id', 'user_handle', 'user_screen_name', 'location', 'profile_img', 'account_created']
-
         filter_df.loc[:, 'account_created'] = pd.to_datetime(filter_df['account_created'])
-        filter_df.replace(r'\s+|\\n|\\|/|,', ' ', regex=True, inplace=True)
+
+        temp_df = filter_df[['user_id', 'user_handle', 'user_screen_name', 'location']]
+        temp_df.replace(r'\s+|\\n|\\|/|,', ' ', regex=True, inplace=True)
+
+        # Merge sanitized values back to original df
+        filter_df[['user_id',
+                   'user_handle',
+                   'user_screen_name',
+                   'location']] = temp_df[temp_df.columns]
+
         filter_df.drop_duplicates('user_id', inplace=True)
         return filter_df
 
@@ -84,7 +93,8 @@ class ProcessRetrievedTweets(GridGiveawayTweetRetriever):
         giveaway_results, created = GiveawayResults.objects.get_or_create(giveaway_id=twitter_giveaway)
         giveaway_results.participants = len(participants)
         # Create m2m mapping
-        contest, created = ContestUserParticipation.objects.get_or_create(contest=twitter_giveaway, user_id=self.user_id)
+        contest, created = ContestUserParticipation.objects.get_or_create(contest=twitter_giveaway,
+                                                                          user_id=self.user_id)
         contest.save()
         contest.contestants.add(*participants)
 
