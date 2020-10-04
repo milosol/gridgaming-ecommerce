@@ -513,7 +513,9 @@ def load_entries(request):
         tgid = TwitterGiveawayID.objects.get(id=gw.giveaway_id_id)
         tweet_url = tgid.tweet_url
         print("==== load entries :", tweet_url)
-        gm = GiveawayManager(new_giveaway=False, existing_tweet_url=tweet_url, user_id=request.user.id)
+        gm = GiveawayManager(new_giveaway=False,
+                             existing_tweet_url=tweet_url,
+                             user_id=request.user.id)
         ret_count = gm.tweet.retweet_count
         dp = DrawPrice.objects.all().first()
         gw.retweet_count = ret_count
@@ -598,7 +600,9 @@ def get_drawinformation(gwid):
 
 @csrf_exempt
 def draw(request):
-    res = {'success': True, 'msg': '', 'stop': False}
+    res = {'success': True,
+           'msg': '',
+           'stop': False}
     try:
         gwid = request.POST['gwid']
         gw = GiveawayWinners.objects.get(id=gwid)
