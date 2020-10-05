@@ -55,6 +55,24 @@ class GiveawayQueueAdmin(admin.ModelAdmin):
         'end_time'
     ]
 
+class TwitterGiveawayIDAdmin(admin.ModelAdmin):
+    list_display = [
+        'id',
+        'tweet_url',
+        'giveaway_id',
+    ]
+    
+class ContestUserParticipationAdmin(admin.ModelAdmin):
+    list_display = [
+        'user_id',
+        'contest_id',
+        'tweet_url'
+    ]
+    
+    def tweet_url(self, obj):
+        return str(obj.contest.tweet_url)
+    
+    
 # Register your models here.
 class GiveawayStatsAdmin(admin.ModelAdmin):
 
@@ -90,6 +108,7 @@ class GiveawayWinnersAdmin(admin.ModelAdmin):
         'id',
         'user_id',
         'user_name',
+        'giveaway_id_id',
         'status',
         'draw_id',
         'retweet_count',
@@ -121,10 +140,10 @@ class GiveawayWinnersAdmin(admin.ModelAdmin):
     
 admin.site.register(TwitterGiveaway)
 admin.site.register(ContestUserAccounts)
-admin.site.register(TwitterGiveawayID)
+admin.site.register(TwitterGiveawayID, TwitterGiveawayIDAdmin)
 admin.site.register(GiveawayResults)
 admin.site.register(DrawPrice)
-admin.site.register(ContestUserParticipation)
+admin.site.register(ContestUserParticipation, ContestUserParticipationAdmin)
 admin.site.register(GiveawayStats, GiveawayStatsAdmin)
 admin.site.register(GiveawayQueue, GiveawayQueueAdmin)
 admin.site.register(GiveawayWinners, GiveawayWinnersAdmin)

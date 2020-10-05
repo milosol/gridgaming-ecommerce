@@ -704,7 +704,11 @@
                         $("#h_loadresult").show();
                     }
                 }, error: function(data){
+                    $("#btn_loadentry").attr("disabled", false);
                     clearInterval(progress_handle);
+                    $("#progress").hide()
+                    $("#h_loadresult").html("Error occured in server.");
+                    $("#h_loadresult").show();
                 }
             })
         })

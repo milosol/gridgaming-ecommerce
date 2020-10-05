@@ -550,10 +550,12 @@ def load_all_entries(request):
         gw = GiveawayWinners.objects.get(id=gwid)
         tgid = TwitterGiveawayID.objects.get(id=gw.giveaway_id_id)
         tweet_url = tgid.tweet_url
-        participants = ContestUserParticipation.objects.get(contest=tgid, user_id=gw.user_id).contestants.all()
-        for p in participants:
-            temp = {'user_id': p.user_id, 'screen_name': p.user_screen_name, 'profile_img': p.profile_img, 'account_created': p.account_created}
-            res['participants'].append(temp)
+        cups = ContestUserParticipation.objects.filter(contest=tgid, user_id=gw.user_id)
+        if cups.exists():
+            participants = cups[0].contestants.all()
+            for p in participants:
+                temp = {'user_id': p.user_id, 'screen_name': p.user_screen_name, 'profile_img': p.profile_img, 'account_created': p.account_created}
+                res['participants'].append(temp)
     except Exception as e:
         print(e)
         res['success'] = False

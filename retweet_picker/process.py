@@ -33,7 +33,7 @@ class ProcessRetrievedTweets(GridGiveawayTweetRetriever):
         filter_df.columns = ['user_id', 'user_handle', 'user_screen_name', 'location', 'profile_img', 'account_created']
 
         filter_df.loc[:, 'account_created'] = pd.to_datetime(filter_df['account_created'])
-        # filter_df.replace(r'\s+|\\n|\\|/|,', ' ', regex=True, inplace=True)
+        filter_df.replace(r'\s+|\\n|\\|/|,', ' ', regex=True, inplace=True)
         filter_df.drop_duplicates('user_id', inplace=True)
         return filter_df
 
@@ -97,6 +97,7 @@ class ProcessRetrievedTweets(GridGiveawayTweetRetriever):
         # Build a list of objects for bulk insert
         print('Building participants')
         self.participants = self.build_record_objs(contest_df)
+        print("=== len of participatns :", len(self.participants))
         # Insert all objects into database for users
         try:
             print('Inserting Participants')
