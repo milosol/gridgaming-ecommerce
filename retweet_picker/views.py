@@ -17,7 +17,8 @@ from django.views.decorators.csrf import csrf_exempt
 from core.decorators import account_type_check, cleared_hot_check
 from core.models import Order, OrderItem
 from .forms import RetweetChooserForm
-from .models import GiveawayResults, TwitterGiveawayID, TwitterGiveaway, GiveawayStats, GiveawayQueue, DrawPrice, GiveawayWinners, ContestUserParticipation, ContestUserAccounts
+from .models import GiveawayResults, TwitterGiveawayID, TwitterGiveaway, GiveawayStats, GiveawayQueue, DrawPrice, \
+    GiveawayWinners, ContestUserParticipation, ContestUserAccounts
 from .process import ProcessRetrievedTweets
 from .tasks import start_giveaway_bg, retrieve_tweets_choose_winner_job, draw_winner, fetch_content_from_url
 from users.models import User
@@ -30,8 +31,10 @@ import django_rq
 import random
 import string
 
+
 def create_drawid():
     return ''.join(random.choices(string.ascii_lowercase + string.digits, k=20))
+
 
 def new_retweet_contest(request):
     """ Created to pull down results via URL"""
@@ -172,27 +175,27 @@ def queue_retrieve(queue_id):
     try:
         row = GiveawayQueue.objects.get(id=queue_id)
         if row.status == 'R':
-             return False
+            return False
         row.status = 'R'
         row.save()
         print("======== retrieving:", queue_id, ":", row.queue_type, ":", row.tweet_url, )
-        
+
         if row.queue_type == 'H':
             queue = django_rq.get_queue('high')
         elif row.queue_type == 'L':
             queue = django_rq.get_queue('low')
         else:
             queue = django_rq.get_queue('default')
-            
+
         user = User.objects.get(id=row.user_id)
         if user.username == 'GridGamingIO':
             sponsors = ['@GridGamingIO']
         else:
             sponsors = ['@GridGamingIO', '@' + user.username]
-        print("======== sponsors : ", sponsors)    
+        print("======== sponsors : ", sponsors)
         queue.enqueue(retrieve_tweets_choose_winner_job, existing_tweet_url=row.tweet_url, user_id=row.user_id,
                       order_id=row.item_id, giveaway_amount=row.giveaway_amount, sponsors=sponsors)
-        
+
         # retrieve_tweets_choose_winner_job(existing_tweet_url=row.tweet_url, user_id=row.user_id, order_id=row.item_id, giveaway_amount=row.giveaway_amount, sponsors=sponsors)
         return True
     except Exception as e:
@@ -291,6 +294,7 @@ def delete_queue(request):
         res['msg'] = 'Error occured while deleting queue.'
     return JsonResponse(res)
 
+
 @csrf_exempt
 def clear_queue(request):
     try:
@@ -300,6 +304,7 @@ def clear_queue(request):
         print(e)
         messages.error(request, "Failed to clear ended jobs")
     return redirect("retweet_picker:queue_view")
+
 
 def prelaunch_validator(request, order_id, item_id):
     queryset = Order.objects.filter(ordered=True,
@@ -415,6 +420,7 @@ def contest_results(request, order_id):
 
     return render(request, "contest_results.html", context)
 
+
 def pick(request):
     context = {}
     try:
@@ -423,6 +429,7 @@ def pick(request):
         pass
 
     return render(request, "pick.html", context)
+
 
 @csrf_exempt
 def fetch_data(request):
@@ -441,6 +448,7 @@ def fetch_data(request):
         res['msg'] = 'Error occured while fetching data. Please input correct url.'
     return JsonResponse(res)
 
+
 @csrf_exempt
 def import_contest(request):
     res = {'success': True, 'msg': ''}
@@ -454,6 +462,7 @@ def import_contest(request):
         res['success'] = False
         res['msg'] = 'Error occured while fetching data. Please input correct url.'
     return JsonResponse(res)
+
 
 def pick_entries(request, gwid):
     context = {}
@@ -470,12 +479,12 @@ def pick_entries(request, gwid):
             gw.paid_count = 0
             gw.save()
         if ret_count <= dp.free_max:
-            context['pay_status'] = 0             # free to download
+            context['pay_status'] = 0  # free to download
         else:
             if gw.paid_count + dp.free_max >= ret_count:
-                context['pay_status'] = 1         # you have already paid
+                context['pay_status'] = 1  # you have already paid
             else:
-                context['pay_status'] = 2         # you must pay more
+                context['pay_status'] = 2  # you must pay more
                 rest = ret_count - gw.paid_count - dp.free_max
                 pay_price = int(rest / dp.per_amount) * dp.price
                 context['pay_price'] = pay_price
@@ -491,8 +500,9 @@ def pick_entries(request, gwid):
         context['draw_id'] = draw_info['draw_info']['draw_id']
     except Exception as e:
         print(e)
-    
+
     return render(request, "contest.html", context)
+
 
 @csrf_exempt
 def load_entries(request):
@@ -503,7 +513,9 @@ def load_entries(request):
         tgid = TwitterGiveawayID.objects.get(id=gw.giveaway_id_id)
         tweet_url = tgid.tweet_url
         print("==== load entries :", tweet_url)
-        gm = GiveawayManager(new_giveaway=False, existing_tweet_url=tweet_url, user_id=request.user.id)
+        gm = GiveawayManager(new_giveaway=False,
+                             existing_tweet_url=tweet_url,
+                             user_id=request.user.id)
         ret_count = gm.tweet.retweet_count
         dp = DrawPrice.objects.all().first()
         gw.retweet_count = ret_count
@@ -511,7 +523,7 @@ def load_entries(request):
         cups = ContestUserParticipation.objects.filter(contest=tgid, user_id=gw.user_id)
         if cups.exists():
             cups[0].contestants.clear()
-            
+
         gw.toload_count = gw.paid_count + dp.free_max
         gw.save()
         res = gm.retrieve_tweets(gwid=gwid, max_tweets=gw.toload_count)
@@ -525,6 +537,7 @@ def load_entries(request):
         res['success'] = False
         res['msg'] = 'Downloading entries failed. Please input correct url.'
     return JsonResponse(res)
+
 
 @csrf_exempt
 def load_entry_progress(request):
@@ -542,6 +555,7 @@ def load_entry_progress(request):
         res['msg'] = 'Error occured while fetching data. Please input correct url.'
     return JsonResponse(res)
 
+
 @csrf_exempt
 def load_all_entries(request):
     res = {'success': True, 'msg': '', 'participants': []}
@@ -550,17 +564,22 @@ def load_all_entries(request):
         gw = GiveawayWinners.objects.get(id=gwid)
         tgid = TwitterGiveawayID.objects.get(id=gw.giveaway_id_id)
         tweet_url = tgid.tweet_url
+
         cups = ContestUserParticipation.objects.filter(contest=tgid, user_id=gw.user_id)
         if cups.exists():
             participants = cups[0].contestants.all()
             for p in participants:
-                temp = {'user_id': p.user_id, 'screen_name': p.user_screen_name, 'profile_img': p.profile_img, 'account_created': p.account_created}
+                temp = {'user_id': p.user_id, 
+                        'screen_name': p.user_screen_name, 
+                        'profile_img': p.profile_img, 
+                        'account_created': p.account_created}
                 res['participants'].append(temp)
     except Exception as e:
         print(e)
         res['success'] = False
         res['msg'] = 'Error occured while loading all entries.'
     return JsonResponse(res)
+
 
 def get_drawinformation(gwid):
     res = {'success:': True, 'msg': '', 'draw_info': {}}
@@ -573,15 +592,20 @@ def get_drawinformation(gwid):
         if gw.status == 'W':
             winners = gw.winner.all()
             for w in winners:
-                res['draw_info']['winners'].append({'screen_name': w.user_screen_name, 'profile_img': w.profile_img})
+                res['draw_info']['winners'].append({'screen_name': w.user_screen_name,
+                                                    'profile_img': w.profile_img})
     except Exception as e:
         print(e)
         res['success'] = False
-        res['draw_info'] = {'draw_status':'', 'drawed_at':'', 'draw_id': '', 'winners': []}
-    return res   
+        res['draw_info'] = {'draw_status': '', 'drawed_at': '', 'draw_id': '', 'winners': []}
+    return res
+
+
 @csrf_exempt
 def draw(request):
-    res = {'success': True, 'msg': '', 'stop': False}
+    res = {'success': True,
+           'msg': '',
+           'stop': False}
     try:
         gwid = request.POST['gwid']
         gw = GiveawayWinners.objects.get(id=gwid)
@@ -590,7 +614,7 @@ def draw(request):
         gw.save()
         tgid = TwitterGiveawayID.objects.get(id=gw.giveaway_id_id)
         tweet_url = tgid.tweet_url
-        
+
         wc = int(request.POST['winner'])
         tags = request.POST['tags']
         fe = request.POST['follow_enable']
@@ -601,7 +625,7 @@ def draw(request):
             actions['follow_enable'] = True
         if fo == 'true':
             actions['follow_other'] = True
-            
+
         sponsors = []
         if actions['follow_enable'] == True:
             username = request.user.username
@@ -619,7 +643,7 @@ def draw(request):
             gw.status = 'W'
             gw.draw_id = create_drawid()
             gw.save()
-            
+
         draw_info = get_drawinformation(gwid)
         res['draw_info'] = draw_info['draw_info']
     except Exception as e:
@@ -628,6 +652,7 @@ def draw(request):
         res['msg'] = 'Error occured while drawing.'
     print("== final draw result : ", res)
     return JsonResponse(res)
+
 
 @csrf_exempt
 def drawstop(request):
@@ -643,6 +668,7 @@ def drawstop(request):
         res['success'] = False
         res['msg'] = 'Error occured while stop drawing.'
     return JsonResponse(res)
+
 
 @csrf_exempt
 def drawing_progress(request):
@@ -664,6 +690,7 @@ def drawing_progress(request):
         res['success'] = False
         res['msg'] = 'Error occured while stop drawing.'
     return JsonResponse(res)
+
 
 @csrf_exempt
 def draw_verify(request):
@@ -689,7 +716,8 @@ def draw_verify(request):
                 cua = cuas[0]
                 temp['screen_name'] = cua.user_screen_name
                 temp['profile_img'] = cua.profile_img
-            res['draw_info']['rerolls'].append({'id': reroll.id, 'reason': reroll.reason, 'kind': reroll.kind, 'user_info': temp})
+            res['draw_info']['rerolls'].append(
+                {'id': reroll.id, 'reason': reroll.reason, 'kind': reroll.kind, 'user_info': temp})
     except Exception as e:
         print(e)
         res['success'] = False

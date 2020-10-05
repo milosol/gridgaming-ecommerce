@@ -85,7 +85,7 @@ class GridGiveawayTweetRetriever(TwitterInteract):
         # encoded_tweet_text = urllib.parse.quote_plus(tweet_text)
         searchQuery = 'RT @{author} '.format(author=self.author) + tweet_text
         tweetCount = 0
-        tweetsPerQry = 50
+        tweetsPerQry = 100
         print(searchQuery)    
         print('[+] Retrieving all contest tweets for TWEET ID: {tweet_id}\n Tweet text: {text}'.format(
             tweet_id=self.tweet.id,
