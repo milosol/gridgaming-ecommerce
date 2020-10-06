@@ -845,11 +845,11 @@
                             if (data.success == true) {
                                 if(data.stop == true){
                                     draw_status = 'S'
-                                    $("#spn_status").html('Stoped')
+                                    $("#spn_status").html('Stopped')
                                     $("#spn_drawwinners").html('_')
                                     $("#spn_drawdate").html('_')
                                     $("#spn_drawid").html('_')
-                                    $("#label_status").html("Draw is stoped")
+                                    $("#label_status").html("Draw is stopped")
                                 }else{
                                     draw_status = 'W'
                                     $("#label_status").html("Draw is finished")
@@ -901,11 +901,11 @@
                         data: {'gwid': gwid},
                         success: function (data) {
                             if (data.success == true) {
-                                $("#label_status").html("Please wait while stop drawing.")
+                                $("#label_status").html("Please wait while we stop drawing...")
                             } else {
                                 $("#btn_drawstop").prop('disabled', false);
                                 swal.fire(
-                                    "Can't stop drawing,",
+                                    "Could not stop drawing,",
                                     data.msg,
                                     'error'
                                 )
