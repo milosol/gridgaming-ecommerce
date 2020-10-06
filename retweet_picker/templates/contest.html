@@ -3,12 +3,13 @@
 {% load mathfilters %}
 
 {% block extra_head_tags %}
+
 <!-- <link href="{% static 'taginput/stylesheets/inputTag.css' %}" rel="stylesheet"> -->
 <link href="{% static 'taginput/jquery.tagsinput-revisited.css' %}" rel="stylesheet">
 <!-- <link rel="stylesheet" href="http://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"> -->
 <link href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css" rel="stylesheet">
 <link href="https://cdn.datatables.net/buttons/1.6.2/css/buttons.dataTables.min.css" rel="stylesheet">
-
+<script src="https://kit.fontawesome.com/a076d05399.js"></script>
 <style>
     .switch {
       position: relative;
@@ -404,9 +405,9 @@
                                                 </div>
                                                 <div class="card-body">
                                                     <h6>Number of winners : <span id="spn_winner">1</span></h6>
-                                                    <h6>Follow Enable : <span id="spn_followenable">false</span></h6>
+                                                    <h6>Follow Enable : <span id="spn_followenable" class="pl-2"><i class="fas fa-times text-danger"></i></span></h6>
                                                     <h6>Must Be Following: <span id="spn_followers"></span></h6>
-                                                    <h6>Retweet Enable: <span id="spn_retweetenable">true</span></h6>
+                                                    <h6>Retweet Enable: <span id="spn_retweetenable" class="pl-2"><i class="fas fa-check text-success"></i></span></h6>
                                                     <div id="div_chkactions" class="form-check mt-4 px-3 py-2" style="border: 1px solid #8a8686; border-radius: 15px; box-shadow: 0px 0px 2px #7a967ab5;">
                                                         <input type="checkbox" class="form-check-input" id="chk_actions" hidden>
                                                         <label class="form-check-label" for="chk_actions">Are you sure with these actions?</label>
@@ -497,24 +498,7 @@
     var draw_id = '{{draw_id}}';
     var progress_handle = 0;
     var entry_table = 0;
-    function load_entry_progress(){
-        $.ajax({
-            type: "POST",
-            url: "/contests/load_entry_progress",
-            data: {'gwid': gwid},
-            success: function (data) {
-                if (data.success == true) {
-                    console.log("progress : ", data.progress)
-                    $("#div_progress div").attr('aria-valuenow', data.progress);
-                    $("#div_progress div").css('width', data.progress + '%');
-                    if(data.progress >= 100){
-                        // clearInterval(progress_handle);
-                    }
-                } else {
-                }
-            }
-        })
-    }
+    var start_from = 100
     function draw_table(data){
         if(!entry_table){
             entry_table = $('#zero_config').DataTable( {
@@ -551,12 +535,15 @@
             success: function (data) {
                 setTimeout(() => {
                     $("#progress").hide()
-                }, 4000);
+                    $("#btn_loadentry").attr("disabled", false);
+                }, 2000);
                 if (data.success == true) {
                     $("#spn_entries").html(data.participants.length);
                     draw_table(data.participants)
                 } else {
                 }
+            },error: function(e){
+                
             }
         })
     }
@@ -622,7 +609,11 @@
     function setdrawactions(){
         res = get_actions();
         $("#spn_winner").html(res.winner);
-        $("#spn_followenable").html(String(res.fe));
+        if(res.fe == false){
+            $("#spn_followenable").html('<i class="fas fa-times text-danger"></i>');
+        }else{
+            $("#spn_followenable").html('<i class="fas fa-check text-success"></i>');
+        }
         $("#spn_followers").html(res.tags);
     }
     function get_winners_names(winners){
@@ -674,43 +665,67 @@
             }
         })
     }
+    function load_entry_progress(){
+        
+        $.ajax({
+            type: "POST",
+            url: "/contests/load_entry_progress",
+            data: {'gwid': gwid},
+            success: function (data) {
+                if (data.success == true) {
+                    if(data.progress < 100 && start_from == 100){
+                        start_from = data.progress
+                    }
+                    $("#div_progress div").attr('aria-valuenow', data.progress);
+                    $("#div_progress div").css('width', data.progress + '%');
+                    if(data.progress >= 100 && start_from < 100){
+                        clearInterval(progress_handle);
+                        draw_status = 'L';
+                        setTimeout(() => {
+                            load_all_entries();
+                        }, 1500);
+                    }
+                } else {
+
+                }
+            }
+        })
+    }
+    function fnload_entry(){
+        $("#h_loadresult").hide();
+        $("#btn_loadentry").attr("disabled", true);
+        $("#div_progress div").css('width', '0');
+        $("#progress").show()
+        
+        if(entry_table)
+            entry_table.clear().draw();
+        $.ajax({
+            type: "POST",
+            url: "/contests/load_entries",
+            data: {'gwid': gwid},
+            success: function (data) {
+                if (data.success == true) {
+                    progress_handle = setInterval(() => {
+                        load_entry_progress()
+                    }, 4000);
+                } else {
+                    $("#progress").hide()
+                    $("#h_loadresult").html(data.msg);
+                    $("#h_loadresult").show();
+                }
+            }, error: function(data){
+                $("#btn_loadentry").attr("disabled", false);
+                clearInterval(progress_handle);
+                $("#progress").hide()
+                $("#h_loadresult").html("Error occured in server.");
+                $("#h_loadresult").show();
+            }
+        })
+    }
     $(function(){
         initialize()
         $("#btn_loadentry").click(function(){
-            $("#h_loadresult").hide();
-            $("#btn_loadentry").attr("disabled", true);
-            $("#div_progress div").css('width', '0');
-            $("#progress").show()
-            progress_handle = setInterval(() => {
-                load_entry_progress()
-            }, 4000);
-            if(entry_table)
-                entry_table.clear().draw();
-            $.ajax({
-                type: "POST",
-                url: "/contests/load_entries",
-                data: {'gwid': gwid},
-                success: function (data) {
-                    $("#btn_loadentry").attr("disabled", false);
-                    clearInterval(progress_handle);
-                    if (data.success == true) {
-                        $("#div_progress div").css('width', 100 + '%');
-                        $("#div_progress div").css('width', 100 + '%');
-                        load_all_entries();
-                        draw_status = 'L';
-                    } else {
-                        $("#progress").hide()
-                        $("#h_loadresult").html(data.msg);
-                        $("#h_loadresult").show();
-                    }
-                }, error: function(data){
-                    $("#btn_loadentry").attr("disabled", false);
-                    clearInterval(progress_handle);
-                    $("#progress").hide()
-                    $("#h_loadresult").html("Error occured in server.");
-                    $("#h_loadresult").show();
-                }
-            })
+            fnload_entry()
         })
         
         $("#div_winner input").change(function(){

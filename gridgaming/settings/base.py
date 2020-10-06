@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'mathfilters',
     'slotapp',
     'giveaways',
+    'background_task',
 ]
 
 MIDDLEWARE = [
@@ -185,6 +186,7 @@ ACCOUNT_EMAIL_VERIFICATION = 'none'
 # EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 # EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 
+BACKGROUND_TASK_RUN_ASYNC = True
 
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration

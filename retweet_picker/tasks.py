@@ -1,7 +1,8 @@
 from django_rq import job
 import time
 from retweet_picker.manager import GiveawayManager
-
+from background_task import background
+from .models import GiveawayWinners, DrawPrice, ContestUserParticipation, ContestUserAccounts, TwitterGiveawayID
 
 def start_giveaway_bg(user_id=None,
                       order_id=None,
@@ -38,6 +39,7 @@ def fetch_content_from_url(existing_tweet_url=None):
         gm = GiveawayManager(new_giveaway=False, existing_tweet_url=existing_tweet_url)
         if gm.tweet_id:
             res['tweet_id'] = gm.tweet_id
+            res['tweet_url'] = gm.tweet_url
         else:
             res['success'] = False
             res['msg'] = "Can't process this url. Are you sure this url is correct?"
@@ -53,7 +55,40 @@ def draw_winner(existing_tweet_url=None, winner_count=1, actions=None, user_id=N
     gm = GiveawayManager(new_giveaway=False, existing_tweet_url=existing_tweet_url, winner_count=winner_count, sponsors=actions['sponsors'], user_id=user_id)
     res = gm.drawwinner(actions=actions)
     return res
-        
+
+@background(schedule=60)
+def load_entry_task(gwid, user_id):
+    res = {'success': True, 'msg': ''}
+    try:
+        gw = GiveawayWinners.objects.get(id=gwid)
+        tgid = TwitterGiveawayID.objects.get(id=gw.giveaway_id_id)
+        tweet_url = tgid.tweet_url
+        print("==== load entries on task :", tweet_url)
+        gm = GiveawayManager(new_giveaway=False,
+                             existing_tweet_url=tweet_url,
+                             user_id=user_id)
+        ret_count = gm.tweet.retweet_count
+        dp = DrawPrice.objects.all().first()
+        gw.retweet_count = ret_count
+        gw.loaded_count = 0
+        cups = ContestUserParticipation.objects.filter(contest=tgid, user_id=gw.user_id)
+        if cups.exists():
+            cups[0].contestants.clear()
+
+        gw.toload_count = gw.paid_count + dp.free_max
+        gw.save()
+        res = gm.retrieve_tweets(gwid=gwid, max_tweets=gw.toload_count)
+        print(" === load entry task is finisehd")
+        if res['success'] == False:
+            return res
+        gw = GiveawayWinners.objects.get(id=gwid)
+        gw.status = 'L'
+        gw.save()
+    except Exception as e:
+        print(e)
+        res['success'] = False
+        res['msg'] = 'Downloading entries failed. Please input correct url.'
+    return res
 @job('default')
 def sleeper():
     from django.db import connection

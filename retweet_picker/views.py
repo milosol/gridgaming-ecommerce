@@ -20,7 +20,7 @@ from .forms import RetweetChooserForm
 from .models import GiveawayResults, TwitterGiveawayID, TwitterGiveaway, GiveawayStats, GiveawayQueue, DrawPrice, \
     GiveawayWinners, ContestUserParticipation, ContestUserAccounts
 from .process import ProcessRetrievedTweets
-from .tasks import start_giveaway_bg, retrieve_tweets_choose_winner_job, draw_winner, fetch_content_from_url
+from .tasks import start_giveaway_bg, retrieve_tweets_choose_winner_job, draw_winner, fetch_content_from_url, load_entry_task
 from users.models import User
 from retweet_picker.manager import GiveawayManager
 
@@ -509,33 +509,11 @@ def load_entries(request):
     res = {'success': True, 'msg': ''}
     try:
         gwid = request.POST['gwid']
-        gw = GiveawayWinners.objects.get(id=gwid)
-        tgid = TwitterGiveawayID.objects.get(id=gw.giveaway_id_id)
-        tweet_url = tgid.tweet_url
-        print("==== load entries :", tweet_url)
-        gm = GiveawayManager(new_giveaway=False,
-                             existing_tweet_url=tweet_url,
-                             user_id=request.user.id)
-        ret_count = gm.tweet.retweet_count
-        dp = DrawPrice.objects.all().first()
-        gw.retweet_count = ret_count
-        gw.loaded_count = 0
-        cups = ContestUserParticipation.objects.filter(contest=tgid, user_id=gw.user_id)
-        if cups.exists():
-            cups[0].contestants.clear()
-
-        gw.toload_count = gw.paid_count + dp.free_max
-        gw.save()
-        res = gm.retrieve_tweets(gwid=gwid, max_tweets=gw.toload_count)
-        if res['success'] == False:
-            return JsonResponse(res)
-        gw = GiveawayWinners.objects.get(id=gwid)
-        gw.status = 'L'
-        gw.save()
+        load_entry_task(gwid, request.user.id, schedule=timezone.now())
     except Exception as e:
         print(e)
         res['success'] = False
-        res['msg'] = 'Downloading entries failed. Please input correct url.'
+        res['msg'] = 'Downloading entries failed'
     return JsonResponse(res)
 
 

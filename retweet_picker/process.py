@@ -109,7 +109,6 @@ class ProcessRetrievedTweets(GridGiveawayTweetRetriever):
         # Build a list of objects for bulk insert
         print('Building participants')
         self.participants = self.build_record_objs(contest_df)
-        print("=== len of participatns :", len(self.participants))
         # Insert all objects into database for users
         try:
             print('Inserting Participants')

@@ -225,6 +225,9 @@
 <script src="{% static 'taginput/jquery.tagsinput-revisited.js' %}"></script>
 <script sync src="https://platform.twitter.com/widgets.js"></script>
 <script  type="text/javascript">
+    var link = "";
+    var tweet_url = "";
+    var draw_url = "";
     $(function(){
         $("#div_link input").change(function(){
             $("#div_link").removeClass('error')
@@ -261,7 +264,7 @@
             $.ajax({
                 type: "POST",
                 url: "../import_contest",
-                data: {'link': link},
+                data: {'link': tweet_url},
                 success: function (data) {
                     console.log(data);
                     if (data.success == true) {
@@ -272,9 +275,9 @@
             })
         })
         $("#btn_draw").click(function(){
-            link = $("#in_link").val();
+            link = $("#in_link").val().trim();
             valid = true
-            if(link.trim() == "" || link.indexOf('https://twitter.com/') == -1){
+            if(link == "" || link.indexOf('https://twitter.com/') == -1){
                 $("#div_link label").html('Please fill this link field!')
                 $("#div_link").addClass('error')
                 valid = false
@@ -296,6 +299,7 @@
                     var tweet = document.getElementById("tweet_content");
                     console.log(data);
                     if (data.success == true) {
+                        tweet_url = data.tweet_url;
                         twttr.widgets.createTweet(
                             data.tweet_id, tweet,
                             {
