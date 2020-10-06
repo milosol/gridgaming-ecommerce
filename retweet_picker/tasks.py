@@ -63,7 +63,7 @@ def load_entry_task(gwid, user_id):
         gw = GiveawayWinners.objects.get(id=gwid)
         tgid = TwitterGiveawayID.objects.get(id=gw.giveaway_id_id)
         tweet_url = tgid.tweet_url
-        print("==== load entries on task :", tweet_url)
+        print("=== load entries on background task :", tweet_url)
         gm = GiveawayManager(new_giveaway=False,
                              existing_tweet_url=tweet_url,
                              user_id=user_id)
@@ -75,10 +75,12 @@ def load_entry_task(gwid, user_id):
         if cups.exists():
             cups[0].contestants.clear()
 
-        gw.toload_count = gw.paid_count + dp.free_max
+        toload_count = gw.paid_count + dp.free_max
+        if toload_count > ret_count:
+            toload_count = ret_count
+        gw.toload_count = toload_count
         gw.save()
         res = gm.retrieve_tweets(gwid=gwid, max_tweets=gw.toload_count)
-        print(" === load entry task is finisehd")
         if res['success'] == False:
             return res
         gw = GiveawayWinners.objects.get(id=gwid)
