@@ -509,6 +509,7 @@ def load_entries(request):
     res = {'success': True, 'msg': ''}
     try:
         gwid = request.POST['gwid']
+        GiveawayWinners.objects.filter(id=gwid).update(status='C', loaded_count=0)
         load_entry_task(gwid, request.user.id, schedule=timezone.now())
     except Exception as e:
         print(e)
@@ -519,10 +520,12 @@ def load_entries(request):
 
 @csrf_exempt
 def load_entry_progress(request):
-    res = {'success': True, 'msg': ''}
+    res = {'success': True, 'msg': '', 'loaded': False}
     try:
         gwid = request.POST['gwid']
         gw = GiveawayWinners.objects.get(id=gwid)
+        if gw.status == 'L':
+            res['loaded'] = True
         if gw.toload_count != 0:
             res['progress'] = int(gw.loaded_count / gw.toload_count * 100)
         else:
@@ -536,13 +539,12 @@ def load_entry_progress(request):
 
 @csrf_exempt
 def load_all_entries(request):
-    res = {'success': True, 'msg': '', 'participants': []}
+    res = {'success': True, 'msg': '', 'participants': [], 'ended': False, 'end': 0}
     try:
         gwid = request.POST['gwid']
         gw = GiveawayWinners.objects.get(id=gwid)
         tgid = TwitterGiveawayID.objects.get(id=gw.giveaway_id_id)
         tweet_url = tgid.tweet_url
-
         cups = ContestUserParticipation.objects.filter(contest=tgid, user_id=gw.user_id)
         if cups.exists():
             participants = cups[0].contestants.all()

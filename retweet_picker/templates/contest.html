@@ -9,6 +9,7 @@
 <!-- <link rel="stylesheet" href="http://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"> -->
 <link href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css" rel="stylesheet">
 <link href="https://cdn.datatables.net/buttons/1.6.2/css/buttons.dataTables.min.css" rel="stylesheet">
+
 <script src="https://kit.fontawesome.com/a076d05399.js"></script>
 <style>
     .switch {
@@ -189,6 +190,8 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">
+
+
                         <nav>
                             <div class="nav nav-tabs" style="width: 50%;" id="nav-tab" role="tablist">
                               <a class="nav-item nav-link active" id="nav-entry-tab" data-toggle="tab" href="#nav-entry" role="tab" aria-controls="nav-entry" aria-selected="true">Entries</a>
@@ -473,6 +476,8 @@
     
 {% endblock %}
 {% block extra_scripts %}
+
+
 <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/1.6.2/js/dataTables.buttons.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/1.6.2/js/buttons.flash.min.js"></script>
@@ -499,6 +504,7 @@
     var progress_handle = 0;
     var entry_table = 0;
     var start_from = 100
+    
     function draw_table(data){
         if(!entry_table){
             entry_table = $('#zero_config').DataTable( {
@@ -513,7 +519,6 @@
                 ]
             } );
         } 	
-        entry_table.clear();
         var str = "";
         for(i=0;i<data.length;i++){
             str = "<img class='user_avatar' src='" + data[i].profile_img + "'>  " + data[i].screen_name
@@ -522,24 +527,33 @@
                 "twitter",
                 str,
                 data[i].account_created.split('T')[0],
-            ] ).draw();
+            ] )
         }
+        entry_table.draw();
         $("table.dataTable tbody tr").css("background-color", 'none');
     }
     function load_all_entries(){
+        if(entry_table)
+            entry_table.clear();
+        load_part_entries(0);
+    }
+    function load_part_entries(){
         $('#zero_config').show()
         $.ajax({
             type: "POST",
             url: "/contests/load_all_entries",
             data: {'gwid': gwid},
             success: function (data) {
-                setTimeout(() => {
-                    $("#progress").hide()
-                    $("#btn_loadentry").attr("disabled", false);
-                }, 2000);
+                console.log(data)
                 if (data.success == true) {
-                    $("#spn_entries").html(data.participants.length);
+                    $("#spn_entries").html(data.end);
                     draw_table(data.participants)
+                    // if(data.ended == false){
+                    //     setTimeout(() => {
+                    //         load_part_entries(data.end)
+                    //     }, 1000);
+                    // }
+                    
                 } else {
                 }
             },error: function(e){
@@ -569,7 +583,10 @@
             $("#h_loadentry").html("You can download only " + (paid_amount + free_max) + " entries");
         }
         if(draw_status != 'C'){
-            load_all_entries()
+            setTimeout(() => {
+                load_all_entries();
+            }, 2000);
+            
         }else{
             $('#zero_config').hide()
         }
@@ -665,25 +682,26 @@
             }
         })
     }
-    function load_entry_progress(){
-        
+    function load_entry_progress(){ 
         $.ajax({
             type: "POST",
             url: "/contests/load_entry_progress",
             data: {'gwid': gwid},
             success: function (data) {
                 if (data.success == true) {
-                    if(data.progress < 100 && start_from == 100){
-                        start_from = data.progress
-                    }
-                    $("#div_progress div").attr('aria-valuenow', data.progress);
-                    $("#div_progress div").css('width', data.progress + '%');
-                    if(data.progress >= 100 && start_from < 100){
+                    if(data.loaded == false){
+                        $("#div_progress div").attr('aria-valuenow', data.progress);
+                        $("#div_progress div").css('width', data.progress + '%');
+                    }else{
+                        $("#div_progress div").attr('aria-valuenow', 100);
+                        $("#div_progress div").css('width', 100 + '%');
                         clearInterval(progress_handle);
                         draw_status = 'L';
                         setTimeout(() => {
+                            $("#progress").hide()
+                            $("#btn_loadentry").attr("disabled", false);
                             load_all_entries();
-                        }, 1500);
+                        }, 2000);
                     }
                 } else {
 
