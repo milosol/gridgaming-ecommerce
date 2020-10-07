@@ -12,7 +12,7 @@ class User(AbstractUser):
                                      null=True,
                                      blank=True,
                                      on_delete=models.CASCADE)
-    blacklisted = models.BooleanField(default=False)
+    blacklisted = models.NullBooleanField(default=False, blank=True, null=True)
     cleared_hot = models.BooleanField(default=False)  # Sets to true after member earns status
 
 
