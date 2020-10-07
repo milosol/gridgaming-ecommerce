@@ -1,6 +1,9 @@
 # Create your models here.
 import logging
 
+from allauth.account.app_settings import app_settings
+from allauth.account.utils import perform_login
+from allauth.socialaccount.signals import pre_social_login
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
@@ -35,6 +38,13 @@ from allauth.account.signals import (
 )
 from django.dispatch import receiver
 from core.models import History
+
+@receiver(pre_social_login)
+def link_to_local_user(sender, request, sociallogin, **kwargs):
+    email_address = sociallogin.account.extra_data['email']
+    users = User.objects.filter(email=email_address)
+    if users:
+        perform_login(request, users[0], email_verification=app_settings.EMAIL_VERIFICATION)
 
 
 @receiver(user_logged_in)
