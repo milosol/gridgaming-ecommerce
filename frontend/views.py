@@ -1,3 +1,6 @@
+from allauth.exceptions import ImmediateHttpResponse
+from allauth.socialaccount.signals import pre_social_login
+from django.dispatch import receiver
 from django.shortcuts import render
 from allauth.socialaccount.models import SocialAccount
 from .forms import UserAccountForm
@@ -103,3 +106,16 @@ def update_account_type(request):
     #
     # else:
     #     form = UserAccountForm(initial={0:0})
+
+@receiver(pre_social_login)
+def handleDuplicateEmail(sender, request, sociallogin, **kwargs):
+    if sociallogin.account.provider == 'facebook' or sociallogin.account.provider == 'twitter':
+        email_address = sociallogin.account.extra_data['email'] # get email address from fb or twitter social account.
+    else:
+        email_address = sociallogin.account.extra_data['email-address']  # Get email from linkedin social account.
+    users = User.objects.all().filter(email=email_address) # This line is problematic
+    if users.exists():
+        user = users.first()
+        if not (user.profile.provider == sociallogin.account.provider):    # Different user is trying to login with already existing user's email address.
+            response = 'Your social account email address is already registered to some account. Please choose a different one.'
+            raise ImmediateHttpResponse(render(request, 'index.html', {'type': True, 'response': response}))
