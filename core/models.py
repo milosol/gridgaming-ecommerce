@@ -327,6 +327,8 @@ class Transaction(models.Model):
 
 def userprofile_receiver(sender, instance, created, *args, **kwargs):
     if created:
+        if not instance.blacklisted:
+            instance.blacklisted=False
         userprofile = UserProfile.objects.create(user=instance)
 
 
