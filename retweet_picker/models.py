@@ -20,6 +20,7 @@ TYPE_CHOICES = (
 
 DRAWSTATUS_CHOICES = (
     ('C', 'Created'),
+    ('E', 'Loading Error'),
     ('L', 'Loaded entries'),
     ('D', 'Drawing'),
     ('S', 'Drawing stoped'),
@@ -106,13 +107,14 @@ class DrawPrice(models.Model):
 class Rerolls(models.Model):
     reason = models.CharField(max_length=200, blank=True)
     contestant = models.ForeignKey(ContestUserAccounts, on_delete=models.CASCADE)  
-    kind = models.IntegerField(default=0)
+    kind = models.IntegerField(default=0) # 0: reason  1: choosing  2:choosed  3: rerolled
     
 class GiveawayWinners(models.Model):
     """ Table to track all winners - might not need if we use M2M"""
     giveaway_id = models.ForeignKey('TwitterGiveawayID', related_name='draw_giveaway_details', null=True, on_delete=models.SET_NULL)
     price = models.IntegerField(default=0)
     status = models.CharField(choices=DRAWSTATUS_CHOICES, max_length=1, default='C')
+    load_error = models.CharField(max_length=200, blank=True)
     winner = models.ManyToManyField(ContestUserAccounts, related_name='draw_giveaway_winner')
     re_rolls = models.ManyToManyField(Rerolls)
     participants = models.IntegerField(null=True)  # Count of total entries

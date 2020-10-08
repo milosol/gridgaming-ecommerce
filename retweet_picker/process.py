@@ -55,7 +55,7 @@ class ProcessRetrievedTweets(GridGiveawayTweetRetriever):
         if self.process_tweets:
             self.get_all_tweets()  # creates self.all_tweets
             if len(self.all_tweets) > 0:
-                print("=== all_tweets len: ", len(self.all_tweets))
+                print("=== all got tweets len: ", len(self.all_tweets))
                 filtered_tweets = self.filter_and_rename_fields()
                 return filtered_tweets
             else:
@@ -104,7 +104,7 @@ class ProcessRetrievedTweets(GridGiveawayTweetRetriever):
         contest_df = self.retrieve_filter_tweets()
         if len(self.all_tweets) == 0:
             res['success'] = False
-            res['msg'] = 'No tweets found'
+            res['msg'] = 'No tweets found. Please try again later.'
             return res
         # Build a list of objects for bulk insert
         print('Building participants')

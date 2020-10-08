@@ -489,6 +489,7 @@ def pick_entries(request, gwid):
                 pay_price = int(rest / dp.per_amount) * dp.price
                 context['pay_price'] = pay_price
         draw_info = get_drawinformation(gwid)
+        context['loaded_count'] = gw.loaded_count
         context['paid_amount'] = gw.paid_count
         context['drawprice'] = dp
         context['ret_count'] = ret_count
@@ -520,16 +521,21 @@ def load_entries(request):
 
 @csrf_exempt
 def load_entry_progress(request):
-    res = {'success': True, 'msg': '', 'loaded': False}
+    res = {'success': True, 'msg': '', 'load_status': 'C'}
     try:
         gwid = request.POST['gwid']
         gw = GiveawayWinners.objects.get(id=gwid)
         if gw.status == 'L':
-            res['loaded'] = True
-        if gw.toload_count != 0:
-            res['progress'] = int(gw.loaded_count / gw.toload_count * 100)
+            res['load_status'] = 'L'
+            res['loaded_count'] = gw.loaded_count
+        elif gw.status == 'E':
+            res['load_status'] = 'E'
+            res['load_error'] = gw.load_error
         else:
-            res['progress'] = 0
+            if gw.toload_count != 0:
+                res['progress'] = int(gw.loaded_count / gw.toload_count * 100)
+            else:
+                res['progress'] = 0
     except Exception as e:
         print(e)
         res['success'] = False
@@ -539,7 +545,7 @@ def load_entry_progress(request):
 
 @csrf_exempt
 def load_all_entries(request):
-    res = {'success': True, 'msg': '', 'participants': [], 'ended': False, 'end': 0}
+    res = {'success': True, 'msg': '', 'participants': [], 'ended': False}
     try:
         gwid = request.POST['gwid']
         gw = GiveawayWinners.objects.get(id=gwid)
@@ -601,6 +607,8 @@ def draw(request):
         fo = request.POST['follow_other']
         actions = {'follow_enable': False, 'follow_other': False}
         actions['draw_type'] = request.POST['draw_type']
+        actions['reroll_id'] = int(request.POST['reroll_id'])
+        print(" === reroll_id:", actions['reroll_id'])
         if fe == 'true':
             actions['follow_enable'] = True
         if fo == 'true':
@@ -678,10 +686,14 @@ def draw_verify(request):
     try:
         draw_id = request.POST['draw_id']
         print("=== verifying : ", draw_id)
-        gws = GiveawayWinners.objects.filter(draw_id=draw_id)
+        tgids = TwitterGiveawayID.objects.filter(tweet_url=draw_id)
+        if tgids.exists():
+            gws = GiveawayWinners.objects.filter(giveaway_id=tgids[0], user_id=request.user.id)
+        else:
+            gws = GiveawayWinners.objects.filter(draw_id=draw_id)
         if not gws.exists():
             res['success'] = False
-            res['msg'] = 'There is no matching draw ID'
+            res['msg'] = 'There is no matching draw'
             return JsonResponse(res)
         gw = gws[0]
         res['draw_info']['draw_status'] = gw.status

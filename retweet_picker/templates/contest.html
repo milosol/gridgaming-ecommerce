@@ -165,11 +165,20 @@
         animation-name: warning;
         animation-duration: 0.5s;
     }
+    #btn_toactions.warning, #btn_todraw.warning{
+        animation: next-warning 1s infinite;
+        /* animation-duration: 3s; */
+    }
     @keyframes warning {
         0%   {background-color: #691ed4;}
         25%  {background-color: #272b34;}
         50%  {background-color: #691ed4}
         100% {background-color: #272b34;}
+    }
+    @keyframes next-warning {
+        0%   {background-color: #691ed4; border-color: #691ed4;}
+        50%  {background-color: #21c1d6; border-color: #21c1d6;}
+        100% {background-color: #691ed4; border-color: #691ed4;}
     }
     .user_avatar{
         width: 25px;
@@ -178,7 +187,13 @@
         margin-right: 10px;
     }
     #tbl_drawing td{
-        padding: 5px 20px 2px 30px;
+        padding: 5px 20px 2px 20px;
+    }
+    #tbl_drawing td:nth-child(2){
+        padding: 5px 5px 2px 10px;
+    }
+    .td-reroll .rtdr-disabled {
+        color: gray;
     }
     </style>
 {% endblock %}
@@ -207,17 +222,18 @@
                                             <h6 class="text-center bg-1 py-2 mx-5 shadow-sm rounded-lg" style="background-color: #212d2b;">tweet url : {{tweet_url}}</h6>
                                         </div>
                                         <div class="col-sm-5 col-md-5 my-2 py-2 px-3 text-center">
-                                            <div class="card text-white mb-3 px-3 py-4 rounded-lg" style="border: 1px solid #24332a; box-shadow: 2px 2px 5px #21222d;">
+                                            <div class="card text-white mb-3 px-3 pt-3 pb-2 rounded-lg" style="border: 1px solid #24332a; box-shadow: 2px 2px 5px #21222d;">
                                                 <h6 style="width: fit-content" id="h_retcount">Entries count of tweet: {{ret_count}}</h6>
                                                 <h6 style="width: fit-content" id="h_freeamount">Free amount : {{drawprice.free_max}}</h6>
                                                 <h6 style="width: fit-content" id="h_paid">Paid amount {{paid_amount}}</h6>
                                                 <h6 style="width: fit-content" id="h_pay">You should pay ${{drawprice.price}} per more {{drawprice.per_amount}} entries</h6>
-                                                <button id="btn_pay" class="btn btn-primary mt-4 py-2 font-18" disabled>Free</button>
+                                                <button id="btn_pay" class="btn btn-primary mt-3 mb-2 py-2 font-18" disabled>Free</button>
                                             </div>
                                         </div>
                                         <div class="col-sm-7 col-md-7 my-2 py-2 px-3 text-center">
-                                            <h5 class="mt-3" style="line-height: normal;" id="h_loadentry">You are free to load entries. Click below button to load entries.</h5>
-                                            <button class="btn btn-success mt-3" id="btn_loadentry">Load entries</button>
+                                            <h5 class="mt-3" style="line-height: normal;" id="h_loadentry">You are free to download entries. Click below button to start download.</h5>
+                                            <button class="btn btn-success mt-3" id="btn_loadentry">Download entries</button>
+                                            <button class="btn btn-success mt-2 warning" id="btn_toactions">Continue to actions <i class="fas fa-arrow-circle-right" style="vertical-align: bottom;font-size: 20px;"></i></button>
                                             <h5 class="mt-5 text-danger" id="h_loadresult" style="display: none;">No tweets found</h5>
                                             <div class="mt-4" id="progress" style="display: none;">
                                                 <h6>Loading entries...</h6>
@@ -275,10 +291,15 @@
                             </div>
                             <div class="tab-pane fade" id="nav-actions" role="tabpanel" aria-labelledby="nav-actions-tab">
                                 <div class="px-md-5 py-md-3 px-1 py-3">
-                                    <div class='col-sm-6 my-2' id="div_winner">
-                                        <h6>Enter number of winners</h6>
-                                        <input type="number" class="form-control" placeholder="Number of Winners" id="in_winner" value="1">
-                                        <label>Please enter correct number!</label>
+                                    <div class="row">
+                                        <div class='col-sm-6 my-2' id="div_winner">
+                                            <h6>Enter number of winners</h6>
+                                            <input type="number" class="form-control" placeholder="Number of Winners" id="in_winner" value="1">
+                                            <label>Please enter correct number!</label>
+                                        </div>
+                                        <div class='col-sm-6 my-2 text-center'>
+                                            <button class="btn btn-success mt-4 warning mx-auto" id="btn_todraw">Continue to draw <i class="fas fa-arrow-circle-right" style="vertical-align: bottom;font-size: 20px;"></i></button>
+                                        </div>
                                     </div>
                                     <div class="my-5 option-container">
                                         <div class="option-label px-4 py-1">Follow</div>
@@ -493,6 +514,7 @@
     var pay_status = '{{ pay_status }}'
     var pay_price = {{ pay_price }};
     var ret_count = {{ ret_count }};
+    var loaded_count = {{ loaded_count }};
     var paid_amount = {{ paid_amount }};
     var draw_status = "{{ status }}";
     var free_max = {{drawprice.free_max}};
@@ -504,7 +526,83 @@
     var progress_handle = 0;
     var entry_table = 0;
     var start_from = 100
-    
+    function initialize(){
+        console.log("draw_status :", draw_status);
+        init_entrypanel()
+        init_drawpanel()
+    }
+
+    function init_entrypanel(){
+        // draw_status , pay_status, loaded_count, pay_price, paid_amount, free_max
+        if(draw_status == 'C' || draw_status == 'E'){
+            $("#nav-actions-tab").hide()
+            $("#nav-draw-tab").hide()
+            if(pay_status == 0){
+                $("#btn_pay").html("Free")
+                $("#h_paid").hide()
+                $("#h_pay").hide()
+                $("#btn_pay").prop('disabled', true);
+                $("#h_loadentry").html("You are free to download entries. Click below button to start download.")
+            }else if(pay_status == 1){
+                $("#btn_pay").html("You already paid")
+                $("#btn_pay").prop('disabled', true);
+                $("#h_paid").show()
+                $("#h_pay").hide()
+                $("#h_loadentry").html("You can download all entries now. Click below button to start download.")
+            }else{
+                $("#h_paid").show()
+                $("#h_pay").show()
+                str = "Pay $" + pay_price;
+                $("#btn_pay").html(str)
+                $("#btn_pay").prop('disabled', false);
+                $("#h_loadentry").html("You can download only " + (paid_amount + free_max) + " entries");
+            }
+            $('#zero_config').hide()
+            $('#btn_toactions').hide()
+        }else{
+            $("#nav-actions-tab").show()
+            $("#nav-draw-tab").show()
+            $('#btn_toactions').show()
+            $("#btn_pay").hide()
+            $("#h_paid").hide()
+            $("#h_pay").hide()
+            $("#h_loadentry").hide()
+            $("#h_freeamount").hide()
+            $("#btn_loadentry").hide()
+            $("#h_retcount").html("You have downloaded " + loaded_count + " entries.")
+            $("#progress").hide()
+            setTimeout(() => {
+                load_all_entries();
+            }, 2000);
+        }
+    }
+    function init_drawpanel(){
+        // draw_status, draw_winners, draw_date, draw_id
+        switch(draw_status){
+            case 'C': case 'E': case 'L':
+                $("#spn_status").html('To draw');
+                break;
+            case 'D':
+                $("#spn_status").html('Drawing');
+                break;
+            case 'S':
+                $("#spn_status").html('Drawing stoped');
+                break;
+            case 'W':
+                $("#spn_status").html('Draw finished');
+                str = get_winners_names(draw_winners);
+                $("#spn_drawwinners").html(str);
+                $("#spn_drawdate").html(draw_date);
+                $("#spn_drawid").html(draw_id);
+                break;
+            default:
+                break;
+        }
+        if(draw_status != 'C' && draw_status != 'E'){
+            $("#spn_entries").html(loaded_count);
+        }
+    }
+
     function draw_table(data){
         if(!entry_table){
             entry_table = $('#zero_config').DataTable( {
@@ -535,9 +633,6 @@
     function load_all_entries(){
         if(entry_table)
             entry_table.clear();
-        load_part_entries(0);
-    }
-    function load_part_entries(){
         $('#zero_config').show()
         $.ajax({
             type: "POST",
@@ -546,14 +641,7 @@
             success: function (data) {
                 console.log(data)
                 if (data.success == true) {
-                    $("#spn_entries").html(data.end);
                     draw_table(data.participants)
-                    // if(data.ended == false){
-                    //     setTimeout(() => {
-                    //         load_part_entries(data.end)
-                    //     }, 1000);
-                    // }
-                    
                 } else {
                 }
             },error: function(e){
@@ -561,55 +649,7 @@
             }
         })
     }
-    function initialize(){
-        if(pay_status == 0){
-            $("#btn_pay").html("Free")
-            $("#h_paid").hide()
-            $("#h_pay").hide()
-            $("#btn_pay").prop('disabled', true);
-            $("#h_loadentry").html("You are free to load entries. Click below button to load entries.")
-        }else if(pay_status == 1){
-            $("#btn_pay").html("You already paid")
-            $("#btn_pay").prop('disabled', true);
-            $("#h_paid").show()
-            $("#h_pay").hide()
-            $("#h_loadentry").html("You can download all entries now. Click below button to load entries.")
-        }else{
-            $("#h_paid").show()
-            $("#h_pay").show()
-            str = "Pay $" + pay_price;
-            $("#btn_pay").html(str)
-            $("#btn_pay").prop('disabled', false);
-            $("#h_loadentry").html("You can download only " + (paid_amount + free_max) + " entries");
-        }
-        if(draw_status != 'C'){
-            setTimeout(() => {
-                load_all_entries();
-            }, 2000);
-            
-        }else{
-            $('#zero_config').hide()
-        }
-        // draw initialize
-        if(draw_status == 'C' || draw_status == 'L'){
-            $("#spn_status").html('to draw');
-        }else if (draw_status == 'D'){
-            $("#spn_status").html('Drawing');
-        }else if(draw_status == 'S'){
-            $("#spn_status").html('Stoped');
-        }else if(draw_status == 'W'){
-            $("#spn_status").html('draw finished');
-        }
-        if(draw_status != 'C'){
-            $("#spn_entries").html(paid_amount + free_max);
-        }
-        if(draw_status == 'W'){
-            str = get_winners_names(draw_winners);
-            $("#spn_drawwinners").html(str);
-            $("#spn_drawdate").html(draw_date);
-            $("#spn_drawid").html(draw_id);
-        }
-    }
+    
     function get_actions(){
         res = {}
         winner = $("#in_winner").val();
@@ -658,13 +698,21 @@
             }
         })
     }
+
+    function show_reroll_buttons(){
+        items = $(".td-reroll").toArray();
+        for(i=0;i<items.length;i++){
+            td_id = $(items[i]).attr('id').split('_')[1]
+            $(items[i]).html('<a href="javascript:void(0);" onclick="draw_reroll(' + td_id + ');"><i class="fas fa-redo" style="font-size:20px;"></i></a>')
+        }
+    }
     function show_rerolls(data){
         rids = []
         for(i=0;i<data.length;i++){
             r = data[i]
             if($("#rtr_" + r.id).length == 0){
                 str = "<tr id='rtr_" + r.id + "'><td><img class='user_avatar' src='" + r.user_info.profile_img + "'>"
-                str += r.user_info.screen_name + "</td><td id='rtd_" + r.id + "'>Analyzing...</td></tr>";
+                str += r.user_info.screen_name + "</td><td id='rtd_" + r.id + "'>Analyzing...</td><td id='rtdr_" + r.id +"'></td></tr>";
                 $("#tbl_drawing tbody").append(str);
             }
             rids.push(r.id.toString());
@@ -672,6 +720,11 @@
                 $("#rtd_" + r.id).html(r.reason);
             }else if(r.kind == 2){
                 $("#rtd_" + r.id).html("choosen as winner!");
+                $("#rtdr_" + r.id).addClass("td-reroll");
+            }else if(r.kind == 3){
+                $("#rtd_" + r.id).html("rerolled");
+                $("#rtdr_" + r.id).html("");
+                $("#rtdr_" + r.id).removeClass("td-reroll");
             }
         }
         rows = $("#tbl_drawing tbody tr").toArray();
@@ -689,19 +742,25 @@
             data: {'gwid': gwid},
             success: function (data) {
                 if (data.success == true) {
-                    if(data.loaded == false){
+                    if(data.load_status == 'C'){
                         $("#div_progress div").attr('aria-valuenow', data.progress);
                         $("#div_progress div").css('width', data.progress + '%');
-                    }else{
+                    }else if(data.load_status == 'L'){
                         $("#div_progress div").attr('aria-valuenow', 100);
                         $("#div_progress div").css('width', 100 + '%');
                         clearInterval(progress_handle);
                         draw_status = 'L';
+                        loaded_count = data.loaded_count
                         setTimeout(() => {
-                            $("#progress").hide()
-                            $("#btn_loadentry").attr("disabled", false);
-                            load_all_entries();
+                            initialize();
                         }, 2000);
+                    }else if(data.load_status == 'E'){
+                        $("#btn_loadentry").attr("disabled", false);
+                        $("#btn_pay").attr("disabled", false);
+                        clearInterval(progress_handle);
+                        $("#progress").hide()
+                        $("#h_loadresult").html(data.load_error);
+                        $("#h_loadresult").show();
                     }
                 } else {
 
@@ -711,6 +770,7 @@
     }
     function fnload_entry(){
         $("#h_loadresult").hide();
+        $("#btn_pay").attr("disabled", true);
         $("#btn_loadentry").attr("disabled", true);
         $("#div_progress div").css('width', '0');
         $("#progress").show()
@@ -732,6 +792,7 @@
                     $("#h_loadresult").show();
                 }
             }, error: function(data){
+                $("#btn_pay").attr("disabled", false);
                 $("#btn_loadentry").attr("disabled", false);
                 clearInterval(progress_handle);
                 $("#progress").hide()
@@ -740,12 +801,157 @@
             }
         })
     }
+    function draw_reroll(id){
+        bdisabled = $("#rtdr_" + id + " a").hasClass('rtdr-disabled');
+        console.log('disabled :', bdisabled)
+        if(bdisabled == true){
+            return
+        }
+        $(".td-reroll a").addClass('rtdr-disabled');
+        draw_winner('reroll', id)
+    }
+    function draw_winner(type, id){
+        actions = get_actions();
+        if(type == 'draw'){
+            if(actions.winner == ''){
+                Swal.fire({
+                    title: "Warning",
+                    text: "Please enter winner count in actions.",
+                    showConfirmButton: true
+                });
+                return;
+            }
+
+            bchk_action = $("#chk_actions").prop("checked");
+            if(bchk_action == false){
+                $("#div_chkactions").addClass("warning");
+                setTimeout(() => {
+                    $("#div_chkactions").removeClass("warning");
+                }, 500);
+                return;
+            }
+        }
+        console.log(" rerolling id :", id)
+        $("#label_status").html("Please wait while choosing winner...")
+        $("#btn_drawstop").prop('disabled', false);
+        $("#btn_drawstop").show()
+        $("#btn_close").hide()
+        
+        swal.fire({
+            title: 'Are you sure?',
+            icon: 'warning',
+            text: "You will start drawing winner now.",
+            showCancelButton: true,
+            background: '#e9ecef',
+            confirmButtonColor: '#21c1d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, i am sure!'
+        }).then((result) => {
+            if (result.value) {
+                if(type == 'draw'){
+                    $("#tbl_drawing tbody").html("")
+                }
+                $("#myModal").modal({backdrop: 'static', keyboard: false})
+                var drawing_handle = 0;
+                setTimeout(() => {
+                    drawing_handle = setInterval(() => {
+                        get_drawing_progress()
+                    }, 1000);
+                }, 2000);
+                draw_status = 'D'
+                $.ajax({
+                    type: "POST",
+                    url: "../draw",
+                    data: {'gwid': gwid, 'winner': actions.winner, 'follow_enable': actions.fe,
+                            'follow_other': actions.fo, 'tags': actions.tags, 'draw_type': type, 'reroll_id': id},
+                    success: function (data) {
+                        setTimeout(() => {
+                            clearInterval(drawing_handle);
+                            show_reroll_buttons();
+                        }, 2000);
+                        if (data.success == true) {
+                            if(data.stop == true){
+                                draw_status = 'S'
+                                $("#spn_status").html('Stoped')
+                                $("#spn_drawwinners").html('_')
+                                $("#spn_drawdate").html('_')
+                                $("#spn_drawid").html('_')
+                                $("#label_status").html("Draw is stoped")
+                            }else{
+                                draw_status = 'W'
+                                $("#label_status").html("Draw is finished")
+                                str = get_winners_names(data.draw_info.winners);
+                                $("#spn_drawwinners").html(str)
+                                f_drawdate = new Date(data.draw_info.drawed_at).toLocaleString()
+                                $("#spn_drawdate").html(f_drawdate)
+                                $("#spn_drawid").html(data.draw_info.draw_id)
+                            }
+                            $("#btn_drawstop").hide()
+                            $("#btn_close").show()
+                        } else {
+                            if(draw_type == 'draw'){
+                                setTimeout(function () { $("#myModal").modal("hide"); }, 500);
+                            }else{
+                                $(".td-reroll a").prop('disabled', false);
+                            }
+                            
+                            swal.fire(
+                                'Failed',
+                                data.msg,
+                                'error'
+                            )
+                        }
+                    }, error: function(){
+                        if(drawing_handle)
+                            clearInterval(drawing_handle);
+                        if(draw_type == 'draw'){
+                            setTimeout(function () { $("#myModal").modal("hide"); }, 500);
+                        }else{
+                            $(".td-reroll a").prop('disabled', false);
+                        }
+                        swal.fire(
+                            'Failed',
+                            "Failed on processing drawing winner. Please try again.",
+                            'error'
+                        )
+                    }
+                })
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
+                
+            }
+        })
+    }
     $(function(){
         initialize()
         $("#btn_loadentry").click(function(){
-            fnload_entry()
+            if(pay_status == 2){
+                swal.fire({
+                    title: 'Are you sure?',
+                    icon: 'warning',
+                    text: "Now you can download only " + (paid_amount + free_max) + " entries. \n To download all entries you must pay.",
+                    showCancelButton: true,
+                    background: '#e9ecef',
+                    confirmButtonColor: '#21c1d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Proceed without pay'
+                }).then((result) => {
+                    if (result.value) {
+                        fnload_entry()
+                    } else if (result.dismiss === Swal.DismissReason.cancel) {
+                        
+                    }
+                })
+            }else{
+                fnload_entry();
+            }
+            
         })
-        
+        $("#btn_toactions").click(function(){
+            $("#nav-actions-tab").trigger("click");
+        })
+        $("#btn_todraw").click(function(){
+            $("#nav-draw-tab").trigger("click");
+        })
         $("#div_winner input").change(function(){
             winner = $("#in_winner").val();
             if(winner < 1){
@@ -788,99 +994,9 @@
             $("#chk_actions").prop('checked', false);
         })
         
-        function draw_winner(type){
-            actions = get_actions();
-            if(actions.winner == ''){
-                Swal.fire({
-                    title: "Warning",
-                    text: "Please enter winner count in actions.",
-                    showConfirmButton: true
-                });
-                return;
-            }
-
-            bchk_action = $("#chk_actions").prop("checked");
-            if(bchk_action == false){
-                $("#div_chkactions").addClass("warning");
-                setTimeout(() => {
-                    $("#div_chkactions").removeClass("warning");
-                }, 500);
-                return;
-            }
-            
-            $("#label_status").html("Please wait while choosing winner...")
-            $("#btn_drawstop").prop('disabled', false);
-            $("#btn_drawstop").show()
-            $("#btn_close").hide()
-            
-            swal.fire({
-                title: 'Are you sure?',
-                icon: 'warning',
-                text: "You will start drawing winner now.",
-                showCancelButton: true,
-                background: '#e9ecef',
-                confirmButtonColor: '#21c1d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, i am sure!'
-            }).then((result) => {
-                if (result.value) {
-                    $("#tbl_drawing tbody").html("")
-                    $("#myModal").modal({backdrop: 'static', keyboard: false})
-                    var drawing_handle = 0;
-                    setTimeout(() => {
-                            drawing_handle = setInterval(() => {
-                            get_drawing_progress()
-                        }, 1000);
-                    }, 2000);
-                    draw_status = 'D'
-                    $.ajax({
-                        type: "POST",
-                        url: "../draw",
-                        data: {'gwid': gwid, 'winner': actions.winner, 'follow_enable': actions.fe,
-                                'follow_other': actions.fo, 'tags': actions.tags, 'draw_type': type},
-                        success: function (data) {
-                            setTimeout(() => {
-                                clearInterval(drawing_handle);
-                            }, 2000);
-                            if (data.success == true) {
-                                if(data.stop == true){
-                                    draw_status = 'S'
-                                    $("#spn_status").html('Stoped')
-                                    $("#spn_drawwinners").html('_')
-                                    $("#spn_drawdate").html('_')
-                                    $("#spn_drawid").html('_')
-                                    $("#label_status").html("Draw is stoped")
-                                }else{
-                                    draw_status = 'W'
-                                    $("#label_status").html("Draw is finished")
-                                    str = get_winners_names(data.draw_info.winners);
-                                    $("#spn_drawwinners").html(str)
-                                    f_drawdate = new Date(data.draw_info.drawed_at).toLocaleString()
-                                    $("#spn_drawdate").html(f_drawdate)
-                                    $("#spn_drawid").html(data.draw_info.draw_id)
-                                }
-                                $("#btn_drawstop").hide()
-                                $("#btn_close").show()
-                            } else {
-                                setTimeout(function () { $("#myModal").modal("hide"); }, 500);
-                                swal.fire(
-                                    'Failed',
-                                    data.msg,
-                                    'error'
-                                )
-                            }
-                        }
-                    })
-                } else if (result.dismiss === Swal.DismissReason.cancel) {
-                    
-                }
-            })
-        }
-        $("#btn_redraw").click(function(){
-            draw_winner('redraw')
-        })
+        
         $("#btn_draw").click(function(){
-            draw_winner('draw')
+            draw_winner('draw', 0)
         })
         $("#btn_drawstop").click(function(){
             swal.fire({
