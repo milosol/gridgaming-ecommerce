@@ -1,5 +1,6 @@
 web: gunicorn gridgaming.wsgi --workers 6
 worker: python manage.py rqworker high low default --worker-class rq.SimpleWorker
+background: python manage.py process_tasks
 
 
 # DONT USE PRELOAD

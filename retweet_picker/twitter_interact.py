@@ -5,6 +5,8 @@ from retweet_picker.utils import id_from_url
 import urllib
 from .models import GiveawayWinners
 
+import re
+
 TWITTER_CONSUMER_KEY = config('TWITTER_CONSUMER_KEY')
 TWITTER_CONSUMER_SECRET = config('TWITTER_CONSUMER_SECRET')
 TWITTER_ACCESS_TOKEN = config('TWITTER_ACCESS_TOKEN')
@@ -84,9 +86,14 @@ class GridGiveawayTweetRetriever(TwitterInteract):
         tweet_text = ' '.join(self.tweet.full_text.split()[:split])
         # encoded_tweet_text = urllib.parse.quote_plus(tweet_text)
         searchQuery = 'RT @{author} '.format(author=self.author) + tweet_text
+        replace_urls = re.sub('http://\S+|https://\S+', '', searchQuery)
+        searchQuery = replace_urls
+        #searchQuery = replace_urls[:229]  #limit to 229 characters total no matter what the ratio is for free API
         tweetCount = 0
         tweetsPerQry = 100
-        print(searchQuery)    
+        #print('--search query--')
+        #print(searchQuery)
+        #print('--end searchquery--')
         print('[+] Retrieving all contest tweets for TWEET ID: {tweet_id}\n Tweet text: {text}'.format(
             tweet_id=self.tweet.id,
             text=self.tweet.full_text))

@@ -6,6 +6,8 @@
 
 {% block content %}
 <h1>{% trans "Social Network Login Failure" %}</h1>
+    <h3> If this error persist, please email <a href="mailto:business@gridgaming.io"> business@gridgaming.io</a> for assistance.</h3>
+
 Code: {{ auth_error.code }}, Error: {{ auth_error.exception }}
 <p>{% trans "An error occurred while attempting to login via your social network account." %}</p>
 {% endblock %}
