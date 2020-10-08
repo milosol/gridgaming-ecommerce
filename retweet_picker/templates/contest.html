@@ -807,7 +807,7 @@
         if(bdisabled == true){
             return
         }
-        $(".td-reroll a").addClass('rtdr-disabled');
+        
         draw_winner('reroll', id)
     }
     function draw_winner(type, id){
@@ -844,14 +844,18 @@
             cancelButtonColor: '#d33',
             confirmButtonText: 'Yes, i am sure!'
         }).then((result) => {
-            $("#label_status").html("Please wait while choosing winner...")
-            $("#btn_drawstop").prop('disabled', false);
-            $("#btn_drawstop").show()
-            $("#btn_close").hide()
+            
 
             if (result.value) {
+                $("#label_status").html("Please wait while choosing winner...")
+                $("#btn_drawstop").prop('disabled', false);
+                $("#btn_drawstop").show()
+                $("#btn_close").hide()
+
                 if(type == 'draw'){
                     $("#tbl_drawing tbody").html("")
+                }else{
+                    $(".td-reroll a").addClass('rtdr-disabled');
                 }
                 $("#myModal").modal({backdrop: 'static', keyboard: false})
                 var drawing_handle = 0;
