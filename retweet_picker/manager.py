@@ -324,13 +324,27 @@ class GiveawayManager:
                 self.results.drawed_at = timezone.now()
                 self.results.save()
             else:
-                results, created = GiveawayWinners.objects.get_or_create(giveaway_id=self.tweet_id_key, user_id=self.user_id)
-                if created:
-                    res['msg'] = "There is no contest drawed before."
-                    return res
+                self.winner_count = 1
+                results = GiveawayWinners.objects.get(id=gwid)
                 self.results = results
-                self.participants = list(ContestUserParticipation.objects.get(contest=self.tweet_id_key, user_id=self.user_id).contestants.all())
-            logging.info(f'participants count : {self.results.participants}')
+                print(" === action roll _id :", actions['reroll_id'])
+                reroll_contestant_id = Rerolls.objects.get(id=actions['reroll_id']).contestant_id
+                print(" === reroll contestant_user_id :", reroll_contestant_id)
+                reroll_user = ContestUserAccounts.objects.get(user_id=reroll_contestant_id)
+                self.results.winner.remove(reroll_user)
+                self.results.re_rolls.filter(id=actions['reroll_id']).update(kind=3)
+                self.results.save()
+                rerolls = self.results.re_rolls.all()
+                reroll_ids = []
+                for r in rerolls:
+                    reroll_ids.append(r.contestant_id)
+                cup = ContestUserParticipation.objects.get(contest=self.tweet_id_key, user_id=self.user_id)
+                if len(reroll_ids) == 0:
+                    self.participants = list(cup.contestants.all())
+                else:
+                    self.participants = list(cup.contestants.exclude(user_id__in=reroll_ids))
+                    
+            logging.info(f'participants count : {len(self.participants)}')
             if self.results.participants == 0:
                 res['msg'] = "There is no participants."
                 return res

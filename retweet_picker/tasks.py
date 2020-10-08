@@ -58,19 +58,16 @@ def draw_winner(existing_tweet_url=None, winner_count=1, actions=None, user_id=N
 
 @background(schedule=60)
 def load_entry_task(gwid, user_id):
-    res = {'success': True, 'msg': ''}
     try:
         gw = GiveawayWinners.objects.get(id=gwid)
         tgid = TwitterGiveawayID.objects.get(id=gw.giveaway_id_id)
         tweet_url = tgid.tweet_url
-        print("=== load entries on background task :", tweet_url)
         gm = GiveawayManager(new_giveaway=False,
                              existing_tweet_url=tweet_url,
                              user_id=user_id)
         ret_count = gm.tweet.retweet_count
         dp = DrawPrice.objects.all().first()
         gw.retweet_count = ret_count
-        gw.loaded_count = 0
         cups = ContestUserParticipation.objects.filter(contest=tgid, user_id=gw.user_id)
         if cups.exists():
             cups[0].contestants.clear()
@@ -81,16 +78,17 @@ def load_entry_task(gwid, user_id):
         gw.toload_count = toload_count
         gw.save()
         res = gm.retrieve_tweets(gwid=gwid, max_tweets=gw.toload_count)
-        if res['success'] == False:
-            return res
-        gw = GiveawayWinners.objects.get(id=gwid)
-        gw.status = 'L'
-        gw.save()
+        if res['success'] == True:
+            GiveawayWinners.objects.filter(id=gwid).update(status='L')
+            
     except Exception as e:
         print(e)
         res['success'] = False
-        res['msg'] = 'Downloading entries failed. Please input correct url.'
-    return res
+        res['msg'] = 'Downloading entries failed. Please try again.'
+        
+    if res['success'] == False:
+        GiveawayWinners.objects.filter(id=gwid).update(status='E', load_error=res['msg'])
+        
 @job('default')
 def sleeper():
     from django.db import connection
