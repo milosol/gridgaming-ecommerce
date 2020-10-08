@@ -832,10 +832,7 @@
             }
         }
         console.log(" rerolling id :", id)
-        $("#label_status").html("Please wait while choosing winner...")
-        $("#btn_drawstop").prop('disabled', false);
-        $("#btn_drawstop").show()
-        $("#btn_close").hide()
+        
         
         swal.fire({
             title: 'Are you sure?',
@@ -847,6 +844,11 @@
             cancelButtonColor: '#d33',
             confirmButtonText: 'Yes, i am sure!'
         }).then((result) => {
+            $("#label_status").html("Please wait while choosing winner...")
+            $("#btn_drawstop").prop('disabled', false);
+            $("#btn_drawstop").show()
+            $("#btn_close").hide()
+
             if (result.value) {
                 if(type == 'draw'){
                     $("#tbl_drawing tbody").html("")
