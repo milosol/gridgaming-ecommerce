@@ -108,6 +108,9 @@ class Rerolls(models.Model):
     reason = models.CharField(max_length=200, blank=True)
     contestant = models.ForeignKey(ContestUserAccounts, on_delete=models.CASCADE)  
     kind = models.IntegerField(default=0) # 0: reason  1: choosing  2:choosed  3: rerolled
+    class Meta:
+        ordering = ['id']
+    
     
 class GiveawayWinners(models.Model):
     """ Table to track all winners - might not need if we use M2M"""
@@ -120,6 +123,7 @@ class GiveawayWinners(models.Model):
     participants = models.IntegerField(null=True)  # Count of total entries
     created_at = models.DateTimeField(auto_now_add=True)
     drawed_at = models.DateTimeField(null=True)
+    winner_count = models.IntegerField(default=1)
     retweet_count = models.IntegerField(default=0)
     toload_count = models.IntegerField(default=0)
     loaded_count = models.IntegerField(default=0)
@@ -127,6 +131,10 @@ class GiveawayWinners(models.Model):
     user_id = models.IntegerField(default=0)
     command = models.IntegerField(default=0)
     draw_id = models.CharField(max_length=50, blank=True)
+    
+    class Meta:
+        ordering = ['id']
+        
     def get_winners(self):
         win_names = []
         for w in self.winner.all():

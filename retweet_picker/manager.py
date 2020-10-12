@@ -379,6 +379,9 @@ class GiveawayManager:
                         winner.save()
                         self.results.winner.add(winner)
                         self.participants.remove(winner)
+                        if actions['draw_type'] == 'reroll': 
+                            Rerolls.objects.filter(id=actions['reroll_id']).update(reason=str(reroller.id))
+                        
                 if res['stop'] == True:
                     print("=== stop drawing")
                     break
