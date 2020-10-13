@@ -593,18 +593,21 @@ def draw(request):
            'msg': '',
            'stop': False}
     try:
-        gwid = request.POST['gwid']
-        gw = GiveawayWinners.objects.get(id=gwid)
-        gw.command = 0
-        gw.status = 'D'
-        gw.save()
-        tgid = TwitterGiveawayID.objects.get(id=gw.giveaway_id_id)
-        tweet_url = tgid.tweet_url
-
         wc = int(request.POST['winner'])
         tags = request.POST['tags']
         fe = request.POST['follow_enable']
         fo = request.POST['follow_other']
+        
+        gwid = request.POST['gwid']
+        gw = GiveawayWinners.objects.get(id=gwid)
+        gw.command = 0
+        gw.status = 'D'
+        gw.winner_count = wc
+        gw.save()
+        tgid = TwitterGiveawayID.objects.get(id=gw.giveaway_id_id)
+        tweet_url = tgid.tweet_url
+
+        
         actions = {'follow_enable': False, 'follow_other': False}
         actions['draw_type'] = request.POST['draw_type']
         actions['reroll_id'] = int(request.POST['reroll_id'])
@@ -629,7 +632,8 @@ def draw(request):
         if res['success'] == True and res['stop'] == False:
             gw = GiveawayWinners.objects.get(id=gwid)
             gw.status = 'W'
-            gw.draw_id = create_drawid()
+            if gw.draw_id == None or gw.draw_id == '':
+                gw.draw_id = create_drawid()
             gw.save()
 
         draw_info = get_drawinformation(gwid)
@@ -699,6 +703,7 @@ def draw_verify(request):
         res['draw_info']['draw_status'] = gw.status
         res['draw_info']['drawed_at'] = gw.drawed_at
         res['draw_info']['entries'] = gw.loaded_count
+        res['draw_info']['winner_count'] = gw.winner_count
         res['draw_info']['rerolls'] = []
         rerolls = gw.re_rolls.all()
         for reroll in rerolls:

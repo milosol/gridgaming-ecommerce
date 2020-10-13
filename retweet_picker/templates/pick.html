@@ -8,6 +8,12 @@
 <!-- <link rel="stylesheet" href="http://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"> -->
 
 <style>
+    @media (min-width: 576px){
+        #verifyModal .modal-dialog {
+            max-width: 70%!important;
+            margin: 1.75rem auto;
+        }
+    }
     .switch {
       position: relative;
       display: inline-block;
@@ -117,9 +123,104 @@
         border-radius: 50%;
         margin-right: 10px;
     }
-    #tbl_drawing td{
-        padding: 5px 20px 2px 30px;
+    .tbl_drawing td{
+        padding: 5px 20px 2px 0px;
+        width: auto;
+        text-align: left;
     }
+    </style>
+<style>
+.circle {
+  padding: 13px 20px;
+  border-radius: 50%;
+  background-color: #ED8D8D;
+  color: #fff;
+  max-height: 50px;
+  z-index: 2;
+}
+
+.how-it-works.row .col-2 {
+  align-self: stretch;
+}
+.how-it-works.row .col-2::after {
+  content: "";
+  position: absolute;
+  border-left: 3px solid #ED8D8D;
+  z-index: 1;
+}
+.how-it-works.row .col-2.bottom::after {
+  height: 50%;
+  left: 50%;
+  top: 50%;
+}
+
+.how-it-works.row .col-2.full::after {
+  height: 100%;
+  left: calc(50% - 3px);
+}
+.how-it-works.row .col-2.full:nth-child(odd)::after{
+  left: 50%;
+}
+.how-it-works.row .col-2.top::after {
+  height: 50%;
+  left: 50%;
+  top: 0;
+}
+.how-it-works.row .col-2.top:last-child:after {
+    left: calc(50% - 3px);
+}
+
+#div_timeline .row.timeline:before{
+    content: none;
+}
+
+.timeline{
+    padding: 0!important;
+    margin-right: -15px!important;
+    margin-left: -15px!important;
+}
+.timeline div {
+  padding: 0;
+  height: 40px;
+}
+.timeline hr {
+  border-top: 3px solid #ED8D8D;
+  margin: 0;
+  top: 17px;
+  position: relative;
+}
+.timeline .col-2 {
+  display: flex;
+  overflow: hidden;
+}
+
+.timeline .corner {
+  border: 3px solid #ED8D8D;
+  width: 100%;
+  position: relative;
+  border-radius: 15px;
+}
+.timeline .top-right {
+  left: 50%;
+  top: -50%;
+}
+.timeline .left-bottom {
+  left: -50%;
+  top: calc(50% - 3px);
+}
+.timeline .top-left {
+  left: -50%;
+  top: -50%;
+}
+.timeline .right-bottom {
+  left: 50%;
+  top: calc(50% - 3px);
+}
+
+.col-8.text-right{
+    text-align: -webkit-right!important;
+}
+
     </style>
 {% endblock %}
 
@@ -151,7 +252,7 @@
                                 <h2 class="text-center">DRAW VERIFY</h2>
                                 <div class='row'>
                                     <div class='col-sm-12 my-2 px-sm-5' id="div_verify">
-                                        <input type="text" class="form-control" placeholder="Enter the draw ID or tweet url" id="in_drawid">
+                                        <input type="text" class="form-control" placeholder="Enter the draw ID or tweet url" id="in_drawid" value="wgirtuma6hkab3vk5np5">
                                         <label>Please input draw Id or tweet url to verify</label>
                                     </div>
                                     <div class='col-sm-12 mt-2 text-center'>
@@ -191,17 +292,67 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h4 class="modal-title" id="label_title">Draw Verify</h4>
-                    <!-- <button type="button" class="close" data-dismiss="modal">&times;</button> -->
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
                 </div>
                 <div class="modal-body">
                     <h6  id="label_verifystatus">Drawed Result : </h6>
                     <h6  id="label_entries">Entries : <span id="spn_entries">_</span></h6>
                     <h6  id="label_drawdate">Draw date : <span id="spn_drawdate">_</span></h6>
-                    <table id="tbl_drawing" class="mt-3">
-                        <tbody>
-                            
-                        </tbody>
-                    </table>
+                                        
+                    <div class="">
+                        <div class="container">
+                            <h2 class="pb-3 pt-2 border-bottom mb-5">Drawing Timeline</h2>
+                            <div id="div_timeline">
+                                <!-- <div id="first_section">
+                                    <div class="row align-items-center how-it-works d-flex">
+                                        <div class="col-2 text-center top d-inline-flex justify-content-center align-items-center">
+                                        <div class="circle font-weight-bold">1</div>
+                                        </div>
+                                        <div class="col-8">
+                                            aaaa
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="between12">
+                                    <div class="row timeline">
+                                        <div class="col-2">
+                                        <div class="corner top-right"></div>
+                                        </div>
+                                        <div class="col-8">
+                                        <hr/>
+                                        </div>
+                                        <div class="col-2">
+                                        <div class="corner left-bottom"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="second_section">
+                                    <div class="row align-items-center justify-content-end how-it-works d-flex">
+                                        <div class="col-8 text-right">
+                                        sddddd
+                                        </div>
+                                        <div class="col-2 text-center full d-inline-flex justify-content-center align-items-center">
+                                        <div class="circle font-weight-bold">2</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="between23">
+                                    <div class="row timeline">
+                                        <div class="col-2">
+                                        <div class="corner right-bottom"></div>
+                                        </div>
+                                        <div class="col-8">
+                                        <hr/>
+                                        </div>
+                                        <div class="col-2">
+                                        <div class="corner top-left"></div>
+                                        </div>
+                                    </div>
+                                </div> -->
+                            </div>
+                        </div>
+                    </div>
+                    
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal" id="btn_close">Close</button>
@@ -209,7 +360,62 @@
             </div>
         </div>
     </div>
-
+    <div style="display: none;">
+        <div id="first_section">
+            <div class="row align-items-center how-it-works d-flex">
+                <div class="col-2 text-center {2} d-inline-flex justify-content-center align-items-center">
+                <div class="circle font-weight-bold">{0}</div>
+                </div>
+                <div class="col-8">
+                    {1}
+                </div>
+            </div>
+        </div>
+        <!--path between 1-2-->
+        <div id="between12">
+            <div class="row timeline">
+                <div class="col-2">
+                <div class="corner top-right"></div>
+                </div>
+                <div class="col-8">
+                <hr/>
+                </div>
+                <div class="col-2">
+                <div class="corner left-bottom"></div>
+                </div>
+            </div>
+        </div>
+        <!--second section-->
+        <div id="second_section">
+            <div class="row align-items-center justify-content-end how-it-works d-flex">
+                <div class="col-8 text-right">
+                {1}
+                </div>
+                <div class="col-2 text-center {2} d-inline-flex justify-content-center align-items-center">
+                <div class="circle font-weight-bold">{0}</div>
+                </div>
+            </div>
+        </div>
+        <!--path between 2-3-->
+        <div id="between23">
+            <div class="row timeline">
+                <div class="col-2">
+                <div class="corner right-bottom"></div>
+                </div>
+                <div class="col-8">
+                <hr/>
+                </div>
+                <div class="col-2">
+                <div class="corner top-left"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="tbl_drawing" style="display: none;">
+        <table class="tbl_drawing">
+            <tbody></tbody>
+        </table>
+    </div>
     {% else %}
     <div class="container-fluid">
     <div class="row">
@@ -228,37 +434,20 @@
     var link = "";
     var tweet_url = "";
     var draw_url = "";
+    String.prototype.format = function () {
+        var a = this;
+        for (var k in arguments) {
+            a = a.replace(new RegExp("\\{" + k + "\\}", 'g'), arguments[k]);
+        }
+        return a
+    }
+
     $(function(){
         $("#div_link input").change(function(){
             $("#div_link").removeClass('error')
         })
         $("#div_verify input").change(function(){
             $("#div_verify").removeClass('error')
-        })
-        $('#add_tags').tagsInput();
-        $("#chk_follow").change(function(e){
-            fe = $(e.target).prop("checked");
-            if(fe){
-                $("#follow_show").fadeIn();
-            }else{
-                $("#follow_show").fadeOut();
-            }
-        })
-        $("#chk_followother").change(function(e){
-            fe = $(e.target).prop("checked");
-            if(fe){
-                $("#followother_show").fadeIn();
-            }else{
-                $("#followother_show").fadeOut();
-            }
-        })
-        $("#chk_retweet").change(function(e){
-            fe = $(e.target).prop("checked");
-            if(fe){
-                $("#retweet_show").fadeIn();
-            }else{
-                $("#retweet_show").fadeOut();
-            }
         })
         $("#btn_import").click(function(){
             $.ajax({
@@ -338,25 +527,24 @@
             $("#spn_entries").html("_")
             $("#label_drawdate").show()
             $("#label_entries").show()
-            $("#tbl_drawing tbody").html("")
+            // $("#tbl_drawing tbody").html("")
             $("#verifyModal").modal({backdrop: 'static', keyboard: false})
             $.ajax({
                 type: "POST",
                 url: "/contests/draw_verify",
                 data: {'draw_id': draw_id},
                 success: function (data) {
-                    console.log(data);
                     if (data.success == true) {
                         if(data.draw_info.draw_status != 'W'){
-                            $("#label_verifystatus").html("This conest is not finished yet.")
+                            $("#label_verifystatus").html("This contest is not finished yet.")
                             $("#label_drawdate").hide()
                             $("#label_entries").hide()
                         }else{
-                            $("#label_verifystatus").html("Drawed Results")
+                            $("#label_verifystatus").html("Drawed Results :")
                             f_drawdate = new Date(data.draw_info.drawed_at).toLocaleString()
                             $("#spn_drawdate").html(f_drawdate)
                             $("#spn_entries").html(data.draw_info.entries)
-                            show_rerolls(data.draw_info.rerolls);
+                            show_rerolls(data.draw_info.winner_count, data.draw_info.rerolls);
                         }
                     } else {
                         $("#label_verifystatus").html(data.msg)
@@ -367,23 +555,77 @@
             })
         })
     })
-    function show_rerolls(data){
-        for(i=0;i<data.length;i++){
-            r = data[i]
+    function show_rerolls(wcount, data){
+        $("#div_timeline").html("");
+        console.log(data);
+        index = 0;
+        tbl_index = 1;
+        str = "<tbody>";
+        found_winner = 0
+        winners = []
+        while(1){
+            if(index >= data.length){
+                break;
+            }
+            r = data[index]
+            reason = "";
             if(r.kind == 0){
                 reason = r.reason;
-            }else if(r.kind == 2){
-                reason = "choosen as winner!";
-            }else{
-                reason = "rerolled";
+            }else if(r.kind > 1){
+                reason = "Choosen as winner!";
+                found_winner += 1;
+                winners.push(r);
             }
-            if($("#rtr_" + r.id).length == 0){
-                str = "<tr id='rtr_" + r.id + "'><td><img class='user_avatar' src='" + r.user_info.profile_img + "'>"
-                str += r.user_info.screen_name + "</td><td>" + reason +"</td></tr>";
-                $("#tbl_drawing tbody").append(str);
+            str += "<tr id='rtr_" + tbl_index + "_" + r.id + "'><td><img class='user_avatar' src='" + r.user_info.profile_img + "'>"
+            str += r.user_info.screen_name + "</td><td id='rtd_" + tbl_index + "_" + r.id + "'>" + reason +"</td></tr>";
+                
+            if(found_winner == wcount){
+                str += '</tbody>'
+                tbl_str = $("#tbl_drawing").html()
+                tbl_str = tbl_str.replace('<tbody></tbody>', str)
+                if(tbl_index % 2 == 1){
+                    section_str = $("#first_section").html()
+                    bet_str = $("#between12").html()
+                }else{
+                    section_str = $("#second_section").html()
+                    bet_str = $("#between23").html()
+                }
+                if(tbl_index == 1){
+                    before_class = 'bottom'
+                }else{
+                    before_class = 'full'
+                }
+                if(index == data.length - 1){
+                    before_class = 'top'
+                    bet_str = "";
+                }
+                section_str = section_str.format(tbl_index, tbl_str, before_class);
+                $("#div_timeline").append(section_str + bet_str);
+                str = "<tbody>";
+                for(let i=index + 1;i<data.length;i++){
+                    if(data[i].kind > 1){
+                        for(let j=0; j<winners.length; j++){
+                            if(winners[j].reason == data[i].id){
+                                $("#rtd_" + tbl_index + "_" + winners[j].id).html("Rerolled");
+                                winners.splice(j, 1);
+                                found_winner -= 1;
+                                break;
+                            }
+                        }
+                        tbl_index += 1;
+                        for(let j=0; j<winners.length; j++){
+                            str += "<tr id='rtr_" + tbl_index + "_" + winners[j].id + "'><td><img class='user_avatar' src='" + winners[j].user_info.profile_img + "'>"
+                            str += winners[j].user_info.screen_name + "</td><td id='rtd_" + tbl_index + "_" + winners[j].id + "'>" + "Chooen as winner!" +"</td></tr>";
+                        }
+                        break;
+                    }
+                }
+                
             }
-            
+            index += 1
+            console.log(index);
         }
+        
     }
 </script>
 {% endblock extra_scripts %}
