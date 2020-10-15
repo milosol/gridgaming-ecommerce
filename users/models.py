@@ -1,8 +1,8 @@
 # Create your models here.
 import logging
 
-from allauth.account.utils import perform_login
-from allauth.socialaccount.signals import pre_social_login
+# from allauth.account.utils import perform_login
+# from allauth.socialaccount.signals import pre_social_login
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
