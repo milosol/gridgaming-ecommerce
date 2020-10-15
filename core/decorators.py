@@ -10,6 +10,8 @@ def account_type_check(function):
                 messages.info(request, "Please select role before using the grid.")
                 return HttpResponseRedirect(reverse('frontend:account_type'))
             return function(request, *args, **kwargs)
+        else:
+            pass
         # else:
         #     return HttpResponseRedirect(HttpResponse('Error processing request. Please try again!'))
     return _function
