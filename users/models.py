@@ -46,13 +46,13 @@ from core.models import History
 #         perform_login(request, users[0], email_verification=app_settings.EMAIL_VERIFICATION)
 
 
-@receiver(user_logged_in)
-def login_user(sociallogin, user, **kwargs):
-    History.objects.create(user=user, action='Logged In')
-    if sociallogin.account.provider == 'twitter':
-        try:
-            user.username = sociallogin.account.extra_data['screen_name']
-            user.email = sociallogin.account.extra_data['email']
-            user.save()
-        except Exception as e:
-            logging.error(f'Could not update user upon login: {e}')
+# @receiver(user_logged_in)
+# def login_user(sociallogin, user, **kwargs):
+#     History.objects.create(user=user, action='Logged In')
+#     if sociallogin.account.provider == 'twitter':
+#         try:
+#             user.username = sociallogin.account.extra_data['screen_name']
+#             user.email = sociallogin.account.extra_data['email']
+#             user.save()
+#         except Exception as e:
+#             logging.error(f'Could not update user upon login: {e}')
