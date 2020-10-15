@@ -44,7 +44,7 @@ def home(request):
 
 class ProfileHomeView(LoginRequiredMixin, TemplateView):
     template_name = 'frontend/profile.html'
-    #user_check_failure_path = reverse_lazy("account_signup")
+    user_check_failure_path = reverse_lazy("account_signup")
     success_url = reverse_lazy("profile")
 
     def check_user(self, user):
