@@ -162,12 +162,6 @@ SOCIALACCOUNT_QUERY_EMAIL = True
 SOCIALACCOUNT_PROVIDERS = {
     'twitter': {
         'SCOPE': ['email'],
-    },
-    'mixer': {
-        'SCOPE': [
-            'user:details:self',
-            'user:update:self',
-        ]
     }
 }
 ACCOUNT_EMAIL_REQUIRED = False
