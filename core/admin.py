@@ -195,6 +195,13 @@ class PaymentAdmin(admin.ModelAdmin):
         'timestamp'
     ]
 
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = [
+        'user',
+    ]
+    search_fields = ['user']
+
+
 
 admin.site.register(Item)
 admin.site.register(OrderItem, OrderItemAdmin)
@@ -204,7 +211,7 @@ admin.site.register(Payment, PaymentAdmin)
 admin.site.register(Coupon)
 admin.site.register(Refund)
 admin.site.register(Address, AddressAdmin)
-admin.site.register(UserProfile)
+admin.site.register(UserProfile, UserProfileAdmin)
 admin.site.register(Slotitem, SlotitemAdmin)
 admin.site.register(Checktime, ChecktimeAdmin)
 admin.site.register(Counting, CountingAdmin)

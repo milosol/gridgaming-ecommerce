@@ -324,13 +324,15 @@ class Transaction(models.Model):
         ordering = ['-timestamp']
 
 
-# def userprofile_receiver(sender, instance, created, *args, **kwargs):
-#     print('Firing userprofile receiver')
-#     if created:
-#         userprofile = UserProfile.objects.create(user=instance)
-#
-#
-# post_save.connect(userprofile_receiver, sender=settings.AUTH_USER_MODEL)
+def userprofile_receiver(sender, instance, created, *args, **kwargs):
+    print(sender, instance, created, *args, **kwargs)
+#Caused MAJOR issue where people could not login. Not sure why I had this code here
+    print('Firing userprofile receiver')
+    if created:
+        userprofile = UserProfile.objects.create(user=instance)
+
+
+post_save.connect(userprofile_receiver, sender=settings.AUTH_USER_MODEL)
 
 
 # Create your models here.
