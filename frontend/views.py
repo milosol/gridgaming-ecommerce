@@ -64,7 +64,7 @@ class ProfileHomeView(LoginRequiredMixin, TemplateView):
         context['socials'] = build_socials(self.request.user.id)
         return context
 
-@login_required
+#@login_required
 def profile(request):
     social_account_extras = SocialAccount.objects.get(user=request.user)
 
