@@ -324,18 +324,7 @@ class Transaction(models.Model):
         ordering = ['-timestamp']
 
 
-from django.dispatch import receiver
-from users.models import User
 
-@receiver(post_save, sender=settings.AUTH_USER_MODEL)
-def create_user_profile(sender, instance, created, **kwargs):
-    if created:
-        UserProfile.objects.create(user=instance)
-
-
-@receiver(post_save, sender=settings.AUTH_USER_MODEL)
-def save_user_profile(sender, instance, **kwargs):
-    instance.profile.save()
 
 # def userprofile_receiver(sender, instance, created, *args, **kwargs):
 #     #Caused MAJOR issue where people could not login. Not sure why I had this code here
