@@ -228,7 +228,7 @@ class PaymentView(View):
         kind = self.request.session.get('kind', 0)
         order = get_user_pending_order(self.request)
         form = PaymentForm(self.request.POST)
-        userprofile = UserProfile.objects.get(user=self.request.user)
+        userprofile = UserProfile.objects.getor_create(user=self.request.user)
         charge = None
         braintree_id = None
 
