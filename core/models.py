@@ -79,7 +79,7 @@ class Item(models.Model):
     giveaway_value = models.FloatField(verbose_name="Amount to giveaway")  # Split value and fee to show amount given
     giveaway_fee = models.FloatField(verbose_name="Amount to charge buyer")
     duration_to_run = models.IntegerField(blank=True, null=True)
-    #promote_socials = models.
+    # promote_socials = models.
     category = models.CharField(choices=CATEGORY_CHOICES, max_length=2)
     label = models.CharField(choices=LABEL_CHOICES, max_length=1)
     slug = models.SlugField()
@@ -126,10 +126,10 @@ class OrderItem(models.Model):
     username = models.CharField(max_length=200, default='')
     launch_code = models.CharField(max_length=200, blank=True, null=True)
     status = models.CharField(max_length=20, choices=GIVEAWAY_STATUS_CHOICES, default='I', blank=True, null=True)
-    
+
     class Meta:
         ordering = ['-orders__id']
-        
+
     def __str__(self):
         if self.kind == 0:
             return f"{self.quantity} of {self.item.title}"
@@ -141,7 +141,7 @@ class OrderItem(models.Model):
             return self.item.title
         else:
             return self.slot.title
-            
+
     def get_total_item_price(self):
         # self.user.related_field
         # self.user.account_type
@@ -223,7 +223,7 @@ class Order(models.Model):
     class Meta:
         default_related_name = 'orders'
         ordering = ['-id']
-        
+
     def __str__(self):
         return self.user.username
 
@@ -252,7 +252,6 @@ class Order(models.Model):
             return sum([y.quantity for y in self.items.filter(kind=0)])
         else:
             return sum([y.quantity for y in self.items.filter(kind=1)])
-        
 
 
 class Address(models.Model):
@@ -283,13 +282,12 @@ class Payment(models.Model):
 
     class Meta:
         ordering = ['-id']
-        
+
     def __str__(self):
         if self.user:
             return self.user.username
         else:
             return ''
-    
 
 
 class Coupon(models.Model):
@@ -325,12 +323,15 @@ class Transaction(models.Model):
     class Meta:
         ordering = ['-timestamp']
 
+
 def userprofile_receiver(sender, instance, created, *args, **kwargs):
+    print('Firing userprofile receiver')
     if created:
         userprofile = UserProfile.objects.create(user=instance)
 
 
 post_save.connect(userprofile_receiver, sender=settings.AUTH_USER_MODEL)
+
 
 # Create your models here.
 class Slotitem(models.Model):
@@ -350,6 +351,7 @@ class Slotitem(models.Model):
     def __str__(self):
         return self.title
 
+
 class Checktime(models.Model):
     time = models.IntegerField(default=5)
     launch_time = models.IntegerField(default=24)
@@ -359,11 +361,13 @@ class Checktime(models.Model):
     action_time = models.DateTimeField(auto_now=False, null=True, blank=True)
     thread_id = models.IntegerField(default=1)
     cartcounter_run = models.BooleanField(default=False)
+
     def __str__(self):
         return str(self.time)
-    
+
     def get_deadline(self):
         return self.action_time + timedelta(hours=self.launch_time)
+
 
 class History(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
@@ -374,25 +378,29 @@ class History(models.Model):
     item_str = models.CharField(max_length=200)
     order_str = models.CharField(max_length=100)
     other = models.CharField(max_length=200)
-    
+
     def __str__(self):
         if self.user:
             return self.user.username + " : " + self.action
         else:
             return self.action
-    
+
     class Meta:
         ordering = ['-id']
-        
+
+
 class Counting(models.Model):
     user_id = models.IntegerField(default=0)
     order_id = models.IntegerField(default=0)
     pause = models.BooleanField(default=False)
     deadline = models.DateTimeField(auto_now=False)
+
     def __str__(self):
         return str(self.user_id)
 
+
 class Cartget(models.Model):
     user_id = models.IntegerField(default=0)
+
     def __str__(self):
         return str(self.user_id)
