@@ -177,8 +177,10 @@ class CheckoutViewV2(View):
 def get_user_pending_order(request):
     # get order for the correct user
     kind = request.session.get('kind', 0)
-    user_profile = get_object_or_404(UserProfile, user=request.user)
+    # user_profile = get_object_or_404(UserProfile, user=request.user)
+    user_profile, created = UserProfile.objects.get_or_create(user=request.user)
     order = Order.objects.filter(user=user_profile.user, ordered=False, kind=kind)
+    # order = Order.objects.filter(user=request.user, ordered=False, kind=kind)
     if order.exists():
         # get the only order in the list of filtered orders
         return order[0]
@@ -228,7 +230,7 @@ class PaymentView(View):
         kind = self.request.session.get('kind', 0)
         order = get_user_pending_order(self.request)
         form = PaymentForm(self.request.POST)
-        userprofile = UserProfile.objects.getor_create(user=self.request.user)
+        userprofile, created = UserProfile.objects.get_or_create(user=self.request.user)
         charge = None
         braintree_id = None
 
