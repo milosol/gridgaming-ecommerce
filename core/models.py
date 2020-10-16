@@ -325,11 +325,11 @@ class Transaction(models.Model):
 
 
 def userprofile_receiver(sender, instance, created, *args, **kwargs):
-    print(sender, instance, created, *args, **kwargs)
-#Caused MAJOR issue where people could not login. Not sure why I had this code here
+    #print(sender, instance, created, *args, **kwargs)
+    #Caused MAJOR issue where people could not login. Not sure why I had this code here
     print('Firing userprofile receiver')
     if created:
-        userprofile = UserProfile.objects.create(user=instance)
+        userprofile = UserProfile.objects.get_or_create(user=instance)
 
 
 post_save.connect(userprofile_receiver, sender=settings.AUTH_USER_MODEL)
