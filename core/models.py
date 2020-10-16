@@ -324,15 +324,27 @@ class Transaction(models.Model):
         ordering = ['-timestamp']
 
 
-def userprofile_receiver(sender, instance, created, *args, **kwargs):
-    #print(sender, instance, created, *args, **kwargs)
-    #Caused MAJOR issue where people could not login. Not sure why I had this code here
-    print('Firing userprofile receiver')
+from django.dispatch import receiver
+from users.models import User
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def create_user_profile(sender, instance, created, **kwargs):
     if created:
-        userprofile = UserProfile.objects.get_or_create(user=instance)
+        UserProfile.objects.create(user=instance)
 
 
-post_save.connect(userprofile_receiver, sender=settings.AUTH_USER_MODEL)
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def save_user_profile(sender, instance, **kwargs):
+    instance.profile.save()
+
+# def userprofile_receiver(sender, instance, created, *args, **kwargs):
+#     #Caused MAJOR issue where people could not login. Not sure why I had this code here
+#     print('Firing userprofile receiver')
+#     if created:
+#         userprofile = UserProfile.objects.create(user=instance)
+#
+#
+# post_save.connect(userprofile_receiver, sender=settings.AUTH_USER_MODEL)
 
 
 # Create your models here.
