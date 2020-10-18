@@ -87,7 +87,7 @@ class BotCheck(TwitterInteract):
     def bot_prediction(self):
         # TODO make days old and timeline analysis configurable
         bot = False
-        if self.user_analysis['days_old'] < 90:
+        if self.user_analysis['days_old'] < 60:
             bot = True
 
         if p2f(self.user_analysis['giveaway_timeline_analysis']) > .80:
