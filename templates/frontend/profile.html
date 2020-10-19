@@ -32,35 +32,48 @@
                     <!-- Column -->
                     <div class="col-lg-8 col-xlg-9 col-md-7">
                         <div class="card">
-                            <!-- Tabs -->
-                            <ul class="nav nav-pills custom-pills" id="pills-tab" role="tablist">
-                                <li class="nav-item">
-                                    <a class="nav-link active" id="pills-setting-tab" data-toggle="pill" href="#previous-month" role="tab" aria-controls="pills-setting" aria-selected="true">Setting</a>
-                                </li>
-                            </ul>
-                            <!-- Tabs -->
-                            <div class="tab-content" id="pills-tabContent">
-                                <div class="tab-pane fade active show" id="previous-month" role="tabpanel" aria-labelledby="pills-setting-tab">
-                                    <div class="card-body">
-                                        <form class="form-horizontal form-material">
-                                            <div class="form-group">
-                                                <label class="col-md-12">Connected Accounts</label>
-                                                
-{#                                                <div class="col-md-12">#}
-{#                                                    <input type="text" placeholder="Johnathan Doe" class="form-control form-control-line">#}
-{#                                                </div>#}
-                                            </div>
-{#                                            <div class="form-group">#}
-{#                                                <label for="example-email" class="col-md-12">Email</label>#}
-{#                                                <div class="col-md-12">#}
-{#                                                    <input type="email" placeholder="johnathan@admin.com" class="form-control form-control-line" name="example-email" id="example-email">#}
-{#                                                </div>#}
-{#                                            </div>#}
-                                        </form>
+                            <div class="card-body">
+
+                                <h4 class="card-title mb-3">Account Home</h4>
+
+                                <ul class="nav nav-tabs nav-bordered mb-3 customtab">
+                                    <li class="nav-item">
+                                        <a href="#home-b1" data-toggle="tab" aria-expanded="false" class="nav-link active">
+                                            <i class="mdi mdi-home-variant d-lg-none d-block mr-1"></i>
+                                            <span class="d-none d-lg-block">Home</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="#profile-b1" data-toggle="tab" aria-expanded="true" class="nav-link">
+                                            <i class="mdi mdi-account-circle d-lg-none d-block mr-1"></i>
+                                            <span class="d-none d-lg-block">Profile</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="#settings-b1" data-toggle="tab" aria-expanded="false" class="nav-link">
+                                            <i class="mdi mdi-settings-outline d-lg-none d-block mr-1"></i>
+                                            <span class="d-none d-lg-block">Membership</span>
+                                        </a>
+                                    </li>
+                                </ul>
+
+                                <div class="tab-content">
+                                    <div class="tab-pane active" id="home-b1">
+                                        <p>Account Profile settings. Show connected account and username with a link to refresh username.</p>
+                                    </div>
+                                    <div class="tab-pane show" id="profile-b1">
+                                        <p>Coming soon...</p>
+                                    </div>
+                                    <div class="tab-pane" id="settings-b1">
+                                        <p>Put billing information here.</p>
+                                        <h4>Current Status: User</h4>
+                                        Upgrade to next level (pop up modal to upgrade) with prices from db
+
                                     </div>
                                 </div>
-                            </div>
-                        </div>
+
+                            </div> <!-- end card-body-->
+                        </div> <!-- end card-->
                     </div>
                     <!-- Column -->
                 </div>
