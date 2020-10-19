@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'mathfilters',
     'slotapp',
     'giveaways',
+    'profile_analyzer',
     'background_task',
 ]
 

@@ -226,6 +226,55 @@
     .td-reroll .rtdr-disabled {
         color: gray;
     }
+
+
+    .status_id {
+    {#background-color: #25393c;#}
+    {#color: #26c6da;#}
+    padding: 3px;
+    }
+    #spn_status{
+        font-weight:bold;
+        color:#7460ee;
+        {#color:#e83e8c;#}
+    }
+    .entries_id {
+    {#background-color: #25393c;#}
+    {#color: #26c6da;#}
+    padding: 3px;
+    }
+    #spn_entries{
+        font-weight:bold;
+    }
+    .winners_id {
+        {#background-color: #0000003b;#}
+        {#color: #00dcff;#}
+        padding: 3px;
+    }
+    #spn_drawwinners{
+        font-weight:bold;
+        color:#00dcff;
+    }
+    .draw_date_id {
+    {#background-color: #25393c;#}
+    {#color: #26c6da;#}
+    padding: 3px;
+    }
+    #spn_drawdate {
+        font-weight:bold;
+    }
+    .draw_id {
+    {#background-color: #25393c;#}
+    {#color: #26c6da;#}
+    padding: 3px;
+    }
+    #spn_drawid{
+        font-weight:bold;
+        color:#7460ee;
+    }
+
+
+
     </style>
 {% endblock %}
 
@@ -344,7 +393,7 @@
                                             <div class="mx-2">
                                                 <h5>Enable action</h5>
                                                 <div>
-                                                    The user will need to subscribe to your account in order for their participation to be valid.
+                                                    The user will need to follow an account for their participation to be valid.
                                                 </div>
                                             </div>
                                         </div>
@@ -454,9 +503,9 @@
                                     
                                     <div class="row ">
                                         <div class="col-md-6 mt-2 px-md-4">
-                                            <div class="card">
-                                                <div class="card-header">
-                                                    ACTIONS TO PERFORM
+                                            <div class="card border-primary">
+                                                <div class="card-header bg-primary">
+                                                    <h4 class="mb-0 text-white">ACTIONS TO PERFORM</h4>
                                                 </div>
                                                 <div class="card-body">
                                                     <h6>Number of winners : <span id="spn_winner">1</span></h6>
@@ -471,16 +520,16 @@
                                             </div>
                                         </div>
                                         <div class="col-md-6 mt-2 px-md-4">
-                                            <div class="card">
-                                                <div class="card-header">
-                                                    DRAW DETAIL
+                                            <div class="card border-primary">
+                                                <div class="card-header bg-cyan mb-0 text-white p-2">
+                                                    <h4 class="mb-0 text-white">DRAW DETAIL</h4>
                                                 </div>
                                                 <div class="card-body">
-                                                    <h6>Status : <span id="spn_status">_</span></h6>
-                                                    <h6>Entries : <span id="spn_entries">_</span></h6>
-                                                    <h6>Winners : <span id="spn_drawwinners">_</span></h6>
-                                                    <h6>Draw Date : <span id="spn_drawdate">_</span></h6>
-                                                    <h6>Draw ID : <span id="spn_drawid">_</span></h6>
+                                                    <h6><span class="status_id">Status : <span id="spn_status">_</span></span></h6>
+                                                    <h6><span class="entries_id">Entries : <span id="spn_entries">_</span></span></h6>
+                                                    <h6><span class="winners_id">Winner: <span id="spn_drawwinners">_</span></span></h6>
+                                                    <h6><span class="draw_date_id">Draw Date : <span id="spn_drawdate">_</span></span></h6>
+                                                    <h6><span class="draw_id">Draw ID : <span id="spn_drawid">_</span></span></h6>
                                                 </div>
                                             </div>
                                         </div>
@@ -611,18 +660,18 @@
         // draw_status, draw_winners, draw_date, draw_id
         switch(draw_status){
             case 'C': case 'E': case 'L':
-                $("#spn_status").html('To draw');
+                $("#spn_status").html('To Draw');
                 break;
             case 'D':
                 $("#spn_status").html('Drawing');
                 break;
             case 'S':
-                $("#spn_status").html('Drawing stoped');
+                $("#spn_status").html('Drawing Stopped');
                 break;
             case 'W':
-                $("#spn_status").html('Draw finished');
+                $("#spn_status").html('<i class="mr-2 mdi mdi-check-circle"></i>Draw Complete');
                 str = get_winners_names(draw_winners);
-                $("#spn_drawwinners").html(str);
+                $("#spn_drawwinners").html('<i class="mdi mdi-trophy"></i> ' + str);
                 $("#spn_drawdate").html(draw_date);
                 $("#spn_drawid").html(draw_id);
                 break;
@@ -827,7 +876,7 @@
                 $("#btn_loadentry").attr("disabled", false);
                 clearInterval(progress_handle);
                 $("#progress").hide()
-                $("#h_loadresult").html("Error occured in server.");
+                $("#h_loadresult").html("Error occurred in server.");
                 $("#h_loadresult").show();
             }
         })
@@ -909,14 +958,14 @@
                         if (data.success == true) {
                             if(data.stop == true){
                                 draw_status = 'S'
-                                $("#spn_status").html('Stoped')
-                                $("#spn_drawwinners").html('_')
-                                $("#spn_drawdate").html('_')
-                                $("#spn_drawid").html('_')
-                                $("#label_status").html("Draw is stoped")
+                                $("#spn_status").html('<i class="mr-2 mdi mdi-stop-circle"></i> Stopped')
+                                $("#spn_drawwinners").html('-')
+                                $("#spn_drawdate").html('-')
+                                $("#spn_drawid").html('-')
+                                $("#label_status").html("<i class=\"mr-2 mdi mdi-stop-circle\"></i> Draw is stopped")
                             }else{
                                 draw_status = 'W'
-                                $("#label_status").html("Draw is finished")
+                                $("#label_status").html("<i class=\"mr-2 mdi mdi-flag-checkered\"></i> Draw is finished")
                                 str = get_winners_names(data.draw_info.winners);
                                 $("#spn_drawwinners").html(str)
                                 f_drawdate = new Date(data.draw_info.drawed_at).toLocaleString()

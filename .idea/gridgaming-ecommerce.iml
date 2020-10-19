@@ -27,6 +27,7 @@
         <option value="$MODULE_DIR$/templates" />
         <option value="$MODULE_DIR$/retweet_picker/templates" />
         <option value="$MODULE_DIR$/slotapp/templates" />
+        <option value="$MODULE_DIR$/profile_analyzer/templates" />
       </list>
     </option>
   </component>

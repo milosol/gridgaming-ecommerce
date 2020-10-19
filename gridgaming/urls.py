@@ -20,6 +20,7 @@ urlpatterns = [
     path('slot/', include('slotapp.urls', namespace='slot')),
     path('django-rq/', include('django_rq.urls')),
     path('giveaways/', include('giveaways.urls')),
+    path('analyzer/', include('profile_analyzer.urls')),
     path('', include('frontend.urls', namespace='frontend'))
 ]
 

@@ -416,7 +416,7 @@ def contest_results(request, order_id):
     giveaway_results = GiveawayResults.objects.filter(giveaway_id__in=[x.id for x in giveaway_objs])
     context['giveaway_results'] = giveaway_results
 
-    print(giveaway_ids)
+    #print(giveaway_ids)
 
     return render(request, "contest_results.html", context)
 
