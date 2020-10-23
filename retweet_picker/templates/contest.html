@@ -306,6 +306,7 @@
                                                 <h6 style="width: fit-content" id="h_retcount">Entries count of tweet: {{ret_count}}</h6>
                                                 <h6 style="width: fit-content" id="h_freeamount">Free amount : {{drawprice.free_max}}</h6>
                                                 <h6 style="width: fit-content" id="h_paid">Paid amount {{paid_amount}}</h6>
+                                                <h6 style="width: fit-content" id="h_membership">You are free from membership</h6>
                                                 <h6 style="width: fit-content" id="h_pay">You should pay ${{drawprice.price}} per more {{drawprice.per_amount}} entries</h6>
                                                 <button id="btn_pay" class="btn btn-primary mt-3 mb-2 py-2 font-18" disabled>Free</button>
                                             </div>
@@ -565,7 +566,12 @@
             </div>
         </div>
     </div>
-
+    <form action="{% url 'frontend:pre_checkout' %}" method="post" id="form_pay" hidden>
+        {% csrf_token %}
+        <input type="hidden" name="reason" value="payfordraw">
+        <input type="hidden" name="amount" value="0">
+        <input type="hidden" name="gwid" value="0">
+    </form>
 
     {% else %}
     <div class="container-fluid">
@@ -614,13 +620,16 @@
 
     function init_entrypanel(){
         // draw_status , pay_status, loaded_count, pay_price, paid_amount, free_max
+        $("#h_membership").hide()
         if(draw_status == 'C' || draw_status == 'E'){
             $("#nav-actions-tab").hide()
             $("#nav-draw-tab").hide()
+            console.log("paystatus : ", pay_status)
             if(pay_status == 0){
                 $("#btn_pay").html("Free")
                 $("#h_paid").hide()
                 $("#h_pay").hide()
+                $("#h_membership").hide()
                 $("#btn_pay").prop('disabled', true);
                 $("#h_loadentry").html("You are free to download entries. Click below button to start download.")
             }else if(pay_status == 1){
@@ -628,7 +637,17 @@
                 $("#btn_pay").prop('disabled', true);
                 $("#h_paid").show()
                 $("#h_pay").hide()
+                $("#h_membership").hide()
                 $("#h_loadentry").html("You can download all entries now. Click below button to start download.")
+            }else if(pay_status == 2){
+                $("#btn_pay").html("Free")
+                $("#btn_pay").prop('disabled', true);
+                $("#h_paid").hide()
+                $("#h_freeamount").hide()
+                $("#h_pay").hide()
+                $("#h_membership").show()
+                $("#h_membership").html("You are free from membership")
+                $("#h_loadentry").html("Your account can download all entries now. Click below button to start download.")
             }else{
                 $("#h_paid").show()
                 $("#h_pay").show()
@@ -636,6 +655,13 @@
                 $("#btn_pay").html(str)
                 $("#btn_pay").prop('disabled', false);
                 $("#h_loadentry").html("You can download only " + (paid_amount + free_max) + " entries");
+                if(pay_status == 4){
+                    $("#h_membership").show()
+                    $("#h_membership").html("Your membership reached the limit times this month")
+                }else if(pay_status == 5){
+                    $("#h_membership").show()
+                    $("#h_membership").html("Your membership is out of date.")
+                }
             }
             $('#zero_config').hide()
             $('#btn_toactions').hide()
@@ -836,7 +862,8 @@
                         }, 2000);
                     }else if(data.load_status == 'E'){
                         $("#btn_loadentry").attr("disabled", false);
-                        $("#btn_pay").attr("disabled", false);
+                        if(pay_status > 2)
+                            $("#btn_pay").attr("disabled", false);
                         clearInterval(progress_handle);
                         $("#progress").hide()
                         $("#h_loadresult").html(data.load_error);
@@ -860,7 +887,7 @@
         $.ajax({
             type: "POST",
             url: "/contests/load_entries",
-            data: {'gwid': gwid},
+            data: {'gwid': gwid, 'pay_status': pay_status},
             success: function (data) {
                 if (data.success == true) {
                     progress_handle = setInterval(() => {
@@ -1009,8 +1036,14 @@
     }
     $(function(){
         initialize()
+        $("#btn_pay").click(function(){
+            if(pay_status < 3 || pay_price == 0) return
+            $("#form_pay input[name='amount']").val(pay_price);
+            $("#form_pay input[name='gwid']").val(gwid);
+            $("#form_pay").submit();
+        })
         $("#btn_loadentry").click(function(){
-            if(pay_status == 2){
+            if(pay_status > 2){
                 swal.fire({
                     title: 'Are you sure?',
                     icon: 'warning',

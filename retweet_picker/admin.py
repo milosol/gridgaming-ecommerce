@@ -9,7 +9,10 @@ from .models import (
     GiveawayStats,
     GiveawayQueue,
     GiveawayWinners,
-    DrawPrice
+    DrawPrice,
+    PricingPlan,
+    Membership,
+    Upgradeorder
 )
 from users.models import User
 
@@ -137,6 +140,38 @@ class GiveawayWinnersAdmin(admin.ModelAdmin):
         else:
             return ''
         
+class PricingPlanAdmin(admin.ModelAdmin):
+    list_display = [
+        'plan',
+        'label',
+        'price',
+        'limit_times',
+        'limit_count',
+    ]
+
+class MembershipAdmin(admin.ModelAdmin):
+    list_display = [
+        'user_id',
+        'plan',
+        'paid_month',
+        'paid_time',
+        'end_time',
+        'done_count',
+        'done_month',
+    ]  
+ 
+class UpgradeorderAdmin(admin.ModelAdmin):
+    list_display = [
+        'user_id',
+        'reason',
+        'amount',
+        'months',
+        'upgradeto',
+        'gwid',
+        'payment',
+        'payment_status',
+        'created_at',
+    ]
     
 admin.site.register(TwitterGiveaway)
 admin.site.register(ContestUserAccounts)
@@ -147,4 +182,7 @@ admin.site.register(ContestUserParticipation, ContestUserParticipationAdmin)
 admin.site.register(GiveawayStats, GiveawayStatsAdmin)
 admin.site.register(GiveawayQueue, GiveawayQueueAdmin)
 admin.site.register(GiveawayWinners, GiveawayWinnersAdmin)
+admin.site.register(PricingPlan, PricingPlanAdmin)
+admin.site.register(Membership, MembershipAdmin)
+admin.site.register(Upgradeorder, UpgradeorderAdmin)
 

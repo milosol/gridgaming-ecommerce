@@ -1,6 +1,7 @@
 import logging
 import sys
 import threading
+import math
 from datetime import timedelta
 from django.utils import timezone
 from json import dumps
@@ -17,13 +18,12 @@ from django.views.decorators.csrf import csrf_exempt
 from core.decorators import account_type_check, cleared_hot_check
 from core.models import Order, OrderItem
 from .forms import RetweetChooserForm
-from .models import GiveawayResults, TwitterGiveawayID, TwitterGiveaway, GiveawayStats, GiveawayQueue, DrawPrice, \
+from .models import Membership, PricingPlan, GiveawayResults, TwitterGiveawayID, TwitterGiveaway, GiveawayStats, GiveawayQueue, DrawPrice, \
     GiveawayWinners, ContestUserParticipation, ContestUserAccounts
 from .process import ProcessRetrievedTweets
 from .tasks import start_giveaway_bg, retrieve_tweets_choose_winner_job, draw_winner, fetch_content_from_url, load_entry_task
 from users.models import User
 from retweet_picker.manager import GiveawayManager
-
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 import time
@@ -465,6 +465,7 @@ def import_contest(request):
 
 
 def pick_entries(request, gwid):
+    request.session['uoid'] = -1
     context = {}
     try:
         gw = GiveawayWinners.objects.get(id=gwid)
@@ -473,21 +474,40 @@ def pick_entries(request, gwid):
         dp = DrawPrice.objects.all().first()
         gm = GiveawayManager(new_giveaway=False, existing_tweet_url=tweet_url)
         ret_count = gm.tweet.retweet_count
+        
         # ret_count = 1000
         context['pay_price'] = 0
-        if gw.status == 'C':
-            gw.paid_count = 0
-            gw.save()
+
         if ret_count <= dp.free_max:
             context['pay_status'] = 0  # free to download
         else:
             if gw.paid_count + dp.free_max >= ret_count:
                 context['pay_status'] = 1  # you have already paid
             else:
-                context['pay_status'] = 2  # you must pay more
-                rest = ret_count - gw.paid_count - dp.free_max
-                pay_price = int(rest / dp.per_amount) * dp.price
-                context['pay_price'] = pay_price
+                membership, created = Membership.objects.get_or_create(user_id=request.user.id)
+                if membership.plan == 'F':
+                    context['pay_status'] = 3
+                else:
+                    pps = PricingPlan.objects.filter(plan=membership.plan)
+                    if pps.exists():
+                        pp = pps[0]
+                        set_donemonth(membership.id)
+                        if membership.done_count < pp.limit_times and membership.done_month < membership.paid_month:
+                            context['pay_status'] = 2  # You can be free from membership
+                        else:
+                            if membership.done_count >= pp.limit_times:
+                                context['pay_status'] = 4  # you exceed count this month
+                            if membership.done_month >= membership.paid_month:
+                                membership.plan = 'F'
+                                membership.save()
+                                context['pay_status'] = 5    # your membership is out of date
+                    else:
+                        context['pay_status'] = 3 # you must pay more
+                if context['pay_status'] > 2:
+                    rest = ret_count - gw.paid_count - dp.free_max
+                    pay_price = math.ceil(rest / dp.per_amount * dp.price)
+                    context['pay_price'] = pay_price
+                
         draw_info = get_drawinformation(gwid)
         context['loaded_count'] = gw.loaded_count
         context['paid_amount'] = gw.paid_count
@@ -504,14 +524,26 @@ def pick_entries(request, gwid):
 
     return render(request, "contest.html", context)
 
-
+def set_donemonth(membership_id):
+    try:
+        membership = Membership.objects.get(id=membership_id)
+        diff = timezone.now() - membership.paid_time
+        diff_month = math.floor(diff.total_seconds()/(3600*24*30))
+        if membership.done_month != diff_month:
+            membership.done_month += 1
+            membership.done_count = 0
+            membership.save()
+    except Exception as e:
+        print(e)
+                            
 @csrf_exempt
 def load_entries(request):
     res = {'success': True, 'msg': ''}
     try:
         gwid = request.POST['gwid']
+        pay_status = int(request.POST['pay_status'])
         GiveawayWinners.objects.filter(id=gwid).update(status='C', loaded_count=0)
-        load_entry_task(gwid, request.user.id, schedule=timezone.now())
+        load_entry_task(gwid, request.user.id, pay_status, schedule=timezone.now())
     except Exception as e:
         print(e)
         res['success'] = False

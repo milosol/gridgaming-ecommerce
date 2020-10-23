@@ -1,6 +1,6 @@
 # from django.contrib.auth.models import User
 # from users.models import GridUser as User
-from core.models import Order, OrderItem
+from core.models import Order, OrderItem, Payment               
 from django.conf import settings
 from django.db import models
 import uuid
@@ -25,6 +25,17 @@ DRAWSTATUS_CHOICES = (
     ('D', 'Drawing'),
     ('S', 'Drawing stoped'),
     ('W', 'Drawed')
+)
+
+PRICINGPLAN_CHOICES = (
+    ('F', 'Free'),
+    ('B', 'Basic'),
+    ('P', 'Pro')
+)
+PAYMENT_CHOICES = (
+    ('W', 'Waiting'),
+    ('P', 'Pending'),
+    ('C', 'Complete'),
 )
 
 class ContestUserAccounts(models.Model):
@@ -186,3 +197,42 @@ class GiveawayQueue(models.Model):
     def __str__(self):
         return str(self.tweet_url)
 
+class PricingPlan(models.Model):
+    plan = models.CharField(choices=PRICINGPLAN_CHOICES, max_length=1)
+    label = models.CharField(max_length=200, blank=True)
+    price = models.IntegerField(default=1)
+    limit_times = models.IntegerField(default=2)
+    limit_count = models.IntegerField(default=10000000)
+    
+    class Meta:
+        ordering = ['price']
+        
+    def __str__(self):
+        return self.plan
+    
+class Membership(models.Model):
+    user_id = models.IntegerField(default=0)
+    plan = models.CharField(choices=PRICINGPLAN_CHOICES, max_length=1, default='F')
+    paid_month = models.IntegerField(default=0)
+    paid_time = models.DateTimeField(auto_now=False, null=True)
+    end_time = models.DateTimeField(auto_now=False, null=True)
+    done_count = models.IntegerField(default=0)
+    done_month = models.IntegerField(default=0)
+    
+    class Meta:
+        ordering = ['id']
+        
+class Upgradeorder(models.Model):
+    user_id = models.IntegerField(default=0)
+    reason = models.CharField(max_length=50, blank=True, null=True)
+    amount = models.IntegerField(default=0)
+    months = models.IntegerField(default=0)
+    upgradeto = models.CharField(choices=PRICINGPLAN_CHOICES, max_length=1, default='B')
+    gwid = models.IntegerField(default=0)
+    payment = models.ForeignKey(Payment, on_delete=models.SET_NULL, blank=True, null=True)
+    payment_status = models.CharField(choices=PAYMENT_CHOICES, max_length=1, default='W')
+    created_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['id']
+        

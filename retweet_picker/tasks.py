@@ -2,7 +2,8 @@ from django_rq import job
 import time
 from retweet_picker.manager import GiveawayManager
 from background_task import background
-from .models import GiveawayWinners, DrawPrice, ContestUserParticipation, ContestUserAccounts, TwitterGiveawayID
+from .models import  Membership, GiveawayWinners, DrawPrice, ContestUserParticipation, ContestUserAccounts, TwitterGiveawayID
+
 
 def start_giveaway_bg(user_id=None,
                       order_id=None,
@@ -57,7 +58,7 @@ def draw_winner(existing_tweet_url=None, winner_count=1, actions=None, user_id=N
     return res
 
 @background(schedule=60)
-def load_entry_task(gwid, user_id):
+def load_entry_task(gwid, user_id, pay_status):
     try:
         gw = GiveawayWinners.objects.get(id=gwid)
         tgid = TwitterGiveawayID.objects.get(id=gw.giveaway_id_id)
@@ -73,6 +74,8 @@ def load_entry_task(gwid, user_id):
             cups[0].contestants.clear()
 
         toload_count = gw.paid_count + dp.free_max
+        if pay_status == 2:
+            toload_count = ret_count
         if toload_count > ret_count:
             toload_count = ret_count
         gw.toload_count = toload_count
@@ -80,6 +83,12 @@ def load_entry_task(gwid, user_id):
         res = gm.retrieve_tweets(gwid=gwid, max_tweets=gw.toload_count)
         if res['success'] == True:
             GiveawayWinners.objects.filter(id=gwid).update(status='L')
+            if pay_status == 2:
+                mss = Membership.objects.filter(user_id=gw.user_id)
+                if mss.exists() and mss[0].plan != 'F':
+                    ms = mss[0]
+                    ms.done_count += 1
+                    ms.save()
             
     except Exception as e:
         print(e)

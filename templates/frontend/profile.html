@@ -1,80 +1,238 @@
 {% extends "core/base.html" %}
 {% load account %}
+{% block extra_head_tags %}
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<style>
+    .div-plan{
+        border: 1px solid #c7c7c7;
+        box-shadow: 2px 8px 10px #545454;
+        border-radius: 5px;
+        min-height: 250px;
+    }
+    .div-plan-active{
+        border: 1px solid #4bbbe2;
+        box-shadow: 2px 8px 10px #545454;
+        border-radius: 5px;
+        background-color: #00414e;
+        min-height: 250px;
+    }
+    .btn-upgrade{
+        position: absolute;
+        bottom: 10px;
+    }
+    #upgradeModal span{
+        font-size: 18px;
+        color: #f9e2ff;
+    }
+</style>
+{% endblock %}
 {% block content %}
-                <div class="row">
-                    <!-- Column -->
-                    <div class="col-lg-4 col-xlg-3 col-md-5">
-                        <div class="card">
-                            <div class="card-body">
-                                <center class="mt-4"> <img src="{{ user.socialaccount_set.all.0.get_avatar_url }}" class="rounded-circle" width="150">
-                                    <h4 class="card-title mt-2">{{ user.username }}</h4>
-                                    <h6 class="card-subtitle">{{ user.socialaccount_set.all.0.extra_data.description }}</h6>
-                                    <div class="row text-center justify-content-md-center">
-                                        <div class="col-4"><a href="javascript:void(0)" class="link" alt="Twitter Followers" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="Current Followers"><i class="icon-user-follow"></i> <font class="font-medium">{{ user.socialaccount_set.all.0.extra_data.followers_count }}</font></a></div>
-                                        <div class="col-4"><a href="javascript:void(0)" class="link" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="Following"><i class="icon-user-following" ></i> <font class="font-medium">{{ user.socialaccount_set.all.0.extra_data.friends_count }}</font></a></div>
-                                    </div>
-                                                                    <a href="https://www.twitter.com/{% user_display user %}"><button class="btn btn-circle btn-twitter" _target="blank"><i class="fab fa-twitter"></i></button></a>
-                                </center>
-                            </div>
-                            <div>
-                                <hr> </div>
-                            <div class="card-body text-center"> <small class="text-muted">Last Seen </small>
-                                <h6>{{ user.last_login }}</h6>
+    <div class="row">
+        <!-- Column -->
+        <div class="col-lg-4 col-xlg-3 col-md-5">
+            <div class="card">
+                <div class="card-body">
+                    <center class="mt-4"> <img src="{{ user.socialaccount_set.all.0.get_avatar_url }}" class="rounded-circle" width="150">
+                        <h4 class="card-title mt-2">{{ user.username }}</h4>
+                        <h6 class="card-subtitle">{{ user.socialaccount_set.all.0.extra_data.description }}</h6>
+                        <div class="row text-center justify-content-md-center">
+                            <div class="col-4"><a href="javascript:void(0)" class="link" alt="Twitter Followers" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="Current Followers"><i class="icon-user-follow"></i> <font class="font-medium">{{ user.socialaccount_set.all.0.extra_data.followers_count }}</font></a></div>
+                            <div class="col-4"><a href="javascript:void(0)" class="link" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="Following"><i class="icon-user-following" ></i> <font class="font-medium">{{ user.socialaccount_set.all.0.extra_data.friends_count }}</font></a></div>
+                        </div>
+                                                        <a href="https://www.twitter.com/{% user_display user %}"><button class="btn btn-circle btn-twitter" _target="blank"><i class="fab fa-twitter"></i></button></a>
+                    </center>
+                </div>
+                <div>
+                    <hr> </div>
+                <div class="card-body text-center"> <small class="text-muted">Last Seen </small>
+                    <h6>{{ user.last_login }}</h6>
+                    </div>
+                    <br>
+
+
+
+
+            </div>
+        </div>
+        <!-- Column -->
+        <!-- Column -->
+        <div class="col-lg-8 col-xlg-9 col-md-7">
+            <div class="card">
+                <div class="card-body">
+
+                    <h4 class="card-title mb-3">Account Home</h4>
+
+                    <ul class="nav nav-tabs nav-bordered mb-3 customtab">
+                        <li class="nav-item">
+                            <a href="#home-b1" data-toggle="tab" aria-expanded="false" class="nav-link active">
+                                <i class="mdi mdi-home-variant d-lg-none d-block mr-1"></i>
+                                <span class="d-none d-lg-block">Home</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#profile-b1" data-toggle="tab" aria-expanded="true" class="nav-link">
+                                <i class="mdi mdi-account-circle d-lg-none d-block mr-1"></i>
+                                <span class="d-none d-lg-block">Profile</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#settings-b1" data-toggle="tab" aria-expanded="false" class="nav-link">
+                                <i class="mdi mdi-settings-outline d-lg-none d-block mr-1"></i>
+                                <span class="d-none d-lg-block">Membership</span>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div class="tab-pane active" id="home-b1">
+                            <p>Account Profile settings. Show connected account and username with a link to refresh username.</p>
+                        </div>
+                        <div class="tab-pane show" id="profile-b1">
+                            <p>Coming soon...</p>
+                        </div>
+                        <div class="tab-pane" id="settings-b1">
+                            <div class="mt-4">
+                                <div class="d-lg-flex">
+                                {% for pp in pricing_plans_set %}
+                                    {% if pp.plan == plan %}
+                                        <div class="p-2 pt-4 mt-3 flex-fill mx-2 div-plan-active d-flex flex-column justify-content-between">
+                                    {% else %}
+                                        <div class="p-2 pt-4 mt-3 flex-fill mx-2 div-plan d-flex flex-column justify-content-between">
+                                    {% endif %}
+                                        <div>
+                                            <h3>{{pp.label}}</h3>
+                                        {% if pp.plan == 'F' %}
+                                            <h5>Load limit counts of entries <br>Or pay manually</h5>
+                                            <h5>Draw {{pp.limit_times}} times / month</h5>
+                                        {% else %}
+                                            <h5>${{pp.price}} / month</h5>
+                                            <h5>Draw {{pp.limit_times}} times / month</h5>
+                                        {% endif %}
+                                        </div>
+                                        {% if pp.plan == plan %}
+                                            <button class='btn btn-light-primary disabled btn-block mb-3' disabled>
+                                                Current Plan
+                                            </button>
+                                        {% elif pp.status ==  1 %}
+                                            <button class='btn btn-light-primary disabled btn-block mb-3' disabled>
+                                                Upgrade Plan
+                                            </button>
+                                        {% else %}
+                                            <button onclick="fnupgrade('{{pp.plan}}')" class='btn btn-success btn-block mb-3'>
+                                                Upgrade Plan
+                                            </button>
+                                        {% endif %}
+                                        </div>
+                                {% endfor %}
                                 </div>
-                                <br>
-
-
-
-
+                            </div>
                         </div>
                     </div>
-                    <!-- Column -->
-                    <!-- Column -->
-                    <div class="col-lg-8 col-xlg-9 col-md-7">
-                        <div class="card">
-                            <div class="card-body">
 
-                                <h4 class="card-title mb-3">Account Home</h4>
+                </div> <!-- end card-body-->
+            </div> <!-- end card-->
+        </div>
+        <!-- Column -->
+    </div>
 
-                                <ul class="nav nav-tabs nav-bordered mb-3 customtab">
-                                    <li class="nav-item">
-                                        <a href="#home-b1" data-toggle="tab" aria-expanded="false" class="nav-link active">
-                                            <i class="mdi mdi-home-variant d-lg-none d-block mr-1"></i>
-                                            <span class="d-none d-lg-block">Home</span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a href="#profile-b1" data-toggle="tab" aria-expanded="true" class="nav-link">
-                                            <i class="mdi mdi-account-circle d-lg-none d-block mr-1"></i>
-                                            <span class="d-none d-lg-block">Profile</span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a href="#settings-b1" data-toggle="tab" aria-expanded="false" class="nav-link">
-                                            <i class="mdi mdi-settings-outline d-lg-none d-block mr-1"></i>
-                                            <span class="d-none d-lg-block">Membership</span>
-                                        </a>
-                                    </li>
-                                </ul>
-
-                                <div class="tab-content">
-                                    <div class="tab-pane active" id="home-b1">
-                                        <p>Account Profile settings. Show connected account and username with a link to refresh username.</p>
-                                    </div>
-                                    <div class="tab-pane show" id="profile-b1">
-                                        <p>Coming soon...</p>
-                                    </div>
-                                    <div class="tab-pane" id="settings-b1">
-                                        <p>Put billing information here.</p>
-                                        <h4>Current Status: User</h4>
-                                        Upgrade to next level (pop up modal to upgrade) with prices from db
-
-                                    </div>
-                                </div>
-
-                            </div> <!-- end card-body-->
-                        </div> <!-- end card-->
-                    </div>
-                    <!-- Column -->
+    <div class="modal fade" id="upgradeModal">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Upgrade Plan</h4>
+                    <!-- <button type="button" class="close" data-dismiss="modal">&times;</button> -->
                 </div>
+                <div class="modal-body">
+                    <div>
+                        <h2 id="h_plan" class="mb-3">Basic</h2>
+                        <ul>
+                            <li><h5 id="h_drawtimes">You can draw <span id="spn_drawtimes">2</span> times by free per month</h5></li>
+                            <li><h5 id="h_pay">Pay <span id="spn_price">$10</span> per month</h5></li>
+                        </ul>
+                        
+                        <div class="d-flex justify-content-center">
+                            <h5 style="width:fit-content;" class="pt-2 mx-2">Make plan for </h5>
+                            <select class="form-control" id="sel_month" style="width: 200px;" onchange="fnshowresult()">
+                                <option value='1'>1 month</option>
+                                <option value='2'>2 months</option>
+                                <option value='4'>4 months</option>
+                                <option value='6'>6 months</option>
+                                <option value='12'>12 months</option>
+                            </select>
+                        </div>
+                        <ul>
+                            <li>
+                                <h5 id="h_result" class="mt-3">Please pay <span id="spn_result">$10</span> now for your plan</h5>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- <div class="mt-4">
+                        <h2>Payment Option</h2>
+                        <div>
+                            <div class="custom-control custom-radio my-2">
+                                <input id="in_paypal" name="payment_option" value="paypal" type="radio" class="custom-control-input" checked required>
+                                <label class="custom-control-label" for="in_paypal">Paypal</label>
+                            </div>
+                            <div class="custom-control custom-radio my-2">
+                                <input id="in_stripe" name="payment_option" value="stripe" type="radio" class="custom-control-input" required>
+                                <label class="custom-control-label" for="in_stripe">Stripe</label>
+                            </div>
+                        </div>
+                    </div> -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary mx-3" id="btn_paynow">Pay now</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" id="btn_close">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+    <form action="{% url 'frontend:pre_checkout' %}" method="post" id="form_pay" hidden>
+        {% csrf_token %}
+        <input type="hidden" name="reason" value="membership">
+        <input type="hidden" name="amount" value="0">
+        <input type="hidden" name="upgradeto" value="B">
+        <input type="hidden" name="months" value="1">
+    </form>
+
 {% endblock %}
+
+{% block extra_scripts %}
+<script type="text/javascript">
+     var current_plan = '{{ plan }}'
+     var pricing_plans = JSON.parse("{{pricing_plans_json|escapejs}}");
+     var modal_plan = 'F'
+     var modal_data = {}
+     function fnupgrade(plan){
+        modal_plan = plan
+        for(i=0;i<pricing_plans.length;i++){
+            if(pricing_plans[i].plan == modal_plan){
+                modal_data = pricing_plans[i]
+                break;
+            }
+        }
+        $("#h_plan").html(plan == 'B'? 'Basic' : 'Pro');
+        $("#spn_price").html('$' + modal_data.price)
+        $("#spn_drawtimes").html(modal_data.limit_times)
+        $("#sel_month").val(1)
+        fnshowresult();
+        $("#upgradeModal").modal({backdrop: 'static', keyboard: false})
+     }
+     function fnshowresult(){
+         mv = $("#sel_month").val()
+         result = modal_data.price * mv
+         $("#spn_result").html('$' + result);
+         $("#form_pay input[name='upgradeto']").val(modal_plan);
+         $("#form_pay input[name='amount']").val(result);
+         $("#form_pay input[name='months']").val(mv);
+     }
+     $(function(){
+         $("#btn_paynow").click(function(){
+            $("#form_pay").submit();
+         })
+     })
+     
+</script>
+{% endblock extra_scripts %}
