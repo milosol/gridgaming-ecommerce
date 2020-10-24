@@ -20,25 +20,29 @@ def payment_notification(sender, **kwargs):
         order_id = ipn.invoice.split("_")[0]
         kind = ipn.invoice.split("_")[1]
         order = get_object_or_404(Order, id=order_id)
-        order_items = order.items.all()
-        order_items.update(ordered=True, status='P')
-        for item in order_items:
-            item.save()
+        if order.status == 'I':
+            order_items = order.items.all()
+            order_items.update(ordered=True, status='P')
+            for item in order_items:
+                item.save()
 
-        payment = Payment()
-        payment.payment_method = 'P'
-        payment.user = order.user
-        payment.amount = order.get_total()
-        payment.save()
+            payment = Payment()
+            payment.payment_method = 'P'
+            payment.user = order.user
+            payment.amount = order.get_total()
+            payment.save()
 
-        order.ordered = True
-        order.status = 'P'
-        order.notes = ipn.payment_status
-        order.payment = payment
-        order.ref_code = create_ref_code()
-        order.save()
-        order.items.filter(ordered=False).update(ordered=True)
-        if order.kind == 1:
-            del_timing(order.user.id, 'paypal payment done')
-        History.objects.create(user=order.user, action='Purchased', item_str=order.get_purchased_items(),
-                               reason="Payment done", order_str=order.id)
+            order.ordered = True
+            order.status = 'P'
+            order.notes = ipn.payment_status
+            order.payment = payment
+            order.ref_code = create_ref_code()
+            order.save()
+            order.items.filter(ordered=False).update(ordered=True)
+            if order.kind == 1:
+                del_timing(order.user.id, 'paypal payment done')
+            History.objects.create(user=order.user, action='Purchased', item_str=order.get_purchased_items(),
+                                reason="Payment done", order_str=order.id)
+        else:
+            order.notes = ipn.payment_status
+            order.save()
