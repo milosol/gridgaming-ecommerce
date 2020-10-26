@@ -4,6 +4,7 @@ from django.dispatch import receiver
 from django.shortcuts import render
 from allauth.socialaccount.models import SocialAccount
 from .forms import UserAccountForm
+from django.http import JsonResponse
 from users.models import UserRoles, User
 from django.contrib import messages
 from django.shortcuts import redirect, reverse
@@ -89,6 +90,19 @@ def profile(request):
     if PricingPlan.objects.all().count() == 0:
         for choice, label in PRICINGPLAN_CHOICES:
             PricingPlan.objects.create(plan=choice, label=label)
+            
+    if membership.plan == 'F':
+        context['minus_price'] = 0
+    else:
+        try:
+            diff = membership.end_time - timezone.now()
+            diff_month = diff.total_seconds()/(3600*24*30)
+            current_price = PricingPlan.objects.filter(plan=membership.plan).first().price
+            context['minus_price'] = math.floor(diff_month * current_price)
+        except Exception as e:
+            print(e)
+            context['minus_price'] = 0
+            
     pps = PricingPlan.objects.all()
     pp_array = []
     selected = False
@@ -106,6 +120,7 @@ def profile(request):
             pp.status= 0 if selected else 1
         temp['status'] = pp.status
         pp_array.append(temp)
+    
     context['plan'] = membership.plan
     context['pricing_plans_set'] = pps
     context['pricing_plans_json'] = dumps(pp_array)
@@ -367,7 +382,29 @@ def account_type(request):
         form = UserAccountForm()
     context['form'] = form
     return render(request, "account/account_type.html", context=context)
-
+@csrf_exempt
+def get_membership(request):
+    res = {'success': True, 'msg': '', 'membership': 'Free'}
+    try:
+        if PricingPlan.objects.all().count() == 0:
+            for choice, label in PRICINGPLAN_CHOICES:
+                PricingPlan.objects.create(plan=choice, label=label)
+        membership, created = Membership.objects.get_or_create(user_id=request.user.id)
+        if membership.plan != 'F':
+            if membership.end_time < timezone.now():
+                membership.plan = 'F'
+                membership.paid_month = 0
+                membership.done_count = 0
+                membership.done_month = 0
+                membership.save()
+            else:
+                res['membership'] = PricingPlan.objects.filter(plan=membership.plan).first().label
+    except Exception as e:
+        print(e)
+        res['success'] = False
+        res['membership'] = 'Free'
+        res['msg'] = 'Error occured while getting membership'
+    return JsonResponse(res)
 
 def update_account_type(request):
     if request.method == "POST":

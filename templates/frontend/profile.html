@@ -202,9 +202,11 @@
 {% block extra_scripts %}
 <script type="text/javascript">
      var current_plan = '{{ plan }}'
+     var minus_price = '{{ minus_price }}'
      var pricing_plans = JSON.parse("{{pricing_plans_json|escapejs}}");
      var modal_plan = 'F'
      var modal_data = {}
+     console.log("minus price :", minus_price)
      function fnupgrade(plan){
         modal_plan = plan
         for(i=0;i<pricing_plans.length;i++){
@@ -222,7 +224,10 @@
      }
      function fnshowresult(){
          mv = $("#sel_month").val()
-         result = modal_data.price * mv
+         result = modal_data.price * mv - minus_price
+         if(result < 0){
+             result = 0
+         }
          $("#spn_result").html('$' + result);
          $("#form_pay input[name='upgradeto']").val(modal_plan);
          $("#form_pay input[name='amount']").val(result);

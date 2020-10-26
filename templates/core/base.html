@@ -127,5 +127,22 @@ twq('track','PageView');
 {% block extra_scripts %}
 {% endblock extra_scripts %}
 </body>
-
+<script>
+    $(function(){
+        console.log(" here ");
+        $.ajax({
+            type: "POST",
+            url: "/profile/get_membership",
+            success: function (data) {
+                if (data.success == true) {
+                    $("#membership").html(data.membership)
+                } else {
+                    console.log(data.msg)
+                }
+            },error: function(e){
+                
+            }
+        })
+    })
+</script>
 </html>
