@@ -225,14 +225,16 @@
 {% endblock %}
 
 {% block content %}
-{% if request.user.is_staff %}
+{#{% if request.user.is_staff %}#}
     <div class="container-fluid">
                 <div class="card">
                     <div class="card-body">
                         <div class="row px-md-5 px-sm-2">
-                            <div class="col-sm-12 mt-5">
-                                <h2 style="text-align: center;">TWEET LINK</h2>
-                                <h6 style="text-align: center;">Type or paste content link</h6>
+                            <div class="col-sm-12 mt-5 text-center">
+                                <h2>RETWEET PICKER <span style="color:yellow">BETA</span></h2>
+                                <span class="text-secondary">Retweet picker is currently in beta mode and is currently <u>limited to retweet competitions no longer than 7 days</u>. If you run into an issue please email business@gridgaming.io so we can make it better.</span>
+                                <hr>
+                                <h6 style="text-align: center;">Type or paste Twitter link</h6>
                                 <div class='row'>
                                     <div class='col-sm-12 my-2 px-sm-5' id="div_link">
                                         <input type="text" class="form-control" placeholder="https://twitter.com/ ... /status/ ..." id="in_link">
@@ -416,13 +418,13 @@
             <tbody></tbody>
         </table>
     </div>
-    {% else %}
-    <div class="container-fluid">
-    <div class="row">
-        <h1>Coming soon... </h1>
-    </div>
-    </div>
-    {% endif %}
+{#    {% else %}#}
+{#    <div class="container-fluid">#}
+{#    <div class="row">#}
+{#        <h1>Coming soon... </h1>#}
+{#    </div>#}
+{#    </div>#}
+{#    {% endif %}#}
     
 {% endblock %}
 {% block extra_scripts %}
