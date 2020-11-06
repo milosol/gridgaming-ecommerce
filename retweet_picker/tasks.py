@@ -33,8 +33,6 @@ def retrieve_tweets_choose_winner_job(existing_tweet_url=None,
     gm.run_pipeline()
     
 def fetch_content_from_url(existing_tweet_url=None):
-    # from django.db import connection
-    # connection.close()
     res = {'success': True, 'msg': ''}
     try:
         gm = GiveawayManager(new_giveaway=False, existing_tweet_url=existing_tweet_url)
@@ -74,7 +72,7 @@ def load_entry_task(gwid, user_id, pay_status):
             cups[0].contestants.clear()
 
         toload_count = gw.paid_count + dp.free_max
-        if pay_status == 2:
+        if pay_status > 1 and pay_status < 5:
             toload_count = ret_count
         if toload_count > ret_count:
             toload_count = ret_count
@@ -83,11 +81,14 @@ def load_entry_task(gwid, user_id, pay_status):
         res = gm.retrieve_tweets(gwid=gwid, max_tweets=gw.toload_count)
         if res['success'] == True:
             GiveawayWinners.objects.filter(id=gwid).update(status='L')
-            if pay_status == 2:
+            if pay_status == 3 or pay_status == 4:
                 mss = Membership.objects.filter(user_id=gw.user_id)
-                if mss.exists() and mss[0].plan != 'F':
+                if mss.exists():
                     ms = mss[0]
-                    ms.done_count += 1
+                    if pay_status == 3:
+                        ms.bonus_count = ms.bonus_count - 1
+                    else:
+                        ms.done_count += 1
                     ms.save()
             
     except Exception as e:

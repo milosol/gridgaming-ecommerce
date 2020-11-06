@@ -119,6 +119,9 @@ class GiveawayWinnersAdmin(admin.ModelAdmin):
         'loaded_count',
         'winners',
         'tweet_url',
+        'winner_count',
+        'follow_main',
+        'followers',
     ]
     
     list_display_links = [
@@ -147,6 +150,8 @@ class PricingPlanAdmin(admin.ModelAdmin):
         'price',
         'limit_times',
         'limit_count',
+        'unlimited_times',
+        'unlimited_count',
     ]
 
 class MembershipAdmin(admin.ModelAdmin):
@@ -156,6 +161,7 @@ class MembershipAdmin(admin.ModelAdmin):
         'paid_month',
         'paid_time',
         'end_time',
+        'bonus_count',
         'done_count',
         'done_month',
     ]  

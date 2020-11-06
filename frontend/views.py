@@ -32,6 +32,7 @@ from core.forms import PaymentForm
 from stripe import error
 from django.utils import timezone
 from datetime import timedelta
+from retweet_picker.views import set_donemonth
 
 def create_ref_code():
     return ''.join(random.choices(string.ascii_lowercase + string.digits, k=20))
@@ -84,13 +85,22 @@ class ProfileHomeView(LoginRequiredMixin, TemplateView):
 #@login_required
 def profile(request):
     # social_account_extras = SocialAccount.objects.get(user=request.user)
+    tab = request.GET.get('tab', 'home')
     request.session['uoid'] = -1
     context = {}
     membership, created = Membership.objects.get_or_create(user_id=request.user.id)
     if PricingPlan.objects.all().count() == 0:
         for choice, label in PRICINGPLAN_CHOICES:
             PricingPlan.objects.create(plan=choice, label=label)
-            
+    pps = PricingPlan.objects.filter(plan=membership.plan)
+    if pps.exists():
+        if pps[0].unlimited_times == True:
+            context['left_label'] = 'unlimited'
+        else:
+            context['left_label'] = str(pps[0].limit_times - membership.done_count + membership.bonus_count) + " / " + str(pps[0].limit_times)
+    else:
+        context['left_label'] = '0'
+    context['left_label'] += ' this month'
     if membership.plan == 'F':
         context['minus_price'] = 0
     else:
@@ -124,6 +134,7 @@ def profile(request):
     context['plan'] = membership.plan
     context['pricing_plans_set'] = pps
     context['pricing_plans_json'] = dumps(pp_array)
+    context['tab'] = tab
     return render(request, "frontend/profile.html", context=context)
     
 def pre_checkout(request):
@@ -187,7 +198,7 @@ class PaypalPaymentView(View):
             host = request.get_host()
 
             if uo.reason == 'membership':
-                return_url = 'http://{}{}'.format(host, reverse('frontend:profile'))
+                return_url = 'http://{}{}'.format(host, reverse('frontend:profile')) + "?tab=membership"
                 item_name = "Upgrade Membership : " + uo.upgradeto + "_" + str(uo.id)
             else:
                 return_url = 'http://{}{}'.format(host, "/contests/" + str(uo.gwid) + "/entries")
@@ -339,7 +350,7 @@ class StripePaymentView(View):
                     
                     messages.success(self.request,
                                     "Your membership is upgraded!", extra_tags='order_complete')
-                    return redirect("frontend:profile")
+                    return redirect("/profile?tab=membership")
                 else:
                     add_drawcount(uo.id)
                     messages.success(self.request, "Payment succeed", extra_tags='order_complete')
@@ -398,6 +409,8 @@ def get_membership(request):
                 membership.done_month = 0
                 membership.save()
             else:
+                set_donemonth(membership.id)
+                membership = Membership.objects.get(user_id=request.user.id)
                 res['membership'] = PricingPlan.objects.filter(plan=membership.plan).first().label
     except Exception as e:
         print(e)

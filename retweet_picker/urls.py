@@ -32,7 +32,7 @@ urlpatterns = [
     path('load_entries', load_entries , name='load_entries'),
     path('load_entry_progress', load_entry_progress , name='load_entry_progress'),
     path('load_all_entries', load_all_entries , name='load_all_entries'),
-    path('<int:gwid>/entries', login_required(pick_entries) , name='pick_entries'),
+    path('draw/<int:gwid>', login_required(pick_entries) , name='pick_entries'),
     path('clearqueue', clear_queue , name='clear_queue'),
     path('order/<int:order_id>', order_details, name="order_details"),
     path('results/<int:order_id>', views.contest_results, name='contest_results'),
@@ -40,5 +40,5 @@ urlpatterns = [
     path('results/', views.contest_results, name='all_contest_results'),
     path('bubble_rescue/decoder_ring/<slug:secret_code>/', views.decoder_ring, name='decoder'),
     path('bubble_rescue/', views.bubble_rescue, name='bubble-rescue-5000'),
-    path('pick/', login_required(views.pick), name='pick')
+    path('import/', login_required(views.pick), name='pick')
 ]

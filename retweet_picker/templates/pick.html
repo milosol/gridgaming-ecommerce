@@ -3,9 +3,13 @@
 {% load mathfilters %}
 
 {% block extra_head_tags %}
-<!-- <link href="{% static 'taginput/stylesheets/inputTag.css' %}" rel="stylesheet"> -->
 <link href="{% static 'taginput/jquery.tagsinput-revisited.css' %}" rel="stylesheet">
-<!-- <link rel="stylesheet" href="http://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"> -->
+<link href="{% static 'stepper/css/steppers.min.css' %}" rel="stylesheet">
+<link href="{% static 'stepper/css/custom-stepper.css' %}" rel="stylesheet">
+<link href="{% static 'stepper/css/mdb.min.css' %}" rel="stylesheet">
+<link href="{% static 'stepper/css/pick.css' %}" rel="stylesheet">
+<!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"> -->
+
 
 <style>
     @media (min-width: 576px){
@@ -14,91 +18,13 @@
             margin: 1.75rem auto;
         }
     }
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 40px;
-      height: 22px;
-    }
-    
-    .switch input { 
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-    
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #ccc;
-      -webkit-transition: .4s;
-      transition: .4s;
-    }
-    
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 18px;
-      width: 18px;
-      left: 2px;
-      bottom: 2px;
-      background-color: white;
-      -webkit-transition: .4s;
-      transition: .4s;
-    }
-    
-    input:checked + .slider {
-      background-color: #2196F3;
-    }
-    
-    input:focus + .slider {
-      box-shadow: 0 0 1px #2196F3;
-    }
-    
-    input:checked + .slider:before {
-      -webkit-transform: translateX(18px);
-      -ms-transform: translateX(18px);
-      transform: translateX(18px);
-    }
-    
-    /* Rounded sliders */
-    .slider.round {
-      border-radius: 18px;
-      height: 22px;
-      width: 40px;
-    }
-    
-    .slider.round:before {
-      border-radius: 50%;
-    }
-    .option-container{
-        border-top: 2px solid #5a686c;
-        border-spacing: 40px;
-        display: block;
-    }
-    .option-label{
-        width: fit-content;
-        background-color: #272b34;
-        font-weight: bold;
-        font-size: 1rem;
-        /* color: #0cc0f6; */
-        text-shadow: 1px 1px 4px #5a686c;
-        margin-top:-20px;
-        margin-left: 40px;
-        border-radius: 40%;
-        border: 2px solid #5a686c;
-    }
-    #div_link label, #div_verify label{
+    #div_link label, #div_winner label{
         display: none;
         margin-top: 5px;
         margin-bottom: 0;
         text-align: center;
     }
-    #div_link.error label, #div_verify.error label{
+    #div_link.error label, #div_winner.error label{
         color: #ff399e;
         display: block;
         animation: fadein 0.5s;
@@ -118,251 +44,223 @@
     }
 
     .user_avatar{
-        width: 25px;
-        height: 25px;
+        width: 40px;
+        height: 40px;
         border-radius: 50%;
         margin-right: 10px;
     }
-    .tbl_drawing td{
-        padding: 5px 20px 2px 0px;
-        width: auto;
+    .tbl_drawing tr td:nth-child(1){
+        padding: 15px 0px 2px 0px;
+        width: 50%;
         text-align: left;
     }
-    </style>
-<style>
-.circle {
-  padding: 13px 20px;
-  border-radius: 50%;
-  background-color: #ED8D8D;
-  color: #fff;
-  max-height: 50px;
-  z-index: 2;
-}
+    .tbl_drawing tr td:nth-child(2){
+        padding: 15px 5px 2px 15px;
+        width: 50%;
+        text-align: left;
+    }
+    .tbl_drawing tr td:nth-child(3){
+        padding: 15px 0px 2px 15px;
+        width: 10%;
+        text-align: left;
+    }
+    .col-8.text-right{
+        text-align: -webkit-right!important;
+    }
 
-.how-it-works.row .col-2 {
-  align-self: stretch;
-}
-.how-it-works.row .col-2::after {
-  content: "";
-  position: absolute;
-  border-left: 3px solid #ED8D8D;
-  z-index: 1;
-}
-.how-it-works.row .col-2.bottom::after {
-  height: 50%;
-  left: 50%;
-  top: 50%;
-}
-
-.how-it-works.row .col-2.full::after {
-  height: 100%;
-  left: calc(50% - 3px);
-}
-.how-it-works.row .col-2.full:nth-child(odd)::after{
-  left: 50%;
-}
-.how-it-works.row .col-2.top::after {
-  height: 50%;
-  left: 50%;
-  top: 0;
-}
-.how-it-works.row .col-2.top:last-child:after {
-    left: calc(50% - 3px);
-}
-
-#div_timeline .row.timeline:before{
-    content: none;
-}
-
-.timeline{
-    padding: 0!important;
-    margin-right: -15px!important;
-    margin-left: -15px!important;
-}
-.timeline div {
-  padding: 0;
-  height: 40px;
-}
-.timeline hr {
-  border-top: 3px solid #ED8D8D;
-  margin: 0;
-  top: 17px;
-  position: relative;
-}
-.timeline .col-2 {
-  display: flex;
-  overflow: hidden;
-}
-
-.timeline .corner {
-  border: 3px solid #ED8D8D;
-  width: 100%;
-  position: relative;
-  border-radius: 15px;
-}
-.timeline .top-right {
-  left: 50%;
-  top: -50%;
-}
-.timeline .left-bottom {
-  left: -50%;
-  top: calc(50% - 3px);
-}
-.timeline .top-left {
-  left: -50%;
-  top: -50%;
-}
-.timeline .right-bottom {
-  left: 50%;
-  top: calc(50% - 3px);
-}
-
-.col-8.text-right{
-    text-align: -webkit-right!important;
-}
-
-    </style>
+    #spn_followers{
+        font-size: 16px;
+        color: #31e2e2;
+    }
+    #a_settings:hover{
+        color: #31e2e2;
+    }
+    #a_settings{
+        color: white;
+    }
+    #div_timeline{
+        transition-duration: 3s;
+        transition-property: all;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
 
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-body">
+            <!-- Grid row -->
+            
+            <div class="row pt-5 d-flex justify-content-center">
+                <div class="col-sm-12 mt-2 text-center">
+                    <h2>RETWEET PICKER <span style="color:yellow">BETA</span></h2>
+                    <span class="text-secondary">Retweet picker is currently in beta mode and is currently <u>limited to retweet competitions no longer than 7 days</u>. If you run into an issue please email business@gridgaming.io so we can make it better.</span>
+                    <hr class="mb-5" style="background-color: white;">
+                </div>
 
-    <div class="container-fluid">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="row px-md-5 px-sm-2">
-                            <div class="col-sm-12 mt-5 text-center">
-                                <h2>RETWEET PICKER <span style="color:yellow">BETA</span></h2>
-                                <span class="text-secondary">Retweet picker is currently in beta mode and is currently <u>limited to retweet competitions no longer than 7 days</u>. If you run into an issue please email business@gridgaming.io so we can make it better.</span>
-                                <hr>
-                                <h6 style="text-align: center;">Type or paste Twitter link</h6>
+                <div class="col-md-2 pl-5 pl-md-0 pb-5 mt-2">
+                <!-- Stepper -->
+                    <div class="steps-form-3">
+                        <div class="steps-row-3 setup-panel-3 d-flex justify-content-between">
+                            <div class="steps-step-3">
+                                <a href="#step-5" type="button" class="btn btn-info btn-circle-3 waves-effect ml-0" data-toggle="tooltip" data-placement="top" title="Input Tweet"><i class="fa fa-keyboard" aria-hidden="true"></i></a>
+                            </div>
+                            <div class="steps-step-3">
+                                <a href="#step-6" type="button" class="btn btn-pink btn-circle-3 waves-effect" data-toggle="tooltip" data-placement="top" title="Check Tweet"><i class="fa fa-eye" aria-hidden="true"></i></a>
+                            </div>
+                            <div class="steps-step-3">
+                                <a href="#step-7" type="button" class="btn btn-pink btn-circle-3 waves-effect" data-toggle="tooltip" data-placement="top" title="Set Followers"><i class="fa fa-list" aria-hidden="true"></i></a>
+                            </div>
+                            <div class="steps-step-3 no-height">
+                                <a href="#step-8" type="button" class="btn btn-pink btn-circle-3 waves-effect p-3" data-toggle="tooltip" data-placement="top" title="Complete"><i class="fa fa-check" aria-hidden="true"></i></a>
+                            </div>
+                            <div class="steps-step-3 no-height">
+                                <a href="#step-9" type="button" class="btn btn-pink btn-circle-3 waves-effect px-2" data-toggle="tooltip" data-placement="top" title="Draw Result"><i class="fa fa-trophy" aria-hidden="true"></i></a>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <!-- Grid column -->
+
+                <!-- Grid column -->
+                <div class="col-md-7">
+                        <!-- First Step -->
+                        <div class="row setup-content-3" id="step-5">
+                            <div class="col-md-12 pt-5">
+                                <h3 class="pl-0 text-center mb-4">Type or paste Twitter link</h3>
                                 <div class='row'>
-                                    <div class='col-sm-12 my-2 px-sm-5' id="div_link">
+                                    <div class='col-sm-12 my-2' id="div_link">
                                         <input type="text" class="form-control" placeholder="https://twitter.com/ ... /status/ ..." id="in_link">
                                         <label>Please fill this link field!</label>
                                     </div>
                                     
                                     <div class='col-sm-12 mt-2 text-center' >
-                                        <button class="btn btn-primary mx-2 my-2 px-5" disabled id="btn_fetching" style="display: none;">
-                                            <span class="spinner-border spinner-border-sm"></span>
-                                             Fetching data ...
+                                        <button class="btn btn-primary mx-2 my-2 px-sm-4" disabled id="btn_fetching" style="display: none;">
+                                            <span class="spinner-border spinner-border-sm mr-1" style="vertical-align: sub;"></span>
+                                            Fetching data ...
                                         </button>
-                                        <button class='btn  btn-primary mx-2 my-2 px-5' id="btn_draw">DRAW WINNER</button>
+                                        <button class='btn  btn-primary mx-2 my-2 px-5' id="btn_draw">Fetch Data</button>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="col-sm-12 mt-5">
-                                <h2 class="text-center">DRAW VERIFY</h2>
-                                <div class='row'>
-                                    <div class='col-sm-12 my-2 px-sm-5' id="div_verify">
-                                        <input type="text" class="form-control" placeholder="Enter the draw ID or tweet url" id="in_drawid" value="">
-                                        <label>Please input draw Id or tweet url to verify</label>
-                                    </div>
-                                    <div class='col-sm-12 mt-2 text-center'>
-                                        <button class='btn  btn-success px-5' id="btn_verify">VERIFY</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-    </div>
-
-    <div class="modal fade" id="myModal">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title" id="label_title">Import contest</h4>
-                    <!-- <button type="button" class="close" data-dismiss="modal">&times;</button> -->
-                </div>
-                <div class="modal-body">
-                    <h6 id="label_status">Content preview</h6>
-                    <div id="tweet_content">
-
-                    </div>
-                    <h6 class="mt-3 px-3" id="label_retweetcount" style="color: white"></h6>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal" id="btn_close">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="btn_import">Import contest</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="verifyModal">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title" id="label_title">Draw Verify</h4>
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <h6  id="label_verifystatus">Drawed Result : </h6>
-                    <h6  id="label_entries">Entries : <span id="spn_entries">_</span></h6>
-                    <h6  id="label_drawdate">Draw date : <span id="spn_drawdate">_</span></h6>
-                                        
-                    <div class="">
-                        <div class="container">
-                            <h2 class="pb-3 pt-2 border-bottom mb-5">Drawing Timeline</h2>
-                            <div id="div_timeline">
-                                <!-- <div id="first_section">
-                                    <div class="row align-items-center how-it-works d-flex">
-                                        <div class="col-2 text-center top d-inline-flex justify-content-center align-items-center">
-                                        <div class="circle font-weight-bold">1</div>
-                                        </div>
-                                        <div class="col-8">
-                                            aaaa
-                                        </div>
-                                    </div>
-                                </div>
-                                <div id="between12">
-                                    <div class="row timeline">
-                                        <div class="col-2">
-                                        <div class="corner top-right"></div>
-                                        </div>
-                                        <div class="col-8">
-                                        <hr/>
-                                        </div>
-                                        <div class="col-2">
-                                        <div class="corner left-bottom"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div id="second_section">
-                                    <div class="row align-items-center justify-content-end how-it-works d-flex">
-                                        <div class="col-8 text-right">
-                                        sddddd
-                                        </div>
-                                        <div class="col-2 text-center full d-inline-flex justify-content-center align-items-center">
-                                        <div class="circle font-weight-bold">2</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div id="between23">
-                                    <div class="row timeline">
-                                        <div class="col-2">
-                                        <div class="corner right-bottom"></div>
-                                        </div>
-                                        <div class="col-8">
-                                        <hr/>
-                                        </div>
-                                        <div class="col-2">
-                                        <div class="corner top-left"></div>
-                                        </div>
-                                    </div>
+                                <!-- <div class="form-group md-form">
+                                    <label for="yourEmail-3" data-error="wrong" data-success="right">Email</label>
+                                    <input id="yourEmail-3" type="email" required="required" class="form-control validate">
                                 </div> -->
                             </div>
                         </div>
-                    </div>
-                    
+
+                        <!-- Second Step -->
+                        <div class="row setup-content-3" id="step-6">
+                            <div class="col-md-12">
+                                <h3 class="pl-0 text-center">Check Tweet</h3>
+                                <div id="tweet_content"></div>
+                                <h6 class="mt-3 text-center" id="label_retweetcount" style="color: white"></h6>
+                                <div class="text-center">
+                                    <button type="button" class="btn btn-primary px-5" id="btn_confirm">Confirm</button>
+                                </div>
+                                <!-- <button class="btn btn-mdb-color btn-rounded prevBtn-3 float-left" type="button">Previous</button>
+                                <button class="btn btn-mdb-color btn-rounded nextBtn-3 float-right" type="button">Next</button> -->
+                            </div>
+                        </div>
+
+                        <!-- Third Step -->
+                        <div class="row setup-content-3" id="step-7">
+                            <div class="col-md-12">
+                                <h3 class="pl-0 my-2 text-center">Set Followers</h3>
+                                <div id="div_winner">
+                                    <h6>Enter number of winners</h6>
+                                    <input type="number" class="form-control" placeholder="Number of Winners" id="in_winner" value="1">
+                                    <label>Please enter correct number!</label>
+                                </div>
+
+                                <div class="my-5 option-container">
+                                    <!-- <div class="option-label px-4 py-1">Follow</div> -->
+                                    
+                                    <div id="follow_show">
+                                        <div  style="display: flex;" class="px-2 mt-4">
+                                            <div class="mx-2">
+                                                <i class="fas fa-check text-success"></i>
+                                            </div>
+                                            <div class="mx-2">
+                                                <h5>Follow the main account, author of this tweet</h5>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="px-2 mt-4" id="followother_show">
+                                            <div class="mx-2">
+                                                <h5>List of additional accounts to follow</h5>
+                                            </div>
+                                            <div id="tags" class="mt-3 px-3">
+                                                <input id="add_tags" name="tags-1" type="text" value="">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="text-center mt-4">
+                                        <button type="button" class="btn btn-primary px-5" id="btn_next">Next</button>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- Fourth Step -->
+                        <div class="row setup-content-3 mx-md-n5" id="step-8">
+                            <div class="col-12 text-center">
+                                <h3 class="my-4 mb-5">Import contest</h3>
+                            </div>
+                            <div class="col-md-6 d-flex justify-content-center">
+                                <div class="card border-success" style="max-width: 25rem; width: 100%;">
+                                    <div class="card-header bg-transparent border-success text-success" style="border-bottom: 1px solid;">Settings</div>
+                                    <div class="card-body">
+                                        <h6>Number of winners : <span id="spn_winner" class="pl-2">1</span></h6>
+                                        <h6>Follow Main Account : <span id="spn_followenable" class="pl-2"><i class="fas fa-check text-success"></i></span></h6>
+                                        <h6>Following: <span id="spn_followers" class="pl-2">_</span></h6>
+                                    </div>
+                                    <div class="card-footer bg-transparent border-success text-center" style="border-top: 1px solid;">
+                                        <a id="a_settings">Go back to Settings</a>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-center mt-4" style="line-height: 1.5;">Are you sure with these settings? Click below button to start draw</h5>
+                                <div class="text-center mt-4">
+                                    <button type="button" class="btn btn-primary px-5" id="btn_import">Import Contest</button>
+                                </div>
+                            </div>
+                            
+                        </div>
+
+                        <!-- Fifth Step -->
+                        <div class="row setup-content-3" id="step-9">
+                            <div class="col-md-12 mb-5">
+                                <h3>Draw Result</h3>
+                                <h6  id="label_verifystatus" style="display: none;"></h6>
+                                <h6  id="label_entries">Retweets Count : <span id="spn_entries">_</span></h6>
+                                <h6  id="label_drawdate">Draw Date : <span id="spn_drawdate">_</span></h6>
+                                <div class="">
+                                    <h2 class="pb-3 pt-2 border-bottom mb-5">Drawing Timeline</h2>
+                                    <div id="div_timeline">
+                                    </div>
+                                </div>
+                                <div class="text-center mt-4">
+                                    <a id="a_redraw" class="btn btn-outline-secondary px-4">Go To Redraw</a>
+                                </div>
+                            </div>
+                            
+                        </div>
+
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal" id="btn_close">Close</button>
-                </div>
+                <!-- Grid column -->
+
             </div>
+            <!-- Grid row -->
         </div>
     </div>
+    </div>
+
     <div style="display: none;">
         <div id="first_section">
             <div class="row align-items-center how-it-works d-flex">
@@ -422,14 +320,20 @@
 
 {% endblock %}
 {% block extra_scripts %}
-    <!-- <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script> -->
-<!-- <script src="http://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script> -->
+<script src="{% static 'stepper/js/steppers.min.js' %}"></script>
+<script src="{% static 'stepper/js/custom-stepper.js' %}"></script>
+<script src="{% static 'stepper/js/mdb.min.js' %}"></script>
+<script src="{% static 'stepper/js/pick.js' %}"></script>
+<script src="{% static 'js/popper.min.js' %}"></script>
+
 <script src="{% static 'taginput/jquery.tagsinput-revisited.js' %}"></script>
+
 <script sync src="https://platform.twitter.com/widgets.js"></script>
 <script  type="text/javascript">
     var link = "";
     var tweet_url = "";
     var draw_url = "";
+    var draw_status = 0
     String.prototype.format = function () {
         var a = this;
         for (var k in arguments) {
@@ -437,29 +341,23 @@
         }
         return a
     }
-
+    function initialize(){
+        $(".btn-pink").addClass('disabled');
+        $("a[href='#step-9']").parent().hide();
+        $(".steps-form-3").removeClass('kind3')
+        $("a[href='#step-7']").parent().show();
+        $("a[href='#step-8']").parent().show();
+        $("#in_winner").val(1);
+        $('#add_tags').importTags('');
+    }
     $(function(){
+        initialize();
         $("#div_link input").change(function(){
             $("#div_link").removeClass('error')
         })
-        $("#div_verify input").change(function(){
-            $("#div_verify").removeClass('error')
-        })
-        $("#btn_import").click(function(){
-            $.ajax({
-                type: "POST",
-                url: "../import_contest",
-                data: {'link': tweet_url},
-                success: function (data) {
-                    console.log(data);
-                    if (data.success == true) {
-                        location.href = "../" + data.gwid + "/entries"
-                    } else {
-                    }
-                }
-            })
-        })
+        
         $("#btn_draw").click(function(){
+            initialize()
             link = $("#in_link").val().trim();
             valid = true
             if(link == "" || link.indexOf('https://twitter.com/') == -1){
@@ -482,12 +380,11 @@
                     $("#tweet_content").html("")
 
                     var tweet = document.getElementById("tweet_content");
-                    console.log(data);
                     if (data.success == true) {
                         tweet_url = data.tweet_url;
                         twttr.widgets.createTweet(
                             data.tweet_id, tweet,
-                            {
+                            {   
                                 conversation : 'none',    // or all
                                 cards        : 'hidden',  // or visible
                                 linkColor    : '#cc0000', // default is blue
@@ -496,22 +393,93 @@
                             .then (function (el) {
                                 el.contentDocument.querySelector(".footer").style.display = "none";
                         });
-                        $("#label_retweetcount").html("You can load entries up to " + data.free_max + " as free.  If you are sure, please click below button.")
-                        $("#myModal").modal({backdrop: 'static', keyboard: false})
+                        if(data.kind == 0){
+                            $("#label_retweetcount").html("You can load entries up to " + data.free_max + " as free. Are you sure to create contest?")
+                            $("#btn_import").html("Create Contest");
+                        }else if(data.kind == 1){
+                            $("#label_retweetcount").html("You have already created contest with this tweet.")
+                            $("#btn_import").html("Continue Contest");
+                            set_actions(data.actions)
+                        }else{
+                            $("#label_retweetcount").html("This tweet has been already drawed. Are you going to see result?")
+                            set_actions(data.actions)
+                            $("#spn_drawdate").html(data.draw_info.drawed_at)
+                            $("#spn_entries").html(data.draw_info.entries)
+                            $("#a_redraw").attr('href', '../draw/' + data.draw_info.gwid + "?tab=draw")
+                            show_rerolls(data.draw_info.winner_count, data.draw_info.rerolls);
+                        }
+                        draw_status = data.kind;
+                        $("a[href='#step-6']").removeClass('disabled');
+                        $("a[href='#step-6']").trigger('click');
                     } else {
                         $("#div_link label").html(data.msg)
                         $("#div_link").addClass('error')
-                        // setTimeout(function () { $("#myModal").modal("hide"); }, 500);
-                        // swal.fire(
-                        //     'Failed',
-                        //     data.msg,
-                        //     'error'
-                        // )
                     }
                 }
             })
         })
-
+        $("#btn_confirm").click(function(){
+            $(".steps-form-3").removeClass('kind3')
+            $("a[href='#step-7']").parent().show()
+            $("a[href='#step-8']").parent().show()
+            $("a[href='#step-9']").parent().hide()
+            if(draw_status == 0){
+                $("a[href='#step-7']").removeClass('disabled').trigger('click');
+            }else if(draw_status == 1){
+                $("a[href='#step-7']").removeClass('disabled');
+                $("a[href='#step-8']").removeClass('disabled').trigger('click');
+            }else{
+                $(".steps-form-3").addClass('kind3')
+                $("a[href='#step-7']").parent().hide()
+                $("a[href='#step-8']").parent().hide()
+                $("a[href='#step-9']").parent().show()
+                $("a[href='#step-9']").removeClass('disabled').trigger('click');
+                
+            }
+        })
+        $("#a_settings").click(function(){
+            $("a[href='#step-7']").trigger('click');
+        })
+        $("#btn_next").click(function(){
+            $("a[href='#step-8']").removeClass('disabled').trigger('click');
+        })
+        $("#btn_import").click(function(){
+            actions = get_actions();
+            if(actions.winner == ''){
+                Swal.fire({
+                    title: "Warning",
+                    text: "Please enter winner count in settings.",
+                    showConfirmButton: true
+                });
+                return;
+            }
+            swal.fire({
+                title: 'Are you sure?',
+                icon: 'warning',
+                text: "Are you going to continue to import contest?",
+                showCancelButton: true,
+                background: '#e9ecef',
+                confirmButtonColor: '#21c1d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'I am sure'
+            }).then((result) => {
+                if (result.value) {
+                    $.ajax({
+                    type: "POST",
+                    url: "../import_contest",
+                    data: {'link': tweet_url, "actions": JSON.stringify(actions)},
+                    success: function (data) {
+                        if (data.success == true) {
+                            location.href = "../draw/" + data.gwid
+                        } else {
+                        }
+                }
+            })
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                }
+            })
+            
+        })
         $("#btn_verify").click(function(){
             draw_id = $("#in_drawid").val().trim()
             if(draw_id == ''){
@@ -551,9 +519,22 @@
             })
         })
     })
+    function set_actions(actions){
+        $("#in_winner").val(actions.winner);
+        $('#add_tags').importTags(actions.followers);
+        set_settings()
+    }
+    function set_settings(){
+        res = get_actions()
+        $("#spn_winner").html(res.winner);
+        str = res.tags.split(',').join(', ');
+        if(str == ''){
+            str = "_"
+        }
+        $("#spn_followers").html(str);
+    }
     function show_rerolls(wcount, data){
         $("#div_timeline").html("");
-        console.log(data);
         index = 0;
         tbl_index = 1;
         str = "<tbody>";
@@ -619,7 +600,6 @@
                 
             }
             index += 1
-            console.log(index);
         }
         
     }

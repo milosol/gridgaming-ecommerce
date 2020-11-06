@@ -1,0 +1,167 @@
+/* for slider check box */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: 0.4s;
+  transition: 0.4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  -webkit-transition: 0.4s;
+  transition: 0.4s;
+}
+
+input:checked + .slider {
+  background-color: #2196f3;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196f3;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(18px);
+  -ms-transform: translateX(18px);
+  transform: translateX(18px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 18px;
+  height: 22px;
+  width: 40px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+.option-container {
+  /* border-top: 2px solid #5a686c; */
+  border-spacing: 40px;
+  display: block;
+}
+.option-label {
+  width: fit-content;
+  background-color: #272b34;
+  font-weight: bold;
+  font-size: 1rem;
+  /* color: #0cc0f6; */
+  text-shadow: 1px 1px 4px #5a686c;
+  margin-top: -20px;
+  margin-left: 40px;
+  border-radius: 40%;
+  border: 2px solid #5a686c;
+}
+
+/* for timeline */
+.circle {
+  padding: 13px 20px;
+  border-radius: 50%;
+  background-color: #272b34;
+  border: 2px solid #ed8d8d;
+  max-height: 50px;
+  z-index: 2;
+}
+
+.how-it-works.row .col-2 {
+  align-self: stretch;
+}
+.how-it-works.row .col-2::after {
+  content: "";
+  position: absolute;
+  border-left: 3px solid #ed8d8d;
+  z-index: 1;
+}
+.how-it-works.row .col-2.bottom::after {
+  height: 50%;
+  left: 50%;
+  top: 50%;
+}
+
+.how-it-works.row .col-2.full::after {
+  height: 100%;
+  left: calc(50% - 3px);
+}
+.how-it-works.row .col-2.full:nth-child(odd)::after {
+  left: 50%;
+}
+.how-it-works.row .col-2.top::after {
+  height: 50%;
+  left: 50%;
+  top: 0;
+}
+.how-it-works.row .col-2.top:last-child:after {
+  left: calc(50% - 3px);
+}
+
+#div_timeline .row.timeline:before {
+  content: none;
+}
+
+.timeline {
+  padding: 0 !important;
+  margin-right: -15px !important;
+  margin-left: -15px !important;
+}
+.timeline div {
+  padding: 0;
+  height: 40px;
+}
+.timeline hr {
+  border-top: 3px solid #ed8d8d;
+  margin: 0;
+  top: 17px;
+  position: relative;
+}
+.timeline .col-2 {
+  display: flex;
+  overflow: hidden;
+}
+
+.timeline .corner {
+  border: 3px solid #ed8d8d;
+  width: 100%;
+  position: relative;
+  border-radius: 15px;
+}
+.timeline .top-right {
+  left: 50%;
+  top: -50%;
+}
+.timeline .left-bottom {
+  left: -50%;
+  top: calc(50% - 3px);
+}
+.timeline .top-left {
+  left: -50%;
+  top: -50%;
+}
+.timeline .right-bottom {
+  left: 50%;
+  top: calc(50% - 3px);
+}
