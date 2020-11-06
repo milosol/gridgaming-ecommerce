@@ -310,10 +310,9 @@ class GiveawayManager:
         try:
             gwid = actions['gwid']
             
-            if actions['follow_enable'] == True:
-                author = self.process_retrieved_tweets.author
-                self.sponsors.append('@' + author)
-                
+            author = self.process_retrieved_tweets.author
+            self.sponsors.append('@' + author)
+
             if actions['draw_type'] == 'draw':
                 results = GiveawayWinners.objects.get(id=gwid)
                 self.results = results

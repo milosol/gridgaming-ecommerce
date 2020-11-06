@@ -121,8 +121,8 @@ class Rerolls(models.Model):
     kind = models.IntegerField(default=0) # 0: reason  1: choosing  2:choosed  3: rerolled
     class Meta:
         ordering = ['id']
-    
-    
+        
+       
 class GiveawayWinners(models.Model):
     """ Table to track all winners - might not need if we use M2M"""
     giveaway_id = models.ForeignKey('TwitterGiveawayID', related_name='draw_giveaway_details', null=True, on_delete=models.SET_NULL)
@@ -135,6 +135,8 @@ class GiveawayWinners(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     drawed_at = models.DateTimeField(null=True)
     winner_count = models.IntegerField(default=1)
+    follow_main = models.BooleanField(default=True)
+    followers = models.CharField(max_length=250, blank=True)
     retweet_count = models.IntegerField(default=0)
     toload_count = models.IntegerField(default=0)
     loaded_count = models.IntegerField(default=0)
@@ -203,7 +205,8 @@ class PricingPlan(models.Model):
     price = models.IntegerField(default=1)
     limit_times = models.IntegerField(default=2)
     limit_count = models.IntegerField(default=10000000)
-    
+    unlimited_times = models.BooleanField(default=False)
+    unlimited_count = models.BooleanField(default=True)
     class Meta:
         ordering = ['price']
         
@@ -218,6 +221,7 @@ class Membership(models.Model):
     end_time = models.DateTimeField(auto_now=False, null=True)
     done_count = models.IntegerField(default=0)
     done_month = models.IntegerField(default=0)
+    bonus_count = models.IntegerField(default=0)
     
     class Meta:
         ordering = ['id']

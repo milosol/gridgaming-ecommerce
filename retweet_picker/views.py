@@ -2,6 +2,7 @@ import logging
 import sys
 import threading
 import math
+import json
 from datetime import timedelta
 from django.utils import timezone
 from json import dumps
@@ -437,11 +438,30 @@ def pick(request):
 
 @csrf_exempt
 def fetch_data(request):
-    res = {'success': True, 'msg': ''}
+    res = {'success': True, 'msg': '', 'kind': 0}
     try:
-        print(" === fetching data .... ")
         link = request.POST['link']
         res = fetch_content_from_url(existing_tweet_url=link)
+        res['kind'] = 0
+        if res['success'] == True:
+            tgids = TwitterGiveawayID.objects.filter(tweet_url=res['tweet_url'])
+            if tgids.exists():
+                gws= GiveawayWinners.objects.filter(giveaway_id=tgids[0], user_id=request.user.id)
+                if gws.exists():
+                    if gws[0].status == 'W':
+                        res['kind'] = 2 # already drawed
+                        temp = {}
+                        temp['draw_status'] = gws[0].status
+                        temp['drawed_at'] = '' if gws[0].drawed_at == None else gws[0].drawed_at.strftime("%d %B, %Y")
+                        temp['entries'] = gws[0].loaded_count
+                        temp['winner_count'] = gws[0].winner_count
+                        temp['rerolls'] = get_rerolls(gws[0].id)['rerolls']
+                        temp['gwid'] = gws[0].id
+                        res['draw_info'] = temp
+                    else:
+                        res['kind'] = 1 # to  draw
+                    res['actions'] = {'winner': gws[0].winner_count, 'fe': gws[0].follow_main, 'followers': gws[0].followers}
+        
         if DrawPrice.objects.all().count() == 0:
             DrawPrice.objects.create(price=1)
         price = DrawPrice.objects.all()[0]
@@ -458,71 +478,82 @@ def import_contest(request):
     res = {'success': True, 'msg': ''}
     try:
         link = request.POST['link']
+        actions = json.loads(request.POST['actions'])
         tgid, created = TwitterGiveawayID.objects.get_or_create(tweet_url=link)
         gw, created = GiveawayWinners.objects.get_or_create(giveaway_id=tgid, user_id=request.user.id)
+        gw.winner_count = int(actions['winner'])
+        gw.follow_main = actions['fe']
+        gw.followers = actions['tags']
+        gw.save()
         res['gwid'] = gw.id
     except Exception as e:
         print(e)
         res['success'] = False
-        res['msg'] = 'Error occured while fetching data. Please input correct url.'
+        res['msg'] = 'Error occured while importing data. Please input correct url.'
     return JsonResponse(res)
-
 
 def pick_entries(request, gwid):
     request.session['uoid'] = -1
     context = {}
+    context['tab'] = request.GET.get('tab', 'download')
     try:
+        
         gw = GiveawayWinners.objects.get(id=gwid)
         tgid = TwitterGiveawayID.objects.get(id=gw.giveaway_id_id)
         tweet_url = tgid.tweet_url
         dp = DrawPrice.objects.all().first()
-        gm = GiveawayManager(new_giveaway=False, existing_tweet_url=tweet_url)
-        ret_count = gm.tweet.retweet_count
-        
-        # ret_count = 1000
-        context['pay_price'] = 0
+        if gw.status == 'C' or gw.status == 'E':
+            gm = GiveawayManager(new_giveaway=False, existing_tweet_url=tweet_url)
+            ret_count = gm.tweet.retweet_count
+            membership, created = Membership.objects.get_or_create(user_id=request.user.id)
+            pp, created = PricingPlan.objects.get_or_create(plan=membership.plan)
+            context['pay_price'] = 0
+            context['unlimited_count'] = pp.unlimited_count
+            context['left_times'] = pp.limit_times + membership.bonus_count - membership.done_count
+            context['total_times'] = pp.limit_times + membership.bonus_count
 
-        if ret_count <= dp.free_max:
-            context['pay_status'] = 0  # free to download
-        else:
-            if gw.paid_count + dp.free_max >= ret_count:
-                context['pay_status'] = 1  # you have already paid
+            if ret_count <= dp.free_max:
+                context['pay_status'] = 0  # free to download
             else:
-                membership, created = Membership.objects.get_or_create(user_id=request.user.id)
-                if membership.plan == 'F':
-                    context['pay_status'] = 3
+                if gw.paid_count + dp.free_max >= ret_count:
+                    context['pay_status'] = 1  # you have already paid
                 else:
-                    pps = PricingPlan.objects.filter(plan=membership.plan)
-                    if pps.exists():
-                        pp = pps[0]
-                        set_donemonth(membership.id)
-                        if membership.done_count < pp.limit_times and membership.done_month < membership.paid_month:
-                            context['pay_status'] = 2  # You can be free from membership
+                    set_donemonth(membership.id)
+                    if pp.unlimited_times == True:
+                        context['pay_status'] = 2  # You can be free from unlimited membership
+                    elif membership.done_count < pp.limit_times + membership.bonus_count:
+                        if pp.limit_times == 0:
+                            context['pay_status'] = 3  # you are free from bonus
+                            context['left_times'] = membership.bonus_count
                         else:
-                            if membership.done_count >= pp.limit_times:
-                                context['pay_status'] = 4  # you exceed count this month
-                            if membership.done_month >= membership.paid_month:
-                                membership.plan = 'F'
-                                membership.save()
-                                context['pay_status'] = 5    # your membership is out of date
+                            context['pay_status'] = 4  # you are free from limited membership
                     else:
-                        context['pay_status'] = 3 # you must pay more
-                if context['pay_status'] > 2:
-                    rest = ret_count - gw.paid_count - dp.free_max
-                    pay_price = math.ceil(rest / dp.per_amount * dp.price)
-                    context['pay_price'] = pay_price
-                
+                        if pp.limit_times == 0:
+                            context['pay_status'] = 6    # you must pay
+                        elif membership.done_count >= pp.limit_times:
+                            context['pay_status'] = 5   # you exceed count this month
+                            context['left_times'] = 0
+                        rest = ret_count - gw.paid_count - dp.free_max
+                        pay_price = math.ceil(rest / dp.per_amount * dp.price)
+                        context['pay_price'] = pay_price
+            context['ret_count'] = ret_count
+        else:
+            rerolls_result = get_rerolls(gwid)     
+            context['rerolls'] = rerolls_result['rerolls']
         draw_info = get_drawinformation(gwid)
         context['loaded_count'] = gw.loaded_count
         context['paid_amount'] = gw.paid_count
-        context['drawprice'] = dp
-        context['ret_count'] = ret_count
+        context['winner_count'] = gw.winner_count
+        context['follow_main'] = gw.follow_main
+        context['followers'] = gw.followers
         context['tweet_url'] = tweet_url
-        context['status'] = gw.status
+        context['draw_status'] = gw.status
         context['gwid'] = gwid
-        context['draw_winners'] = dumps(draw_info['draw_info']['winners'])
-        context['draw_date'] = draw_info['draw_info']['drawed_at']
-        context['draw_id'] = draw_info['draw_info']['draw_id']
+        context['drawprice_free_max'] = dp.free_max
+        context['drawprice_per_amount'] = dp.per_amount
+        context['drawprice_price'] = dp.price
+        context['draw_info'] = draw_info['draw_info']
+        context['context'] = dumps(context) 
     except Exception as e:
         print(e)
 
@@ -536,6 +567,11 @@ def set_donemonth(membership_id):
         if membership.done_month != diff_month:
             membership.done_month += 1
             membership.done_count = 0
+            membership.save()
+        if membership.done_month >= membership.paid_month:
+            membership.plan = 'F'
+            membership.done_count = 0
+            membership.done_month = 0
             membership.save()
     except Exception as e:
         print(e)
@@ -608,7 +644,7 @@ def get_drawinformation(gwid):
     try:
         gw = GiveawayWinners.objects.get(id=gwid)
         res['draw_info']['draw_status'] = gw.status
-        res['draw_info']['drawed_at'] = gw.drawed_at
+        res['draw_info']['drawed_at'] = '' if gw.drawed_at == None else gw.drawed_at.strftime("%d %B, %Y")
         res['draw_info']['draw_id'] = gw.draw_id
         res['draw_info']['winners'] = []
         if gw.status == 'W':
@@ -629,42 +665,28 @@ def draw(request):
            'msg': '',
            'stop': False}
     try:
-        wc = int(request.POST['winner'])
-        tags = request.POST['tags']
-        fe = request.POST['follow_enable']
-        fo = request.POST['follow_other']
         
         gwid = request.POST['gwid']
         gw = GiveawayWinners.objects.get(id=gwid)
         gw.command = 0
         gw.status = 'D'
-        gw.winner_count = wc
         gw.save()
         tgid = TwitterGiveawayID.objects.get(id=gw.giveaway_id_id)
         tweet_url = tgid.tweet_url
 
         
-        actions = {'follow_enable': False, 'follow_other': False}
+        actions = {}
         actions['draw_type'] = request.POST['draw_type']
         actions['reroll_id'] = int(request.POST['reroll_id'])
-        print(" === reroll_id:", actions['reroll_id'])
-        if fe == 'true':
-            actions['follow_enable'] = True
-        if fo == 'true':
-            actions['follow_other'] = True
-
         sponsors = []
-        if actions['follow_enable'] == True:
-            username = request.user.username
-            # sponsors.append('@GridGamingIO')
-            if actions['follow_other'] == True:
-                user_list = tags.split(',')
-                for tag in user_list:
-                    sponsors.append("@" + tag)
+        if gw.followers != '':
+            user_list = gw.followers.split(',')
+            for tag in user_list:
+                sponsors.append("@" + tag)
+                
         actions['sponsors'] = sponsors
         actions['gwid'] = gwid
-        print(" === actions : ", actions)
-        res = draw_winner(existing_tweet_url=tweet_url, winner_count=wc, actions=actions, user_id=request.user.id)
+        res = draw_winner(existing_tweet_url=tweet_url, winner_count=gw.winner_count, actions=actions, user_id=request.user.id)
         if res['success'] == True and res['stop'] == False:
             gw = GiveawayWinners.objects.get(id=gwid)
             gw.status = 'W'
@@ -678,31 +700,31 @@ def draw(request):
         print(e)
         res['success'] = False
         res['msg'] = 'Error occured while drawing.'
+        
     print("== final draw result : ", res)
     return JsonResponse(res)
 
 
 @csrf_exempt
 def drawstop(request):
-    res = {'success': True, 'msg': ''}
+    res = {'success': True, 'msg': '', 'stoped': False}
     try:
         gwid = request.POST['gwid']
         print("=== stop drawing : ", gwid)
         gw = GiveawayWinners.objects.get(id=gwid)
         gw.command = 1
         gw.save()
+        if gw.status == 'S':
+            res['stoped'] = True
     except Exception as e:
         print(e)
         res['success'] = False
         res['msg'] = 'Error occured while stop drawing.'
     return JsonResponse(res)
 
-
-@csrf_exempt
-def drawing_progress(request):
+def get_rerolls(gwid):
     res = {'success': True, 'msg': '', 'rerolls': []}
     try:
-        gwid = request.POST['gwid']
         gw = GiveawayWinners.objects.get(id=gwid)
         rerolls = gw.re_rolls.all()
         for reroll in rerolls:
@@ -713,6 +735,19 @@ def drawing_progress(request):
                 temp['screen_name'] = cua.user_screen_name
                 temp['profile_img'] = cua.profile_img
             res['rerolls'].append({'id': reroll.id, 'reason': reroll.reason, 'kind': reroll.kind, 'user_info': temp})
+    except Exception as e:
+        print(e)
+        res['success'] = False
+        res['msg'] = 'Error occured while getting rerolls.'
+    
+    return res
+
+@csrf_exempt
+def drawing_progress(request):
+    res = {'success': True, 'msg': '', 'rerolls': []}
+    try:
+        gwid = request.POST['gwid']
+        res = get_rerolls(gwid)
     except Exception as e:
         print(e)
         res['success'] = False

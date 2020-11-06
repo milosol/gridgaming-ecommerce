@@ -10,10 +10,10 @@
         min-height: 250px;
     }
     .div-plan-active{
-        border: 1px solid #4bbbe2;
+        border: 1px solid #6b5594;
         box-shadow: 2px 8px 10px #545454;
         border-radius: 5px;
-        background-color: #00414e;
+        background-color: #673AB7;
         min-height: 250px;
     }
     .btn-upgrade{
@@ -110,15 +110,16 @@
                                         {% endif %}
                                         </div>
                                         {% if pp.plan == plan %}
-                                            <button class='btn btn-light-primary disabled btn-block mb-3' disabled>
+                                            <h5 style="color: #94d89f;">Left times: {{left_label}}</h5>
+                                            <button class='btn btn-secondary disabled btn-block mb-3' style="background-color: #272b34;" disabled>
                                                 Current Plan
                                             </button>
                                         {% elif pp.status ==  1 %}
-                                            <button class='btn btn-light-primary disabled btn-block mb-3' disabled>
+                                            <button class='btn btn-secondary disabled btn-block mb-3' style="background-color: #272b34;" disabled>
                                                 Upgrade Plan
                                             </button>
                                         {% else %}
-                                            <button onclick="fnupgrade('{{pp.plan}}')" class='btn btn-success btn-block mb-3'>
+                                            <button onclick="fnupgrade('{{pp.plan}}')" class='btn btn-primary btn-block mb-3'>
                                                 Upgrade Plan
                                             </button>
                                         {% endif %}
@@ -201,6 +202,7 @@
 
 {% block extra_scripts %}
 <script type="text/javascript">
+     var tab = '{{ tab }}'
      var current_plan = '{{ plan }}'
      var minus_price = '{{ minus_price }}'
      var pricing_plans = JSON.parse("{{pricing_plans_json|escapejs}}");
@@ -234,6 +236,10 @@
          $("#form_pay input[name='months']").val(mv);
      }
      $(function(){
+         if(tab == 'membership'){
+            console.log("tab : ", tab)
+             $("[href='#settings-b1']").trigger('click');
+         }
          $("#btn_paynow").click(function(){
             $("#form_pay").submit();
          })
