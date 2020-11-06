@@ -7,5 +7,6 @@ from . import views
 app_name = 'profile_analyzer'
 
 urlpatterns = [
-    path('', views.profile_analyzer, name='profile-analyzer'),
+    path('', views.main, name='profile-analyzer'),
+    path('profile/', views.analyze_profile, name='analyze-profile'),
 ]

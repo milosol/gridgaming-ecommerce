@@ -37,7 +37,8 @@ def fetch_content_from_url(existing_tweet_url=None):
     # connection.close()
     res = {'success': True, 'msg': ''}
     try:
-        gm = GiveawayManager(new_giveaway=False, existing_tweet_url=existing_tweet_url)
+        gm = GiveawayManager(new_giveaway=False,
+                             existing_tweet_url=existing_tweet_url)
         if gm.tweet_id:
             res['tweet_id'] = gm.tweet_id
             res['tweet_url'] = gm.tweet_url
@@ -53,7 +54,11 @@ def fetch_content_from_url(existing_tweet_url=None):
 def draw_winner(existing_tweet_url=None, winner_count=1, actions=None, user_id=None):
     # from django.db import connection
     # connection.close()
-    gm = GiveawayManager(new_giveaway=False, existing_tweet_url=existing_tweet_url, winner_count=winner_count, sponsors=actions['sponsors'], user_id=user_id)
+    gm = GiveawayManager(new_giveaway=False,
+                         existing_tweet_url=existing_tweet_url,
+                         winner_count=winner_count,
+                         sponsors=actions['sponsors'],
+                         user_id=user_id)
     res = gm.drawwinner(actions=actions)
     return res
 

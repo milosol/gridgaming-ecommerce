@@ -139,9 +139,37 @@
             </div>
 
         {% else %}
-            <div class="row">
-                <h2>Available after first sponsored giveaway!</h2>
-            </div>
+        <div class="container-fluid">
+            <a href="{% url 'core:home' %}">
+            <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title mb-0">Almost ready...  <i class="fas fa-chart-line fa-2x text-white"></i></h4>
+                            </div>
+                            <div class="card-body collapse show bg-primary">
+                                <div id="myCarousel" class="carousel slide" data-ride="carousel">
+                                    <!-- Carousel items -->
+                                    <div class="carousel-inner">
+                                        <div class="carousel-item flex-column active">
+                                            <h3 class="text-white font-weight-light"><p>After you purchase a giveaway it will appear here.</p>
+                                                <br>
+                                                <p>You'll be able launch your giveaway directly from your launch pad (here) and it will launch on Gridgaming's Twitter timeline.</p><br>
+                                                <p>
+                                                <b>Click anywhere to visit Sponsor Shop to get started and then come back here to launch!</b>
+                                                </p>
+                                                <p>
+                                                Enjoy!
+                                                </p>
+                                                </h3>
+                                            <div class="text-white mt-3">
+                                                <i>-Gridgaming Staff</i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                </a>
+        </div>
         {% endif %}
     </div>
 

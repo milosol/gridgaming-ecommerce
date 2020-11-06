@@ -1,5 +1,190 @@
 {% extends 'core/base.html' %}
-
+{% load remove_normal %}
+{% load humanize %}
 {% block content %}
-<h2> COMING SOON... </h2>
+
+    <div class="container-fluid">
+        <h2> Analyze Profile </h2>
+{#        <div class="row">#}
+{#            <!-- Column -->#}
+{#            <div class="col-lg-3 col-md-6">#}
+{#                <div class="card">#}
+{#                    <div class="card-body">#}
+{#                        <div class="row pt-2 pb-2">#}
+{#                            <!-- Column -->#}
+{#                            <div class="col pr-0">#}
+{#                                <h1 class="font-weight-light">86</h1>#}
+{#                                <h6 class="text-muted">New Clients</h6></div>#}
+{#                            <!-- Column -->#}
+{#                            <div class="col text-right align-self-center">#}
+{#                                <div data-label="20%" class="css-bar mb-0 css-bar-primary css-bar-20"><i#}
+{#                                        class="mdi mdi-account-circle"></i></div>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                </div>#}
+{#            </div>#}
+{#            <!-- Column -->#}
+{#            <!-- Column -->#}
+{#            <div class="col-lg-3 col-md-6">#}
+{#                <div class="card">#}
+{#                    <div class="card-body">#}
+{#                        <div class="row pt-2 pb-2">#}
+{#                            <!-- Column -->#}
+{#                            <div class="col pr-0">#}
+{#                                <h1 class="font-weight-light">248</h1>#}
+{#                                <h6 class="text-muted">All Projects</h6></div>#}
+{#                            <!-- Column -->#}
+{#                            <div class="col text-right align-self-center">#}
+{#                                <div data-label="30%" class="css-bar mb-0 css-bar-danger css-bar-20"><i#}
+{#                                        class="mdi mdi-briefcase-check"></i></div>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                </div>#}
+{#            </div>#}
+{#            <!-- Column -->#}
+{#            <!-- Column -->#}
+{#            <div class="col-lg-3 col-md-6">#}
+{#                <div class="card">#}
+{#                    <div class="card-body">#}
+{#                        <div class="row pt-2 pb-2">#}
+{#                            <!-- Column -->#}
+{#                            <div class="col pr-0">#}
+{#                                <h1 class="font-weight-light">352</h1>#}
+{#                                <h6 class="text-muted">New Items</h6></div>#}
+{#                            <!-- Column -->#}
+{#                            <div class="col text-right align-self-center">#}
+{#                                <div data-label="40%" class="css-bar mb-0 css-bar-warning css-bar-40"><i#}
+{#                                        class="mdi mdi-star-circle"></i></div>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                </div>#}
+{#            </div>#}
+{#            <!-- Column -->#}
+{#            <!-- Column -->#}
+{#            <div class="col-lg-3 col-md-6">#}
+{#                <div class="card">#}
+{#                    <div class="card-body">#}
+{#                        <div class="row pt-2 pb-2">#}
+{#                            <!-- Column -->#}
+{#                            <div class="col pr-0">#}
+{#                                <h1 class="font-weight-light">159</h1>#}
+{#                                <h6 class="text-muted">Invoices</h6></div>#}
+{#                            <!-- Column -->#}
+{#                            <div class="col text-right align-self-center">#}
+{#                                <div data-label="60%" class="css-bar mb-0 css-bar-info css-bar-60"><i#}
+{#                                        class="mdi mdi-receipt"></i></div>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                </div>#}
+{#            </div>#}
+{#            <!-- Column -->#}
+{#        </div>#}
+        <div class="row">
+            <!-- Column -->
+            <div class="col-lg-4">
+                <!-- Column -->
+                <div class="card">
+                    <img class="card-img-top w-100 profile-bg-height"
+                         src="{{ user.socialaccount_set.all.0.extra_data.profile_banner_url }}" alt="Card image cap">
+                    <div class="card-body little-profile text-center">
+                        <div class="pro-img"><img
+                                src="{{ user.socialaccount_set.all.0.extra_data.profile_image_url|remove_normal }}"
+                                alt="user" class="rounded-circle shadow-sm" width="128"></div>
+                        <h3 class="mb-0">{{ request.user.username }}</h3>
+                        <p>{{ user.socialaccount_set.all.0.extra_data.description }}</p>
+                        <a href="javascript:void(0)"
+                           id="btn_analyze_profile"
+                           class="mt-2 waves-effect waves-dark btn btn-primary btn-md btn-rounded">Refresh</a>
+                        <div class="row text-center mt-3 justify-content-center">
+                            <div class="col-6 col-md-4 mt-3">
+                                <h5 class="mb-0 font-weight-light">{{ user.socialaccount_set.all.0.extra_data.statuses_count|intcomma }}</h5>
+                                <small>Tweets</small>
+                            </div>
+                            <div class="col-6 col-md-4 mt-3">
+                                <h5 class="mb-0 font-weight-light">{{ user.socialaccount_set.all.0.extra_data.followers_count|intcomma }}</h5>
+                                <small>Followers</small>
+                            </div>
+                            <div class="col-6 col-md-4 mt-3">
+                                <h5 class="mb-0 font-weight-light">{{ user.socialaccount_set.all.0.extra_data.friends_count|intcomma }}</h5>
+                                <small>Following</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="card bg-success">
+                    <div class="card-body">
+                        <div id="myCarousel" class="carousel slide" data-ride="carousel">
+                            <!-- Carousel items -->
+                            <div class="carousel-inner">
+                                <div class="carousel-item flex-column active">
+                                    <div class="d-flex no-block al mr-3ign-items-center">
+                                        <i class="mdi mdi-twitter-circle text-white display-6 mr-3" title="Score"></i>
+                                        <div class="mt-2">
+                                            <h5 class="text-white font-weight-medium">Profile </h5>
+                                            <h6 class="text-white">Overview</h6>
+                                            <span id="analyze_status"></span>
+                                        </div>
+                                        <div class="ml-auto mt-3">
+                                            <div class="crypto"></div>
+                                        </div>
+                                    </div>
+                                    <div class="row text-center text-white mt-4 col-lg-12">
+                                        <ul>
+                                            <li id="profile_days_old">asdfasdf</li>
+                                            <li id="profile_follower_count">asdfasdf</li>
+                                            <li>asdfasdf</li>
+                                            <li id="profile_all_data"></li>
+                                    </div>
+                                    <div class="profile_analysis">
+                                        <div id="all_results" style="display:none;">
+                                            ALL RESULTS HERE
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script>
+        $("#btn_analyze_profile").click(function () {
+
+            $("#analyze_status").html("Please wait while getting data...")
+            $("#profile_days_old").html("_")
+            $("#profile_follower_count").html("_")
+            $("#profile_all_data").html("Loading...")
+
+            $.ajax(
+                {
+                type: "GET",
+                url: "/analyzer/profile",
+                dataType: 'json',
+                success: function (data) {
+                    if (data.success === true) {
+                        console.log(data)
+                        $("#all_results").show()
+                        $("#profile_days_old").html(data.profile_analysis.days_old)
+                        $("#profile_follower_count").html(data.profile_analysis.follower_count)
+                        $("#profile_all_data").html(data.profile_analysis)
+
+                    } else {
+                        $("#analyze_status").html(data.msg)
+
+                    }
+                }
+            })
+        })
+    </script>
 {% endblock %}

@@ -44,6 +44,10 @@ class BotCheck(TwitterInteract):
     def get_tweet_count(self):
         return self.user_obj.get('statuses_count')
 
+    def get_default_profile_status(self):
+        """ When true, indicates that the user has not uploaded their own profile image and a default image is used instead."""
+        return self.user_obj.get('default_profile')
+
     def get_default_profile_image(self):
         """ Returns bool if user is using default profile image"""
         return self.user_obj.get('default_profile_image')
@@ -54,6 +58,20 @@ class BotCheck(TwitterInteract):
 
     def get_tweets_per_day(self):
         return self.user_analysis['tweet_count'] / self.user_analysis['days_old']
+
+    def get_protected_status(self):
+        """
+        Whether or not the account is in protected status. Cannot see tweets if in protected mode.
+        :return:
+        """
+        return self.user_obj.get('protected')
+
+    def get_suspended_status(self):
+        """
+        Returns whether or not account is suspended - Obviously can't see tweets if account is suspended.
+        :return:
+        """
+        return self.user_obj.get('suspended')
 
     def giveaway_ratio(self):
         tweet_count = []
@@ -78,9 +96,12 @@ class BotCheck(TwitterInteract):
         self.user_analysis['tweet_count'] = self.get_tweet_count()
         self.user_analysis['favorites'] = self.get_favorites_count()
         self.user_analysis['following'] = self.get_friends_count()
+        self.user_analysis['default_profile_status'] = self.get_default_profile_status()
         self.user_analysis['default_profile_image'] = self.get_default_profile_image()
         self.user_analysis['unique_background'] = self.get_profile_use_background_image()
         self.user_analysis['giveaway_timeline_analysis'] = self.giveaway_ratio()
+        self.user_analysis['suspended'] = self.get_suspended_status()
+        self.user_analysis['protected'] = self.get_protected_status()
         self.user_analysis['tweets_per_day'] = self.get_tweets_per_day()
         return self.user_analysis
 
@@ -95,3 +116,11 @@ class BotCheck(TwitterInteract):
         # if self.user_analysis['follower_count'] < 1000:
         #    bot = True
         return bot
+
+
+class ProfileGrade:
+    """
+    Account Age
+
+
+    """

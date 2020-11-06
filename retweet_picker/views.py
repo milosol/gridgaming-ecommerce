@@ -21,7 +21,11 @@ from .forms import RetweetChooserForm
 from .models import Membership, PricingPlan, GiveawayResults, TwitterGiveawayID, TwitterGiveaway, GiveawayStats, GiveawayQueue, DrawPrice, \
     GiveawayWinners, ContestUserParticipation, ContestUserAccounts
 from .process import ProcessRetrievedTweets
-from .tasks import start_giveaway_bg, retrieve_tweets_choose_winner_job, draw_winner, fetch_content_from_url, load_entry_task
+from .tasks import start_giveaway_bg,\
+    retrieve_tweets_choose_winner_job,\
+    draw_winner,\
+    fetch_content_from_url,\
+    load_entry_task
 from users.models import User
 from retweet_picker.manager import GiveawayManager
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
