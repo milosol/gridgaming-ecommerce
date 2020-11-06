@@ -92,7 +92,7 @@
                          src="{{ user.socialaccount_set.all.0.extra_data.profile_banner_url }}" alt="Card image cap">
                     <div class="card-body little-profile text-center">
                         <div class="pro-img"><img
-                                src="{{ user.socialaccount_set.all.0.extra_data.profile_image_url|remove_normal }}"
+                                src="{{ user.socialaccount_set.all.0.extra_data.profile_image_url }}"
                                 alt="user" class="rounded-circle shadow-sm" width="128"></div>
                         <h3 class="mb-0">{{ request.user.username }}</h3>
                         <p>{{ user.socialaccount_set.all.0.extra_data.description }}</p>

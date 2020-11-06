@@ -15,7 +15,7 @@
                     <!-- ============================================================== -->
                     <!-- Logo -->
                     <!-- ============================================================== -->
-                    <a class="navbar-brand" href="{% url 'frontend:home' %}">
+                    <a class="navbar-brand" href="{% url 'core:home' %}">
                         <!-- Logo icon -->
                         <b class="logo-icon">
                             <!--You can put here icon as well // <i class="wi wi-sunset"></i> //-->
@@ -119,7 +119,7 @@
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle waves-effect waves-dark" href="" data-toggle="dropdown"
                                 aria-haspopup="true" aria-expanded="false">
-                                <img src="{{ user.socialaccount_set.all.0.extra_data.profile_image_url_https|remove_normal }}" alt="user" width="30" class="profile-pic rounded-circle" />
+                                <img src="{{ user.socialaccount_set.all.0.extra_data.profile_image_url_https }}" alt="user" width="30" class="profile-pic rounded-circle" />
                             </a>
                             <div class="dropdown-menu mailbox dropdown-menu-right scale-up">
                                 <ul class="dropdown-user list-style-none">
