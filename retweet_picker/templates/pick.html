@@ -388,7 +388,7 @@
                                 conversation : 'none',    // or all
                                 cards        : 'hidden',  // or visible
                                 linkColor    : '#cc0000', // default is blue
-                                theme        : 'light'    // or dark
+                                theme        : 'dark'    // or dark
                             })
                             .then (function (el) {
                                 el.contentDocument.querySelector(".footer").style.display = "none";
@@ -401,7 +401,7 @@
                             $("#btn_import").html("Continue Contest");
                             set_actions(data.actions)
                         }else{
-                            $("#label_retweetcount").html("This tweet has been already drawed. Are you going to see result?")
+                            $("#label_retweetcount").html("This contest has already been processed. Would you like to see the results?")
                             set_actions(data.actions)
                             $("#spn_drawdate").html(data.draw_info.drawed_at)
                             $("#spn_entries").html(data.draw_info.entries)
@@ -504,7 +504,7 @@
                             $("#label_drawdate").hide()
                             $("#label_entries").hide()
                         }else{
-                            $("#label_verifystatus").html("Drawed Results :")
+                            $("#label_verifystatus").html("Results :")
                             f_drawdate = new Date(data.draw_info.drawed_at).toLocaleString()
                             $("#spn_drawdate").html(f_drawdate)
                             $("#spn_entries").html(data.draw_info.entries)
@@ -549,12 +549,12 @@
             if(r.kind == 0){
                 reason = r.reason;
             }else if(r.kind > 1){
-                reason = "Choosen as winner!";
+                reason = "Chosen as winner!";
                 found_winner += 1;
                 winners.push(r);
             }
             str += "<tr id='rtr_" + tbl_index + "_" + r.id + "'><td><img class='user_avatar' src='" + r.user_info.profile_img + "'>"
-            str += r.user_info.screen_name + "</td><td id='rtd_" + tbl_index + "_" + r.id + "'>" + reason +"</td></tr>";
+            str += "<a href='https://www.twitter.com/" + r.user_info.screen_name + "' target='_blank'>" + r.user_info.screen_name + "</td><td id='rtd_" + tbl_index + "_" + r.id + "'>" + reason +"</td></tr>";
                 
             if(found_winner == wcount){
                 str += '</tbody>'
@@ -592,7 +592,7 @@
                         tbl_index += 1;
                         for(let j=0; j<winners.length; j++){
                             str += "<tr id='rtr_" + tbl_index + "_" + winners[j].id + "'><td><img class='user_avatar' src='" + winners[j].user_info.profile_img + "'>"
-                            str += winners[j].user_info.screen_name + "</td><td id='rtd_" + tbl_index + "_" + winners[j].id + "'>" + "Chooen as winner!" +"</td></tr>";
+                            str += "<a href='https://www.twitter.com/"+winners[j].user_info.screen_name+"' target='_blank'>" + winners[j].user_info.screen_name + "</td><td id='rtd_" + tbl_index + "_" + winners[j].id + "'>" + "Chosen as winner!" +"</td></tr>";
                         }
                         break;
                     }

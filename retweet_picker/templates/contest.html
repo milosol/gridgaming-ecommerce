@@ -600,7 +600,7 @@
             str = ''
             for (i = 0; i < winners.length; i++) {
                 if (i != 0) str += ', ';
-                str += winners[i].screen_name
+                str += "<a href='https://www.twitter.com/" + winners[i].screen_name  +"' target='_blank'>" + winners[i].screen_name
             }
             return str
         } else {
@@ -684,14 +684,14 @@
             r = data[i]
             if ($("#rtr_" + r.id).length == 0) {
                 str = "<tr id='rtr_" + r.id + "'><td><img class='user_avatar' src='" + r.user_info.profile_img + "'>"
-                str += r.user_info.screen_name + "</td><td id='rtd_" + r.id + "'>Analyzing...</td><td id='rtdr_" + r.id + "'></td></tr>";
+                str += "<a href='https://www.twitter.com/" +r.user_info.screen_name +"' target='_blank'>" + r.user_info.screen_name + "</td><td id='rtd_" + r.id + "'>Analyzing...</td><td id='rtdr_" + r.id + "'></td></tr>";
                 $("#tbl_drawing tbody").append(str);
             }
             rids.push(r.id.toString());
             if (r.kind == 0) {
                 $("#rtd_" + r.id).html(r.reason);
             } else if (r.kind == 2) {
-                $("#rtd_" + r.id).html("choosen as winner!");
+                $("#rtd_" + r.id).html("Chosen as winner!");
                 $("#rtdr_" + r.id).addClass("td-reroll");
             } else if (r.kind == 3) {
                 $("#rtd_" + r.id).html("rerolled");
