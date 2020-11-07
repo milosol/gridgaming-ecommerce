@@ -36,7 +36,7 @@ class PaymentAdmin(admin.ModelAdmin):
 
 
 class OrderAdmin(admin.ModelAdmin):
-    raw_id_fields = ("user", 'items')
+    raw_id_fields = ("user", 'items', 'billing_address','payment')
 
     list_display = ['id',
                     'user',
