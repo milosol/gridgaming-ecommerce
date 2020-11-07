@@ -33,16 +33,18 @@ from stripe import error
 from django.utils import timezone
 from datetime import timedelta
 from retweet_picker.views import set_donemonth
+from .ads import prometric_ads
 
 def create_ref_code():
     return ''.join(random.choices(string.ascii_lowercase + string.digits, k=20))
 
 class AdsView(View):
     """Replace pub-0000000000000000 with your own publisher ID"""
-    ad_string = "google.com, pub-2399779593674817, DIRECT, f08c47fec0942fa0"
+    #ad_string = "google.com, pub-2399779593674817, DIRECT, f08c47fec0942fa0"
+    ad_string = prometric_ads
     
     def get(self, request, *args, **kwargs):
-        return HttpResponse(self.ad_string)
+        return HttpResponse(self.ad_string, content_type="text/plain")
 
 
 @register.filter
@@ -57,7 +59,11 @@ def index(request):
 
 
 def home(request):
-    return render(request, "frontend/index.html")
+    if request.user.is_authenticated:
+        messages.success(request, f'Welcome back, {request.user.username}!')
+        return redirect('core:home')
+    else:
+        return render(request, "frontend/index.html")
 
 
 class ProfileHomeView(LoginRequiredMixin, TemplateView):

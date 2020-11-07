@@ -228,7 +228,6 @@ def user_logout(request):
 
 @login_required
 def first_page(request):
-    logging.info("first page")
     request.session['kind'] = 1
     user_id = request.user.id
     u = User.objects.get(id=user_id)

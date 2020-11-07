@@ -123,7 +123,7 @@ class OrderItem(models.Model):
     available_to_run = models.IntegerField(default=1)
     kind = models.IntegerField(default=0)
     slot = models.ForeignKey("Slotitem", on_delete=models.CASCADE, null=True)
-    username = models.CharField(max_length=200, default='')
+    username = models.CharField(max_length=200, default='', blank=True, null=True)
     launch_code = models.CharField(max_length=200, blank=True, null=True)
     status = models.CharField(max_length=20, choices=GIVEAWAY_STATUS_CHOICES, default='I', blank=True, null=True)
 
@@ -242,9 +242,9 @@ class Order(models.Model):
     def get_purchased_items(self):
         # return ', '.join([x.item.title for x in self.items.all()])
         if self.kind == 0:
-            return ', '.join([x.item.title for x in self.items.filter(kind=0)])
+            return ', '.join([x.item.title for x in self.items.filter(kind=0).select_related('item')])
         else:
-            return ', '.join([x.slot.title for x in self.items.filter(kind=1)])
+            return ', '.join([x.slot.title for x in self.items.filter(kind=1).select_related('item')])
 
     def get_items_sum(self):
         # return sum([y.quantity for y in self.items.all()])

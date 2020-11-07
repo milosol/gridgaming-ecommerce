@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.db.models import Prefetch
 
 from .models import (
     Item,
@@ -35,7 +36,7 @@ class PaymentAdmin(admin.ModelAdmin):
 
 
 class OrderAdmin(admin.ModelAdmin):
-    raw_id_fields = ("user",)
+    raw_id_fields = ("user", 'items')
 
     list_display = ['id',
                     'user',
@@ -73,8 +74,37 @@ class OrderAdmin(admin.ModelAdmin):
     #     user_search = user_search.prefetch_related('user')
     #     return user_search
 
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if kwargs:
+            print(f'foreign: {kwargs}')
+        # if db_field.name in ['billing_address','shipping_address']:
+        #     kwargs['queryset'] = Address.objects.filter(user=request.user)
+        # if db_field.name == 'payment':
+        #     kwargs['queryset'] = Payment.objects.filter(user=request.user)
+
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def formfield_for_choice_field(self, db_field, request, **kwargs):
+        if db_field.name == 'items':
+            if kwargs:
+                print(kwargs)
+            #kwargs['queryset'] = OrderItem.objects.filter(user=request.user)
+        return super().formfield_for_choice_field(db_field, request, **kwargs)
+
     def get_cleared_hot(self, obj):
         return obj.user.cleared_hot
+
+    def get_queryset(self, request):
+        prefetched_orders = super(OrderAdmin, self).get_queryset(request)
+        prefetched_orders.prefetch_related(
+            Prefetch('items', queryset=OrderItem.objects.select_related('item',
+                                                                        'slot',
+                                                                        'user')))\
+            .select_related('user', 'shipping_address','billing_address','payment','coupon')
+
+        # prefetched_orders = prefetched_orders.select_related('user', 'shipping_address',
+        #                                                      'billing_address','payment','coupon')
+        return prefetched_orders
 
     get_cleared_hot.boolean = True
     get_cleared_hot.short_description = 'Cleared Hot'
@@ -82,7 +112,7 @@ class OrderAdmin(admin.ModelAdmin):
 
 
 class OrderItemAdmin(admin.ModelAdmin):
-    raw_id_fields = ("user",)
+    raw_id_fields = ("user", "item")
     list_display = ['user',
                     'get_title',
                     'quantity',
@@ -111,6 +141,18 @@ class OrderItemAdmin(admin.ModelAdmin):
             return obj.orders.all()[0].ordered_date
         else:
             return 0
+
+    # def formfield_for_foreignkey(self, db_field, request, **kwargs):
+    #     if db_field.name == 'payment':
+    #         kwargs['queryset'] = Payment.objects.filter(user=request.user)
+    #
+    #     return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+    def get_queryset(self, request):
+        prefetched_orders = super(OrderItemAdmin, self).get_queryset(request)
+        prefetched_orders = prefetched_orders.select_related('item','slot')
+        return prefetched_orders
 
 
 class AddressAdmin(admin.ModelAdmin):
