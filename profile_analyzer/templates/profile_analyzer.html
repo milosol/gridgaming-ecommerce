@@ -3,6 +3,8 @@
 {% load humanize %}
 {% block content %}
 
+{% if request.user.is_staff %}
+
     <div class="container-fluid">
         <h2> Analyze Profile </h2>
 {#        <div class="row">#}
@@ -140,6 +142,7 @@
                                             <li id="profile_follower_count">-</li>
                                             <li>-</li>
                                             <li id="profile_all_data"></li>
+                                        </ul>
                                     </div>
                                     <div class="profile_analysis">
                                         <div id="all_results" style="display:none;">
@@ -155,6 +158,11 @@
 
         </div>
     </div>
+{% else %}
+        <div class="container-fluid">
+            <h2>Profile Analyzer Coming soon!</h2>
+        </div>
+{% endif %}
 {% endblock %}
 
 {% block extra_scripts %}
@@ -187,4 +195,5 @@
             })
         })
     </script>
+
 {% endblock %}
