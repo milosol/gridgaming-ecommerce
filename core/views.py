@@ -24,7 +24,7 @@ from slotapp.views import del_timing
 from .forms import CheckoutFormv2, CouponForm, RefundForm, PaymentForm, BitpayForm
 from .models import Item, OrderItem, Order, Address, Payment, Coupon, Refund, UserProfile, Slotitem, History
 import logging
-
+import traceback
 # from core.extras import transact, generate_client_token
 
 
@@ -175,15 +175,21 @@ class CheckoutViewV2(View):
 
 
 def get_user_pending_order(request):
-    # get order for the correct user
-    kind = request.session.get('kind', 0)
-    # user_profile = get_object_or_404(UserProfile, user=request.user)
-    user_profile, created = UserProfile.objects.get_or_create(user=request.user)
-    order = Order.objects.filter(user=user_profile.user, ordered=False, kind=kind)
-    # order = Order.objects.filter(user=request.user, ordered=False, kind=kind)
-    if order.exists():
-        # get the only order in the list of filtered orders
-        return order[0]
+    try:
+        # get order for the correct user
+        kind = request.session.get('kind', 0)
+        # user_profile = get_object_or_404(UserProfile, user=request.user)
+        user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+        order = Order.objects.filter(user=user_profile.user, ordered=False, kind=kind)
+        # order = Order.objects.filter(user=request.user, ordered=False, kind=kind)
+        if order.exists():
+            # get the only order in the list of filtered orders
+            return order[0]
+        
+    except Exception as e:
+        print("=== error occured while getting pending order")
+        print(e)
+        traceback.format_exc(e)
     return 0
 
 
@@ -193,38 +199,46 @@ class PaymentView(View):
     """
 
     def get(self, *args, **kwargs):
+        
         order = get_user_pending_order(self.request)
         # client_token = generate_client_token()
-        if order != 0:
-            if order.billing_address:
-                context = {
-                    'order': order,
-                    'DISPLAY_COUPON_FORM': False,
-                    'STRIPE_PUBLIC_KEY': settings.STRIPE_PUBLIC_KEY,
-                    # 'client_token': client_token,
-                    'client_token': create_ref_code(),
-                }
-                userprofile = self.request.user.user_profile
-                if userprofile.one_click_purchasing:
-                    # fetch the users card list
-                    cards = stripe.Customer.list_sources(
-                        userprofile.stripe_customer_id,
-                        limit=3,
-                        object='card'
-                    )
-                    card_list = cards['data']
-                    if len(card_list) > 0:
-                        # update the context with the default card
-                        context.update({
-                            'card': card_list[0]
-                        })
-                return render(self.request, "shop_v2/stripe.html", context)
+        try:
+            if order != 0:
+                if order.billing_address:
+                    context = {
+                        'order': order,
+                        'DISPLAY_COUPON_FORM': False,
+                        'STRIPE_PUBLIC_KEY': settings.STRIPE_PUBLIC_KEY,
+                        # 'client_token': client_token,
+                        'client_token': create_ref_code(),
+                    }
+                    userprofile = self.request.user.user_profile
+                    if userprofile.one_click_purchasing:
+                        # fetch the users card list
+                        cards = stripe.Customer.list_sources(
+                            userprofile.stripe_customer_id,
+                            limit=3,
+                            object='card'
+                        )
+                        card_list = cards['data']
+                        if len(card_list) > 0:
+                            # update the context with the default card
+                            context.update({
+                                'card': card_list[0]
+                            })
+                    return render(self.request, "shop_v2/stripe.html", context)
+                else:
+                    messages.warning(
+                        self.request, "You have not added a billing address")
+                    return redirect("core:checkout")
             else:
-                messages.warning(
-                    self.request, "You have not added a billing address")
-                return redirect("core:checkout")
-        else:
-            return redirect("core:home")
+                return redirect("core:home")
+        except Exception as e:
+            print("=== error occured while getting stripe")
+            print(e)
+            traceback.format_exc(e)
+            return redirect("core:checkout")
+            
 
     def post(self, *args, **kwargs):
         kind = self.request.session.get('kind', 0)
