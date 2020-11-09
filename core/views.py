@@ -189,7 +189,7 @@ def get_user_pending_order(request):
     except Exception as e:
         print("=== error occured while getting pending order")
         print(e)
-        traceback.format_exc(e)
+        traceback.print_exc()
     return 0
 
 
@@ -236,7 +236,7 @@ class PaymentView(View):
         except Exception as e:
             print("=== error occured while getting stripe")
             print(e)
-            traceback.format_exc(e)
+            traceback.print_exc()
             return redirect("core:checkout")
             
 
