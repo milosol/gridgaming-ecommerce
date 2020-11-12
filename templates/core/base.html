@@ -129,7 +129,9 @@ twq('track','PageView');
 {% include "core/javascript_files.html" %}
 {% block extra_scripts %}
 {% endblock extra_scripts %}
+
 </body>
+{% if user.is_authenticated %}
 <script>
     $(function(){
         $.ajax({
@@ -147,4 +149,5 @@ twq('track','PageView');
         })
     })
 </script>
+{% endif %}
 </html>
