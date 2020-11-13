@@ -82,6 +82,10 @@
         transition-duration: 3s;
         transition-property: all;
     }
+    .form-check-input[type="checkbox"]:checked+label:before{
+        border-right: 4px solid #4285f4;
+        border-bottom: 4px solid #4285f4;
+    }
 </style>
 {% endblock %}
 
@@ -111,7 +115,7 @@
                                 <a href="#step-6" type="button" class="btn btn-pink btn-circle-3 waves-effect" data-toggle="tooltip" data-placement="top" title="Check Tweet"><i class="fa fa-eye" aria-hidden="true"></i></a>
                             </div>
                             <div class="steps-step-3">
-                                <a href="#step-7" type="button" class="btn btn-pink btn-circle-3 waves-effect" data-toggle="tooltip" data-placement="top" title="Set Followers"><i class="fa fa-list" aria-hidden="true"></i></a>
+                                <a href="#step-7" type="button" class="btn btn-pink btn-circle-3 waves-effect" data-toggle="tooltip" data-placement="top" title="Set Settings"><i class="fa fa-list" aria-hidden="true"></i></a>
                             </div>
                             <div class="steps-step-3 no-height">
                                 <a href="#step-8" type="button" class="btn btn-pink btn-circle-3 waves-effect p-3" data-toggle="tooltip" data-placement="top" title="Complete"><i class="fa fa-check" aria-hidden="true"></i></a>
@@ -169,20 +173,24 @@
                         <!-- Third Step -->
                         <div class="row setup-content-3" id="step-7">
                             <div class="col-md-12">
-                                <h3 class="pl-0 my-2 text-center">Set Followers</h3>
+                                <h3 class="pl-0 my-2 text-center">Set Settings</h3>
                                 <div id="div_winner">
                                     <h6>Enter number of winners</h6>
                                     <input type="number" class="form-control" placeholder="Number of Winners" id="in_winner" value="1">
                                     <label>Please enter correct number!</label>
                                 </div>
-
+                                
                                 <div class="my-5 option-container">
                                     <!-- <div class="option-label px-4 py-1">Follow</div> -->
-                                    
+                                    <div id="div_botchk" class="form-check mt-4 px-3 py-2">
+                                        <input type="checkbox" class="form-check-input" id="chk_bot" hidden checked>
+                                        <label class="form-check-label" for="chk_bot">Check bot while choosing winner</label>
+                                    </div>
                                     <div id="follow_show">
                                         <div  style="display: flex;" class="px-2 mt-4">
+                                            
                                             <div class="mx-2">
-                                                <i class="fas fa-check text-success"></i>
+                                                <i class="fas fa-check text-success" style="font-weight: bold;font-size: 22px;"></i>
                                             </div>
                                             <div class="mx-2">
                                                 <h5>Follow the main account, author of this tweet</h5>
@@ -216,6 +224,7 @@
                                     <div class="card-header bg-transparent border-success text-success" style="border-bottom: 1px solid;">Settings</div>
                                     <div class="card-body">
                                         <h6>Number of winners : <span id="spn_winner" class="pl-2">1</span></h6>
+                                        <h6>Check bot : <span id="spn_botchk" class="pl-2"><i class="fas fa-check text-success"></i></span></h6>
                                         <h6>Follow Main Account : <span id="spn_followenable" class="pl-2"><i class="fas fa-check text-success"></i></span></h6>
                                         <h6>Following: <span id="spn_followers" class="pl-2">_</span></h6>
                                     </div>
@@ -241,6 +250,7 @@
                                 <h6  id="label_verifystatus" style="display: none;"></h6>
                                 <h6  id="label_entries">Retweets Count : <span id="spn_entries">_</span></h6>
                                 <h6  id="label_drawdate">Draw Date : <span id="spn_drawdate">_</span></h6>
+                                <h6  id="label_drawid">Draw ID : <span id="spn_drawid">_</span></h6>
                                 <div class="">
                                     <h2 class="pb-3 pt-2 border-bottom mb-5">Drawing Timeline</h2>
                                     <div id="div_timeline">
@@ -337,6 +347,7 @@
     var tweet_url = "";
     var draw_url = "";
     var draw_status = 0
+    var isauthor = false
     String.prototype.format = function () {
         var a = this;
         for (var k in arguments) {
@@ -396,20 +407,40 @@
                             .then (function (el) {
                                 el.contentDocument.querySelector(".footer").style.display = "none";
                         });
+                        isauthor = data.isauthor;
                         if(data.kind == 0){
-                            $("#label_retweetcount").html("You can load entries up to " + data.free_max + " as free. Are you sure to create contest?")
-                            $("#btn_import").html("Create Contest");
+                            if(isauthor){
+                                $("#label_retweetcount").html("You can load entries up to " + data.free_max + " as free. Are you sure to create contest?")
+                                $("#btn_import").html("Create Contest");
+                            }else{
+                                $("#label_retweetcount").html("You can't manage this tweet because you are not the author.")
+                            }
                         }else if(data.kind == 1){
-                            $("#label_retweetcount").html("You have already created contest with this tweet.")
-                            $("#btn_import").html("Continue Contest");
-                            set_actions(data.actions)
+                            if(isauthor){
+                                $("#label_retweetcount").html("You have already created contest with this tweet.")
+                                $("#btn_import").html("Continue Contest");
+                                set_actions(data.actions)
+                            }else{
+                                $("#label_retweetcount").html("You can't manage this tweet because you are not the author.")
+                            }
                         }else{
                             $("#label_retweetcount").html("This contest has already been processed. Would you like to see the results?")
+                            $("#btn_import").html("See Result");
                             set_actions(data.actions)
+                            if(data.draw_info.draw_id == ''){
+                                $("#spn_drawid").html('_')
+                            }else{
+                                $("#spn_drawid").html("<a href='/retweet-picker/draw-result/" + data.draw_info.draw_id + "'>" + data.draw_info.draw_id + "</a>")
+                            }
                             $("#spn_drawdate").html(data.draw_info.drawed_at)
                             $("#spn_entries").html(data.draw_info.entries)
                             $("#a_redraw").attr('href', '../draw/' + data.draw_info.gwid + "?tab=draw")
                             show_rerolls(data.draw_info.winner_count, data.draw_info.rerolls);
+                            if(isauthor){
+                                $("#a_redraw").show()
+                            }else{
+                                $("#a_redraw").hide()
+                            }
                         }
                         draw_status = data.kind;
                         $("a[href='#step-6']").removeClass('disabled');
@@ -427,17 +458,24 @@
             $("a[href='#step-8']").parent().show()
             $("a[href='#step-9']").parent().hide()
             if(draw_status == 0){
-                $("a[href='#step-7']").removeClass('disabled').trigger('click');
+                if(isauthor){
+                    $("a[href='#step-7']").removeClass('disabled').trigger('click');
+                }else{
+                    $("a[href='#step-5']").removeClass('disabled').trigger('click');
+                }
             }else if(draw_status == 1){
-                $("a[href='#step-7']").removeClass('disabled');
-                $("a[href='#step-8']").removeClass('disabled').trigger('click');
+                if(isauthor){
+                    $("a[href='#step-7']").removeClass('disabled');
+                    $("a[href='#step-8']").removeClass('disabled').trigger('click');
+                }else{
+                    $("a[href='#step-5']").removeClass('disabled').trigger('click'); 
+                }
             }else{
                 $(".steps-form-3").addClass('kind3')
                 $("a[href='#step-7']").parent().hide()
                 $("a[href='#step-8']").parent().hide()
                 $("a[href='#step-9']").parent().show()
                 $("a[href='#step-9']").removeClass('disabled').trigger('click');
-                
             }
         })
         $("#a_settings").click(function(){
@@ -483,46 +521,10 @@
             })
             
         })
-        $("#btn_verify").click(function(){
-            draw_id = $("#in_drawid").val().trim()
-            if(draw_id == ''){
-                $("#div_verify").addClass('error');
-                return;
-            }
-            $("#label_verifystatus").html("Please wait while getting data...")
-            $("#spn_drawdate").html("_")
-            $("#spn_entries").html("_")
-            $("#label_drawdate").show()
-            $("#label_entries").show()
-            // $("#tbl_drawing tbody").html("")
-            $("#verifyModal").modal({backdrop: 'static', keyboard: false})
-            $.ajax({
-                type: "POST",
-                url: "/contests/draw_verify",
-                data: {'draw_id': draw_id},
-                success: function (data) {
-                    if (data.success == true) {
-                        if(data.draw_info.draw_status != 'W'){
-                            $("#label_verifystatus").html("This contest is not finished yet.")
-                            $("#label_drawdate").hide()
-                            $("#label_entries").hide()
-                        }else{
-                            $("#label_verifystatus").html("Results :")
-                            f_drawdate = new Date(data.draw_info.drawed_at).toLocaleString()
-                            $("#spn_drawdate").html(f_drawdate)
-                            $("#spn_entries").html(data.draw_info.entries)
-                            show_rerolls(data.draw_info.winner_count, data.draw_info.rerolls);
-                        }
-                    } else {
-                        $("#label_verifystatus").html(data.msg)
-                        $("#label_drawdate").hide()
-                        $("#label_entries").hide()
-                    }
-                }
-            })
-        })
+        
     })
     function set_actions(actions){
+        $("#chk_bot").prop("checked", actions.bot_chk)
         $("#in_winner").val(actions.winner);
         $('#add_tags').importTags(actions.followers);
         set_settings()
@@ -534,6 +536,12 @@
         if(str == ''){
             str = "_"
         }
+        if(res.bot_chk){
+            $("#spn_botchk").html('<i class="fas fa-check text-success"></i>');
+        }else{
+            $("#spn_botchk").html('<i class="fas fa-times text-danger"></i>');
+        }
+        
         $("#spn_followers").html(str);
     }
     function show_rerolls(wcount, data){

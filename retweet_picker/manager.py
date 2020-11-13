@@ -188,19 +188,27 @@ class GiveawayManager:
 
     def perform_winner_analysis(self, winner=None):
         # TODO Add following sponsors relationship
-        eligibility = True
-        reason = None
-        bc = BotCheck(username=winner)
-        logging.info(bc.user_analysis)
-        bot = bc.bot_prediction()
-        if bot:
-            eligibility = False
-            reason = "User is a bot"
-        following, member_not_followed = self.contestant_following_sponsors(winner)
-        if not following:
-            eligibility = False
-            reason = f"Winner was not following {member_not_followed}"
-        return reason, eligibility
+        try:
+            eligibility = True
+            reason = None
+            if self.results.bot_chk:
+                print("== checking bot ")
+                bc = BotCheck(username=winner)
+                logging.info(bc.user_analysis)
+                bot = bc.bot_prediction()
+                if bot:
+                    eligibility = False
+                    reason = "User is a bot"
+            following, member_not_followed = self.contestant_following_sponsors(winner)
+            if not following:
+                eligibility = False
+                reason = f"Winner was not following {member_not_followed}"
+            return reason, eligibility
+        except Exception as e:
+            print("==== error")
+            print(e)
+            print("=== end error")
+            return 'Error from this user', False
 
     def contestant_following_sponsors(self, contestant):
         following_sponsors = True
@@ -316,7 +324,7 @@ class GiveawayManager:
             if actions['draw_type'] == 'draw':
                 results = GiveawayWinners.objects.get(id=gwid)
                 self.results = results
-                self.participants = list(ContestUserParticipation.objects.get(contest=self.tweet_id_key, user_id=self.user_id).contestants.all())
+                self.participants = list(ContestUserParticipation.objects.get(contest=self.tweet_id_key, kind=1).contestants.all())
                 self.results.participants = len(self.participants)
                 self.results.winner.clear()
                 self.results.re_rolls.clear()
@@ -326,9 +334,7 @@ class GiveawayManager:
                 self.winner_count = 1
                 results = GiveawayWinners.objects.get(id=gwid)
                 self.results = results
-                print(" === action roll _id :", actions['reroll_id'])
                 reroll_contestant_id = Rerolls.objects.get(id=actions['reroll_id']).contestant_id
-                print(" === reroll contestant_user_id :", reroll_contestant_id)
                 reroll_user = ContestUserAccounts.objects.get(user_id=reroll_contestant_id)
                 self.results.winner.remove(reroll_user)
                 self.results.re_rolls.filter(id=actions['reroll_id']).update(kind=3)
@@ -337,7 +343,7 @@ class GiveawayManager:
                 reroll_ids = []
                 for r in rerolls:
                     reroll_ids.append(r.contestant_id)
-                cup = ContestUserParticipation.objects.get(contest=self.tweet_id_key, user_id=self.user_id)
+                cup = ContestUserParticipation.objects.get(contest=self.tweet_id_key, kind=1)
                 if len(reroll_ids) == 0:
                     self.participants = list(cup.contestants.all())
                 else:
@@ -385,6 +391,7 @@ class GiveawayManager:
                     print("=== stop drawing")
                     break
         except Exception as e:
+            GiveawayWinners.objects.filter(id=gwid).update(status='S')
             print(e)
             logging.info("Could not draw winner!")
             res['msg'] = "Could not draw winner!"

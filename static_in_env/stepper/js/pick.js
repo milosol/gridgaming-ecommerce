@@ -8,6 +8,9 @@ $(function(){
         }
         set_settings();
     })
+    $("#chk_bot").change(function(e){
+        set_settings();
+    })
     $('#add_tags').tagsInput({
         onChange: ()=>{
             set_settings();
@@ -21,5 +24,6 @@ function get_actions(){
     res.tags = $('#add_tags').val();
     if(winner > 0) res.winner = winner
     else res.winner = ''
+    res.bot_chk = $("#chk_bot").prop('checked');
     return res
 }

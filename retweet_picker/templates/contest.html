@@ -373,6 +373,8 @@
                                             <div class="card-body">
                                                 <h6><span class="entries_id">Retweets Count : <span id="spn_entries" class="pl-2">_</span></span></h6>
                                                 <h6>Number of winners : <span id="spn_winner" class="pl-2">_</span></h6>
+                                                <h6>Check Bot : <span id="spn_botchk" class="pl-2"><i
+                                                    class="fas fa-check text-success"></i></span></h6>
                                                 <h6>Follow Main Account : <span id="spn_followenable" class="pl-2"><i
                                                             class="fas fa-check text-success"></i></span></h6>
                                                 <h6>Follow Others : <span id="spn_followers" class="pl-2">_</span></h6>
@@ -469,10 +471,7 @@
     var entry_table = 0;
     var start_from = 100
     var drawing_handle = 0;
-    console.log("context:", context);
     function initialize() {
-        console.log("draw_status :", context.draw_status);
-        console.log("paystatus : ", context.pay_status)
         init_entrypanel()
         init_drawpanel()
     }
@@ -581,6 +580,11 @@
             $("#spn_entries").html(context.loaded_count);
         }
         $("#spn_winner").html(context.winner_count);
+        if(context.bot_chk){
+            $("#spn_botchk").html('<i class="fas fa-check text-success"></i>');
+        }else{
+            $("#spn_botchk").html('<i class="fas fa-times text-danger"></i>');
+        }
         str = context.followers.split(',').join(', ');
         if(str == ''){
             str = "_"
@@ -588,7 +592,7 @@
         $("#spn_followers").html(str);
         if(context.draw_status == 'W'){
             $("#spn_drawdate").html(context.draw_info.drawed_at)
-            $("#spn_drawid").html(context.draw_info.draw_id)
+            $("#spn_drawid").html("<a href='/retweet-picker/draw-result/" + context.draw_info.draw_id + "'>" + context.draw_info.draw_id + "</a>")
         }else{
             $("#spn_drawdate").html('_')
             $("#spn_drawid").html('_')
@@ -641,10 +645,9 @@
         $('#div_zero').show()
         $.ajax({
             type: "POST",
-            url: "/contests/load_all_entries",
+            url: "/retweet-picker/load_all_entries",
             data: { 'gwid': context.gwid },
             success: function (data) {
-                console.log(data)
                 if (data.success == true) {
                     draw_table(data.participants)
                 } else {
@@ -660,7 +663,7 @@
     function get_drawing_progress() {
         $.ajax({
             type: "POST",
-            url: "/contests/drawing_progress",
+            url: "/retweet-picker/drawing_progress",
             data: { 'gwid': context.gwid },
             success: function (data) {
                 if (data.success == true) {
@@ -710,7 +713,7 @@
     function load_entry_progress() {
         $.ajax({
             type: "POST",
-            url: "/contests/load_entry_progress",
+            url: "/retweet-picker/load_entry_progress",
             data: { 'gwid': context.gwid },
             success: function (data) {
                 if (data.success == true) {
@@ -752,7 +755,7 @@
             entry_table.clear().draw();
         $.ajax({
             type: "POST",
-            url: "/contests/load_entries",
+            url: "/retweet-picker/load_entries",
             data: { 'gwid': context.gwid, 'pay_status': context.pay_status },
             success: function (data) {
                 if (data.success == true) {
@@ -839,11 +842,11 @@
                                 $("#label_status").html("<i class=\"mr-2 mdi mdi-flag-checkered\"></i> Draw is finished")
                                 $("#label_status").attr('class', 'text-success');
                                 $("#spn_drawdate").html(data.draw_info.drawed_at)
-                                $("#spn_drawid").html(data.draw_info.draw_id)
+                                $("#spn_drawid").html("<a href='/retweet-picker/draw-result/" + data.draw_info.draw_id + "'>" + data.draw_info.draw_id + "</a>")
                             }
                             $("#btn_drawstop").hide()
                         } else {
-                            if (draw_type == 'draw') {
+                            if (type == 'draw') {
                                 $('#div_drawing').hide();
                                 $("#div_choose").fadeIn()
                             } else {
@@ -858,7 +861,7 @@
                     }, error: function () {
                         if (drawing_handle)
                             clearInterval(drawing_handle);
-                        if (draw_type == 'draw') {
+                        if (type == 'draw') {
                             $('#div_drawing').hide();
                             $("#div_choose").fadeIn()
                         } else {

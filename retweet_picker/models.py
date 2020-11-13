@@ -82,7 +82,7 @@ class TwitterGiveawayID(models.Model):
 class ContestUserParticipation(models.Model):
     contestants = models.ManyToManyField(ContestUserAccounts)
     contest = models.ForeignKey('TwitterGiveawayID', on_delete=models.CASCADE)
-    user_id = models.IntegerField(default=0)
+    kind = models.IntegerField(default=0)
 
     def __str__(self):
         return str(self.contest.tweet_url)
@@ -136,6 +136,7 @@ class GiveawayWinners(models.Model):
     drawed_at = models.DateTimeField(null=True)
     winner_count = models.IntegerField(default=1)
     follow_main = models.BooleanField(default=True)
+    bot_chk = models.BooleanField(default=True)
     followers = models.CharField(max_length=250, blank=True)
     retweet_count = models.IntegerField(default=0)
     toload_count = models.IntegerField(default=0)
@@ -144,7 +145,7 @@ class GiveawayWinners(models.Model):
     user_id = models.IntegerField(default=0)
     command = models.IntegerField(default=0)
     draw_id = models.CharField(max_length=50, blank=True)
-    
+    rerolled_count = models.IntegerField(default=0)
     class Meta:
         ordering = ['id']
         
@@ -207,13 +208,14 @@ class PricingPlan(models.Model):
     limit_count = models.IntegerField(default=10000000)
     unlimited_times = models.BooleanField(default=False)
     unlimited_count = models.BooleanField(default=True)
+    reroll_count = models.IntegerField(default=10)
     class Meta:
         ordering = ['price']
         
     def __str__(self):
         return self.plan
     
-class Membership(models.Model):
+class Membership(models.Model): 
     user_id = models.IntegerField(default=0)
     plan = models.CharField(choices=PRICINGPLAN_CHOICES, max_length=1, default='F')
     paid_month = models.IntegerField(default=0)
