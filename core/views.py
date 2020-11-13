@@ -19,6 +19,7 @@ from paypal.standard.forms import PayPalPaymentsForm
 from stripe import error
 from bitpay.client import Client
 
+from users.models import User
 from core.decorators import account_type_check
 from slotapp.views import del_timing
 from .forms import CheckoutFormv2, CouponForm, RefundForm, PaymentForm, BitpayForm
@@ -176,14 +177,11 @@ class CheckoutViewV2(View):
 
 def get_user_pending_order(request):
     try:
-        # get order for the correct user
         kind = request.session.get('kind', 0)
-        # user_profile = get_object_or_404(UserProfile, user=request.user)
-        user_profile, created = UserProfile.objects.get_or_create(user=request.user)
-        order = Order.objects.filter(user=user_profile.user, ordered=False, kind=kind)
-        # order = Order.objects.filter(user=request.user, ordered=False, kind=kind)
+        user = User.objects.get(id=request.user.id)
+        user_profile, created = UserProfile.objects.get_or_create(user=user)
+        order = Order.objects.filter(user=user, ordered=False, kind=kind)
         if order.exists():
-            # get the only order in the list of filtered orders
             return order[0]
         
     except Exception as e:

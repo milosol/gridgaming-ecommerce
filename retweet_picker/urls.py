@@ -11,7 +11,7 @@ from .views import (
     delete_queue,
     clear_queue,
     pick, draw, drawstop, fetch_data, import_contest, pick_entries, load_entries, load_entry_progress,
-    load_all_entries, drawing_progress, draw_verify
+    load_all_entries, drawing_progress, draw_result
 )
 
 app_name = 'retweet_picker'
@@ -24,7 +24,7 @@ urlpatterns = [
     # path('queue/<str:queue_type>/', QueueListView.as_view() , name='queue_view'),
     path('delqueue', delete_queue , name='del_queue'),
     path('draw', draw , name='draw'),
-    path('draw_verify', draw_verify , name='draw_verify'),
+    path('draw-result/<draw_id>', draw_result , name='draw_result'),
     path('drawstop', drawstop , name='drawstop'),
     path('drawing_progress', drawing_progress , name='drawing_progress'),
     path('fetch_data', fetch_data , name='fetch_data'),

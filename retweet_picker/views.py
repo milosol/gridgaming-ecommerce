@@ -444,13 +444,20 @@ def fetch_data(request):
         res = fetch_content_from_url(existing_tweet_url=link)
         res['kind'] = 0
         if res['success'] == True:
+            print('=== author:', res['author'], ":", request.user.username)
+            if res['author'] == request.user.username or request.user.is_staff == True:
+                res['isauthor'] = True
+            else:
+                res['isauthor'] = False
+                
             tgids = TwitterGiveawayID.objects.filter(tweet_url=res['tweet_url'])
             if tgids.exists():
-                gws= GiveawayWinners.objects.filter(giveaway_id=tgids[0], user_id=request.user.id)
+                gws= GiveawayWinners.objects.filter(giveaway_id=tgids[0])
                 if gws.exists():
                     if gws[0].status == 'W':
                         res['kind'] = 2 # already drawed
                         temp = {}
+                        temp['draw_id'] = gws[0].draw_id
                         temp['draw_status'] = gws[0].status
                         temp['drawed_at'] = '' if gws[0].drawed_at == None else gws[0].drawed_at.strftime("%d %B, %Y")
                         temp['entries'] = gws[0].loaded_count
@@ -460,7 +467,7 @@ def fetch_data(request):
                         res['draw_info'] = temp
                     else:
                         res['kind'] = 1 # to  draw
-                    res['actions'] = {'winner': gws[0].winner_count, 'fe': gws[0].follow_main, 'followers': gws[0].followers}
+                    res['actions'] = {'winner': gws[0].winner_count, 'fe': gws[0].follow_main, 'followers': gws[0].followers, 'bot_chk': gws[0].bot_chk}
         
         if DrawPrice.objects.all().count() == 0:
             DrawPrice.objects.create(price=1)
@@ -480,10 +487,12 @@ def import_contest(request):
         link = request.POST['link']
         actions = json.loads(request.POST['actions'])
         tgid, created = TwitterGiveawayID.objects.get_or_create(tweet_url=link)
-        gw, created = GiveawayWinners.objects.get_or_create(giveaway_id=tgid, user_id=request.user.id)
+        gw, created = GiveawayWinners.objects.get_or_create(giveaway_id=tgid)
+        gw.user_id = request.user.id
         gw.winner_count = int(actions['winner'])
         gw.follow_main = actions['fe']
         gw.followers = actions['tags']
+        gw.bot_chk = actions['bot_chk']
         gw.save()
         res['gwid'] = gw.id
     except Exception as e:
@@ -544,6 +553,7 @@ def pick_entries(request, gwid):
         context['loaded_count'] = gw.loaded_count
         context['paid_amount'] = gw.paid_count
         context['winner_count'] = gw.winner_count
+        context['bot_chk'] = gw.bot_chk
         context['follow_main'] = gw.follow_main
         context['followers'] = gw.followers
         context['tweet_url'] = tweet_url
@@ -623,7 +633,7 @@ def load_all_entries(request):
         gw = GiveawayWinners.objects.get(id=gwid)
         tgid = TwitterGiveawayID.objects.get(id=gw.giveaway_id_id)
         tweet_url = tgid.tweet_url
-        cups = ContestUserParticipation.objects.filter(contest=tgid, user_id=gw.user_id)
+        cups = ContestUserParticipation.objects.filter(contest=tgid, kind=1)
         if cups.exists():
             participants = cups[0].contestants.all()
             for p in participants:
@@ -643,6 +653,7 @@ def get_drawinformation(gwid):
     res = {'success:': True, 'msg': '', 'draw_info': {}}
     try:
         gw = GiveawayWinners.objects.get(id=gwid)
+        res['draw_info']['draw_id'] = gw.draw_id
         res['draw_info']['draw_status'] = gw.status
         res['draw_info']['drawed_at'] = '' if gw.drawed_at == None else gw.drawed_at.strftime("%d %B, %Y")
         res['draw_info']['draw_id'] = gw.draw_id
@@ -686,7 +697,7 @@ def draw(request):
                 
         actions['sponsors'] = sponsors
         actions['gwid'] = gwid
-        res = draw_winner(existing_tweet_url=tweet_url, winner_count=gw.winner_count, actions=actions, user_id=request.user.id)
+        res = draw_winner(existing_tweet_url=tweet_url, winner_count=gw.winner_count, actions=actions, user_id=gw.user_id)
         if res['success'] == True and res['stop'] == False:
             gw = GiveawayWinners.objects.get(id=gwid)
             gw.status = 'W'
@@ -755,27 +766,22 @@ def drawing_progress(request):
     return JsonResponse(res)
 
 
-@csrf_exempt
-def draw_verify(request):
-    res = {'success': True, 'msg': '', 'draw_info': {}}
-    try:
-        draw_id = request.POST['draw_id']
-        print("=== verifying : ", draw_id)
-        tgids = TwitterGiveawayID.objects.filter(tweet_url=draw_id)
-        if tgids.exists():
-            gws = GiveawayWinners.objects.filter(giveaway_id=tgids[0], user_id=request.user.id)
-        else:
-            gws = GiveawayWinners.objects.filter(draw_id=draw_id)
-        if not gws.exists():
-            res['success'] = False
-            res['msg'] = 'There is no matching draw'
-            return JsonResponse(res)
+def draw_result(request, draw_id):
+    print("=== drawid", draw_id)
+    # tgids = TwitterGiveawayID.objects.filter(tweet_url=draw_id)
+    # if tgids.exists():
+    #     gws = GiveawayWinners.objects.filter(giveaway_id=tgids[0], user_id=request.user.id)
+    context = {'exist': True}
+    gws = GiveawayWinners.objects.filter(draw_id=draw_id)
+    if not gws.exists():
+        context['exist'] = False
+    else:
         gw = gws[0]
-        res['draw_info']['draw_status'] = gw.status
-        res['draw_info']['drawed_at'] = gw.drawed_at
-        res['draw_info']['entries'] = gw.loaded_count
-        res['draw_info']['winner_count'] = gw.winner_count
-        res['draw_info']['rerolls'] = []
+        context['draw_status'] = gw.status
+        context['drawed_at'] = '' if gws[0].drawed_at == None else gws[0].drawed_at.strftime("%d %B, %Y")
+        context['entries'] = gw.loaded_count
+        context['winner_count'] = gw.winner_count
+        context['rerolls'] = []
         rerolls = gw.re_rolls.all()
         for reroll in rerolls:
             cuas = ContestUserAccounts.objects.filter(pk=reroll.contestant_id)
@@ -784,13 +790,10 @@ def draw_verify(request):
                 cua = cuas[0]
                 temp['screen_name'] = cua.user_screen_name
                 temp['profile_img'] = cua.profile_img
-            res['draw_info']['rerolls'].append(
-                {'id': reroll.id, 'reason': reroll.reason, 'kind': reroll.kind, 'user_info': temp})
-    except Exception as e:
-        print(e)
-        res['success'] = False
-        res['msg'] = 'Error occured while verify.'
-    return JsonResponse(res)
+                context['rerolls'].append(
+                    {'id': reroll.id, 'reason': reroll.reason, 'kind': reroll.kind, 'user_info': temp})
+    context['context'] = dumps(context)
+    return render(request, "draw_result.html", context)
 
 # def get_ipaddress(request):
 #     # if this is a POST request we need to process the form data

@@ -1,0 +1,231 @@
+{% load static %}
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>GridGaming.IO - The World's First Automated Giveaway Platform</title>
+    <meta property="og:title" content="GridGamingIO - The world's first automated giveaway platform">
+    <meta property="og:description" content="The world's first automated giveaway platform.">
+    
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'assets/images/apple-touch-icon.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'assets/images/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'assets/images/favicon-16x16.png' %}">
+    
+    <link href="{% static 'dist/css/style.css'%}" rel="stylesheet">
+    <link href="{% static 'css/gridgaming.css' %}" rel="stylesheet">
+    <link href="{% static 'stepper/css/pick.css' %}" rel="stylesheet">
+
+    <script src="{% static 'assets/libs/jquery/dist/jquery.min.js' %}"></script>
+    <script src="{% static 'assets/libs/bootstrap/dist/js/bootstrap.min.js' %}"></script>
+
+<style>
+    .user_avatar{
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-right: 10px;
+    }
+    .tbl_drawing tr td:nth-child(1){
+        padding: 15px 0px 2px 0px;
+        width: 50%;
+        text-align: left;
+    }
+    .tbl_drawing tr td:nth-child(2){
+        padding: 15px 5px 2px 15px;
+        width: 50%;
+        text-align: left;
+    }
+    .tbl_drawing tr td:nth-child(3){
+        padding: 15px 0px 2px 15px;
+        width: 10%;
+        text-align: left;
+    }
+    .col-8.text-right{
+        text-align: -webkit-right!important;
+    }
+
+    #spn_followers{
+        font-size: 16px;
+        color: #31e2e2;
+    }
+</style>
+<body  data-theme="dark">
+    <div class="page-wrapper" style="display: block;">
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-body">
+            <!-- Grid row -->
+            <div class="row pt-5 d-flex justify-content-center">
+                <div class="col-10 mt-2 text-center">
+                    <h2>RETWEET PICKER <span style="color:yellow">BETA</span></h2>
+                    <span class="text-secondary">Retweet picker is currently in beta mode and is currently <u>limited to retweet competitions no longer than 7 days</u>. If you run into an issue please email business@gridgaming.io so we can make it better.</span>
+                    <hr class="mb-5" style="background-color: white;">
+                </div>
+                <div class="col-md-8 col-sm-12 mb-5">
+                    <h3>Draw Result</h3>
+                    <h6  id="label_verifystatus" style="display: none;"></h6>
+                    <h6  id="label_entries">Retweets Count : <span id="spn_entries">{{entries}}</span></h6>
+                    <h6  id="label_drawdate">Draw Date : <span id="spn_drawdate">{{drawed_at}}</span></h6>
+                    <div class="">
+                        <h2 class="pb-3 pt-2 border-bottom mb-5">Drawing Timeline</h2>
+                        <div id="div_timeline">
+                        </div>
+                    </div>
+                    <div class="text-center mt-4">
+                        <a href="/retweet-picker/import/" class="btn btn-outline-secondary px-4">Go To HomePage</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    </div>
+</div>
+    <div style="display: none;">
+        <div id="first_section">
+            <div class="row align-items-center how-it-works d-flex">
+                <div class="col-2 text-center {2} d-inline-flex justify-content-center align-items-center">
+                <div class="circle font-weight-bold">{0}</div>
+                </div>
+                <div class="col-8">
+                    {1}
+                </div>
+            </div>
+        </div>
+        <!--path between 1-2-->
+        <div id="between12">
+            <div class="row timeline">
+                <div class="col-2">
+                <div class="corner top-right"></div>
+                </div>
+                <div class="col-8">
+                <hr/>
+                </div>
+                <div class="col-2">
+                <div class="corner left-bottom"></div>
+                </div>
+            </div>
+        </div>
+        <!--second section-->
+        <div id="second_section">
+            <div class="row align-items-center justify-content-end how-it-works d-flex">
+                <div class="col-8 text-right">
+                {1}
+                </div>
+                <div class="col-2 text-center {2} d-inline-flex justify-content-center align-items-center">
+                <div class="circle font-weight-bold">{0}</div>
+                </div>
+            </div>
+        </div>
+        <!--path between 2-3-->
+        <div id="between23">
+            <div class="row timeline">
+                <div class="col-2">
+                <div class="corner right-bottom"></div>
+                </div>
+                <div class="col-8">
+                <hr/>
+                </div>
+                <div class="col-2">
+                <div class="corner top-left"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="tbl_drawing" style="display: none;">
+        <table class="tbl_drawing">
+            <tbody></tbody>
+        </table>
+    </div>
+</body>
+{% if exist == True %}
+<script  type="text/javascript">
+    var context =  JSON.parse("{{context|escapejs}}");
+    console.log("rerolls:", context.rerolls);
+    String.prototype.format = function () {
+        var a = this;
+        for (var k in arguments) {
+            a = a.replace(new RegExp("\\{" + k + "\\}", 'g'), arguments[k]);
+        }
+        return a
+    }
+    $(function(){
+        
+        show_rerolls(context.winner_count, context.rerolls)
+    })
+        
+    function show_rerolls(wcount, data){
+        $("#div_timeline").html("");
+        index = 0;
+        tbl_index = 1;
+        str = "<tbody>";
+        found_winner = 0
+        winners = []
+        while(1){
+            if(index >= data.length){
+                break;
+            }
+            r = data[index]
+            reason = "";
+            if(r.kind == 0){
+                reason = r.reason;
+            }else if(r.kind > 1){
+                reason = "Chosen as winner!";
+                found_winner += 1;
+                winners.push(r);
+            }
+            str += "<tr id='rtr_" + tbl_index + "_" + r.id + "'><td><img class='user_avatar' src='" + r.user_info.profile_img + "'>"
+            str += "<a href='https://www.twitter.com/" + r.user_info.screen_name + "' target='_blank'>" + r.user_info.screen_name + "</td><td id='rtd_" + tbl_index + "_" + r.id + "'>" + reason +"</td></tr>";
+                
+            if(found_winner == wcount){
+                str += '</tbody>'
+                tbl_str = $("#tbl_drawing").html()
+                tbl_str = tbl_str.replace('<tbody></tbody>', str)
+                if(tbl_index % 2 == 1){
+                    section_str = $("#first_section").html()
+                    bet_str = $("#between12").html()
+                }else{
+                    section_str = $("#second_section").html()
+                    bet_str = $("#between23").html()
+                }
+                if(tbl_index == 1){
+                    before_class = 'bottom'
+                }else{
+                    before_class = 'full'
+                }
+                if(index == data.length - 1){
+                    before_class = 'top'
+                    bet_str = "";
+                }
+                section_str = section_str.format(tbl_index, tbl_str, before_class);
+                $("#div_timeline").append(section_str + bet_str);
+                str = "<tbody>";
+                for(let i=index + 1;i<data.length;i++){
+                    if(data[i].kind > 1){
+                        for(let j=0; j<winners.length; j++){
+                            if(winners[j].reason == data[i].id){
+                                $("#rtd_" + tbl_index + "_" + winners[j].id).html("Rerolled");
+                                winners.splice(j, 1);
+                                found_winner -= 1;
+                                break;
+                            }
+                        }
+                        tbl_index += 1;
+                        for(let j=0; j<winners.length; j++){
+                            str += "<tr id='rtr_" + tbl_index + "_" + winners[j].id + "'><td><img class='user_avatar' src='" + winners[j].user_info.profile_img + "'>"
+                            str += "<a href='https://www.twitter.com/"+winners[j].user_info.screen_name+"' target='_blank'>" + winners[j].user_info.screen_name + "</td><td id='rtd_" + tbl_index + "_" + winners[j].id + "'>" + "Chosen as winner!" +"</td></tr>";
+                        }
+                        break;
+                    }
+                }
+                
+            }
+            index += 1
+        }
+        
+    }
+</script>
+{% endif %}

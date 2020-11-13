@@ -92,8 +92,12 @@ class ProcessRetrievedTweets(GridGiveawayTweetRetriever):
         giveaway_results, created = GiveawayResults.objects.get_or_create(giveaway_id=twitter_giveaway)
         giveaway_results.participants = len(participants)
         # Create m2m mapping
-        contest, created = ContestUserParticipation.objects.get_or_create(contest=twitter_giveaway,
-                                                                          user_id=self.user_id)
+        print("==== self.gwid = ", self.gwid)
+        if self.gwid == 0:
+            contest, created = ContestUserParticipation.objects.get_or_create(contest=twitter_giveaway, kind=0)
+        else:
+            contest, created = ContestUserParticipation.objects.get_or_create(contest=twitter_giveaway, kind=1)
+        
         contest.save()
         contest.contestants.add(*participants)
 

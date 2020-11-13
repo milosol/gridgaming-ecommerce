@@ -40,6 +40,7 @@ def fetch_content_from_url(existing_tweet_url=None):
         if gm.tweet_id:
             res['tweet_id'] = gm.tweet_id
             res['tweet_url'] = gm.tweet_url
+            res['author'] = gm.process_retrieved_tweets.author
         else:
             res['success'] = False
             res['msg'] = "Can't process this url. Are you sure this url is correct?"
@@ -72,7 +73,7 @@ def load_entry_task(gwid, user_id, pay_status):
         ret_count = gm.tweet.retweet_count
         dp = DrawPrice.objects.all().first()
         gw.retweet_count = ret_count
-        cups = ContestUserParticipation.objects.filter(contest=tgid, user_id=gw.user_id)
+        cups = ContestUserParticipation.objects.filter(contest=tgid, kind=1)
         if cups.exists():
             cups[0].contestants.clear()
 

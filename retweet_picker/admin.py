@@ -67,9 +67,9 @@ class TwitterGiveawayIDAdmin(admin.ModelAdmin):
     
 class ContestUserParticipationAdmin(admin.ModelAdmin):
     list_display = [
-        'user_id',
         'contest_id',
-        'tweet_url'
+        'tweet_url',
+        'kind',
     ]
     
     def tweet_url(self, obj):
@@ -120,6 +120,7 @@ class GiveawayWinnersAdmin(admin.ModelAdmin):
         'winners',
         'tweet_url',
         'winner_count',
+        'bot_chk',
         'follow_main',
         'followers',
     ]
