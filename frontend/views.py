@@ -360,7 +360,7 @@ class StripePaymentView(View):
                 else:
                     add_drawcount(uo.id)
                     messages.success(self.request, "Payment succeed", extra_tags='order_complete')
-                    return redirect("/contests/" + str(uo.gwid) + "/entries")
+                    return redirect("/retweet-picker/" + str(uo.gwid) + "/entries")
                 
             messages.warning(self.request, "Invalid data received")
             return redirect("frontend:stripepayment")
