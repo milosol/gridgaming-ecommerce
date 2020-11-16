@@ -186,13 +186,13 @@ class GiveawayManager:
         change_order_status(self.order_id, 'T')
         return winner
 
-    def perform_winner_analysis(self, winner=None):
+    def perform_winner_analysis(self, winner=None, botchk=True):
         # TODO Add following sponsors relationship
         try:
             eligibility = True
             reason = None
-            if self.results.bot_chk:
-                print("== checking bot ")
+            if botchk:
+                print("=== checking bot")
                 bc = BotCheck(username=winner)
                 logging.info(bc.user_analysis)
                 bot = bc.bot_prediction()
@@ -288,7 +288,7 @@ class GiveawayManager:
                 rerolls = []
                 while not eligible_to_win:
                     winner_obj = self.choose_winner()
-                    reason, eligible_to_win = self.perform_winner_analysis(self.winner)
+                    reason, eligible_to_win = self.perform_winner_analysis(self.winner, True)
                     if not eligible_to_win:
                         logging.info(f'{self.winner} is not eligible... rerolling: Reason: {reason}')
                         reroll_record, created = get_user(winner_obj)
@@ -371,7 +371,7 @@ class GiveawayManager:
                     reroller = Rerolls.objects.create(contestant=reroll_record, kind=1)
                     self.results.re_rolls.add(reroller)
                     self.winner = winner.user_screen_name
-                    reason, eligible_to_win = self.perform_winner_analysis(self.winner)
+                    reason, eligible_to_win = self.perform_winner_analysis(self.winner, self.results.bot_chk)
                     if not eligible_to_win:
                         logging.info(f'{self.winner} is not eligible... rerolling: Reason: {reason}')
                         # reroller = Rerolls.objects.create(reason=reason, contestant=reroll_record)
