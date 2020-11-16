@@ -239,9 +239,9 @@ class PaymentAdmin(admin.ModelAdmin):
 
 class UserProfileAdmin(admin.ModelAdmin):
     list_display = [
-        'user',
+        'user_id',
     ]
-    search_fields = ['user']
+    search_fields = ['user_id']
 
 
 

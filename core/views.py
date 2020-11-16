@@ -179,7 +179,7 @@ def get_user_pending_order(request):
     try:
         kind = request.session.get('kind', 0)
         user = User.objects.get(id=request.user.id)
-        user_profile, created = UserProfile.objects.get_or_create(user=user)
+        user_profile, created = UserProfile.objects.get_or_create(user_id=user.id)
         order = Order.objects.filter(user=user, ordered=False, kind=kind)
         if order.exists():
             return order[0]
@@ -210,7 +210,8 @@ class PaymentView(View):
                         # 'client_token': client_token,
                         'client_token': create_ref_code(),
                     }
-                    userprofile = self.request.user.user_profile
+                    # userprofile = self.request.user.user_profile
+                    userprofile = UserProfile.objects.get(user_id=self.request.user.id)
                     if userprofile.one_click_purchasing:
                         # fetch the users card list
                         cards = stripe.Customer.list_sources(
@@ -242,7 +243,7 @@ class PaymentView(View):
         kind = self.request.session.get('kind', 0)
         order = get_user_pending_order(self.request)
         form = PaymentForm(self.request.POST)
-        userprofile, created = UserProfile.objects.get_or_create(user=self.request.user)
+        userprofile, created = UserProfile.objects.get_or_create(user_id=self.request.user.id)
         charge = None
         braintree_id = None
 
