@@ -97,7 +97,7 @@ function confirmLaunch(order_id, item_id) {
         confirmButtonText: 'Yes, send it!'
     }).then((result) => {
         if (result.value) {
-            window.location.href = "/contests/launch/" + order_id + "/" + item_id;
+            window.location.href = "/retweet-picker/launch/" + order_id + "/" + item_id;
         } else if (
             /* Read more about handling dismissals below */
             result.dismiss === Swal.DismissReason.cancel

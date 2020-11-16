@@ -19,7 +19,7 @@ Swal.fire({
   showLoaderOnConfirm: false,
  allowOutsideClick: false,
   preConfirm: (secret_code) => {
-    return fetch(`/contests/bubble_rescue/decoder_ring/${secret_code}`)
+    return fetch(`/retweet-picker/bubble_rescue/decoder_ring/${secret_code}`)
       .then(response => {
         if (!response.ok) {
           throw new Error(response.statusText)

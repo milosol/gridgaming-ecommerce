@@ -207,7 +207,7 @@ class PaypalPaymentView(View):
                 return_url = 'http://{}{}'.format(host, reverse('frontend:profile')) + "?tab=membership"
                 item_name = "Upgrade Membership : " + uo.upgradeto + "_" + str(uo.id)
             else:
-                return_url = 'http://{}{}'.format(host, "/contests/" + str(uo.gwid) + "/entries")
+                return_url = 'http://{}{}'.format(host, "/retweet-picker/draw/" + str(uo.gwid))
                 item_name = "Pay for drawing " + str(uo.id)
             print(" === return url :", return_url)
             paypal_dict = {

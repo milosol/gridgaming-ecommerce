@@ -133,7 +133,7 @@
                 </div>
             </div>
     {% for instance in object_list %}
-        <p><a href="/contests/results/{{ instance.giveaway_id }}">{{ instance.giveaway_id }}</a> {{ instance.get_absolute_url }}
+        <p><a href="/retweet-picker/results/{{ instance.giveaway_id }}">{{ instance.giveaway_id }}</a> {{ instance.get_absolute_url }}
             winner: {{ instance.get_winner }} {{ instance.created_at }}</p>
     {% endfor %}
 {% endblock %}
