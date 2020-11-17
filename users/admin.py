@@ -7,8 +7,8 @@ from .models import User, UserRoles
 
 class AssignUserRole(admin.ModelAdmin):
     model = User
-    search_fields = ['username','email']
-    list_display = ['username', 'first_name','last_name', 'email', 'get_account_type', 'cleared_hot']
+    search_fields = ['id', 'username','email']
+    list_display = ['id', 'username', 'first_name','last_name', 'email', 'get_account_type', 'cleared_hot']
     list_filter = ('is_staff', 'is_superuser', 'cleared_hot', 'account_type__role_name')
 
     def get_account_type(self, obj):

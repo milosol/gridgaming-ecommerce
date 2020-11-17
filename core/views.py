@@ -177,9 +177,22 @@ class CheckoutViewV2(View):
 
 def get_user_pending_order(request):
     try:
+        print("==== get pending order")
         kind = request.session.get('kind', 0)
+        print("==== request.user.id:", request.user.id)
         user = User.objects.get(id=request.user.id)
-        user_profile, created = UserProfile.objects.get_or_create(user_id=user.id)
+        print("=== got user object :", user.id)
+        ups = UserProfile.objects.filter(user_id=user.id)
+        print("=== ups count :", ups.count())
+        if ups.exists():
+            print("=== user profile exists")
+            user_profile = ups[0]
+            print("=== existing user profile's id:", user_profile.id)
+        else:
+            print("=== user profile does not exists")
+            user_profile = UserProfile.objects.create(user_id=user.id)
+            print("=== created user profile's id :", user_profile.id)
+            
         order = Order.objects.filter(user=user, ordered=False, kind=kind)
         if order.exists():
             return order[0]
