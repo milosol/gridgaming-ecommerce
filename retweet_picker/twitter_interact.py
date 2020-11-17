@@ -83,9 +83,10 @@ class GridGiveawayTweetRetriever(TwitterInteract):
         # Remove last element in tweet to account for URLs
         # Take 70% of the tweet to reduce length
         split = int(self.tweet_ratio * len(self.tweet.full_text.split()))
-        tweet_text = ' '.join(self.tweet.full_text.split()[:split])
+        #tweet_text = ' '.join(self.tweet.full_text.split()[:split])
         # encoded_tweet_text = urllib.parse.quote_plus(tweet_text)
-        searchQuery = 'RT @{author} '.format(author=self.author) + tweet_text.replace('-',' ')
+        tweet_text = ' '.join(self.tweet.full_text.split()[:split]).replace('-',' ')
+        searchQuery = 'RT @{author} '.format(author=self.author) + tweet_text
         replace_urls = re.sub('http://\S+|https://\S+', '', searchQuery)
         searchQuery = replace_urls
         #searchQuery = replace_urls[:229]  #limit to 229 characters total no matter what the ratio is for free API
