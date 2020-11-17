@@ -246,7 +246,7 @@ class StripePaymentView(View):
                 # 'client_token': client_token,
                 'client_token': create_ref_code(),
             }
-            userprofile, created = UserProfile.objects.get_or_create(user_id=self.request.user.id)
+            userprofile, created = UserProfile.objects.get_or_create(user=self.request.user)
             if userprofile.one_click_purchasing:
                 # fetch the users card list
                 cards = stripe.Customer.list_sources(
@@ -272,7 +272,7 @@ class StripePaymentView(View):
             form = PaymentForm(self.request.POST)
             uoid = self.request.session.get('uoid', -1)
             uo = Upgradeorder.objects.get(id=uoid)
-            userprofile, created = UserProfile.objects.get_or_create(user_id=self.request.user.id)
+            userprofile, created = UserProfile.objects.get_or_create(user=self.request.user)
             charge = None
             if form.is_valid():
                 stripe_token = form.cleaned_data.get('stripeToken')

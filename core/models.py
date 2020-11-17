@@ -52,16 +52,15 @@ PAYMENT_METHOD = (
 
 
 class UserProfile(models.Model):
-    # user = models.OneToOneField(
-    #     settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='user_profile')
-    user_id = models.IntegerField(default=0)
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='user_profile')
     stripe_customer_id = models.CharField(max_length=50, blank=True, null=True)
     braintree_customer_id = models.CharField(max_length=50, blank=True, null=True)
     one_click_purchasing = models.BooleanField(default=False)
     twitch_account = models.CharField(max_length=250, null=True, blank=True)
 
     def __str__(self):
-        return str(self.user_id)
+        return str(self.user.username)
 
 
 class Socials(models.Model):
