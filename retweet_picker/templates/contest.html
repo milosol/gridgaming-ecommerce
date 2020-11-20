@@ -401,6 +401,7 @@
                                             </div>
                                             <div class="card-body">
                                                 <h5 id="label_status">Please wait while choosing winner...</h5>
+                                                <h5 id="label_reroll" class="text-right" style="display: none;">Reroll times left : <span id="spn_reroll">0</span></h5>
                                                 <table id="tbl_drawing" class="mt-3">
                                                     <tbody>
                                                     </tbody>
@@ -552,12 +553,16 @@
     function init_drawpanel() {
         // draw_status, draw_winners, draw_date, draw_id
         setdrawdetail()
+        $("#label_reroll").hide()
         if(context.draw_status == 'W'){
             $("#div_choose").hide();
             $("#div_drawing").fadeIn();
             $("#label_status").html("<i class=\"mr-2 mdi mdi-flag-checkered\"></i> Draw is finished")
             $("#label_status").attr('class', 'text-success');
             $("#btn_drawstop").hide()
+            $("#label_reroll").show()
+            console.log("context.reroll_limit:", context.draw_info.reroll_limit);
+            $("#spn_reroll").html(context.draw_info.reroll_limit)
             show_rerolls(context.rerolls)
             show_reroll_buttons();
         }else if(context.draw_status == 'D'){
@@ -679,6 +684,9 @@
         for (i = 0; i < items.length; i++) {
             td_id = $(items[i]).attr('id').split('_')[1]
             $(items[i]).html('<a href="javascript:void(0);" onclick="draw_reroll(' + td_id + ');"><i class="fas fa-redo" style="font-size:20px;"></i></a>')
+        }
+        if(context.draw_info.reroll_limit == 0){
+            $(".td-reroll a").addClass('rtdr-disabled');
         }
     }
     function show_rerolls(data) {
@@ -833,6 +841,7 @@
                                 $("#spn_drawid").html('-')
                                 $("#label_status").html("<i class=\"mr-2 mdi mdi-stop-circle\"></i> Draw is stopped")
                                 $("#label_status").attr('class', 'text-info');
+                                $("label_reroll").hide()
                                 setTimeout(() => {
                                     $("#div_drawing").fadeOut();
                                     $("#div_choose").fadeIn();
@@ -841,6 +850,9 @@
                                 context.draw_status = 'W'
                                 $("#label_status").html("<i class=\"mr-2 mdi mdi-flag-checkered\"></i> Draw is finished")
                                 $("#label_status").attr('class', 'text-success');
+                                $("#label_reroll").show()
+                                context.draw_info.reroll_limit = data.draw_info.reroll_limit
+                                $("#spn_reroll").html(data.draw_info.reroll_limit)
                                 $("#spn_drawdate").html(data.draw_info.drawed_at)
                                 $("#spn_drawid").html("<a href='/retweet-picker/draw-result/" + data.draw_info.draw_id + "'>" + data.draw_info.draw_id + "</a>")
                             }
@@ -851,6 +863,11 @@
                                 $("#div_choose").fadeIn()
                             } else {
                                 $(".td-reroll a").prop('disabled', false);
+                                if('reroll_limit' in data){
+                                    $("#label_reroll").show()
+                                    $("#spn_reroll").html(data.reroll_limit)
+                                    context.draw_info.reroll_limit = data.draw_info.reroll_limit
+                                }
                             }
                             swal.fire(
                                 'Failed',

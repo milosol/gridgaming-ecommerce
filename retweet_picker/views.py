@@ -506,8 +506,10 @@ def pick_entries(request, gwid):
     context = {}
     context['tab'] = request.GET.get('tab', 'download')
     try:
-        
         gw = GiveawayWinners.objects.get(id=gwid)
+        if request.user.id != gw.user_id and request.user.is_staff == False:
+            messages.warning(request, "You are not allowed to visit this page.")
+            return redirect("retweet_picker:pick")
         tgid = TwitterGiveawayID.objects.get(id=gw.giveaway_id_id)
         tweet_url = tgid.tweet_url
         dp = DrawPrice.objects.all().first()
@@ -648,15 +650,26 @@ def load_all_entries(request):
         res['msg'] = 'Error occured while loading all entries.'
     return JsonResponse(res)
 
-
+def get_reroll_count(user_id):
+    try:
+        plan = Membership.objects.get(user_id=user_id).plan
+        reroll_count = PricingPlan.objects.filter(plan=plan).first().reroll_count
+        print("=== reroll_count:", reroll_count)
+        return reroll_count
+    except Exception as e:
+        print(e)
+    return 0
+    
 def get_drawinformation(gwid):
     res = {'success:': True, 'msg': '', 'draw_info': {}}
     try:
         gw = GiveawayWinners.objects.get(id=gwid)
+        reroll_count = get_reroll_count(gw.user_id)
         res['draw_info']['draw_id'] = gw.draw_id
         res['draw_info']['draw_status'] = gw.status
         res['draw_info']['drawed_at'] = '' if gw.drawed_at == None else gw.drawed_at.strftime("%d %B, %Y")
         res['draw_info']['draw_id'] = gw.draw_id
+        res['draw_info']['reroll_limit'] = reroll_count - gw.rerolled_count
         res['draw_info']['winners'] = []
         if gw.status == 'W':
             winners = gw.winner.all()
@@ -685,10 +698,17 @@ def draw(request):
         tgid = TwitterGiveawayID.objects.get(id=gw.giveaway_id_id)
         tweet_url = tgid.tweet_url
 
-        
         actions = {}
         actions['draw_type'] = request.POST['draw_type']
         actions['reroll_id'] = int(request.POST['reroll_id'])
+        reroll_count = get_reroll_count(gw.user_id)
+        if actions['draw_type'] == 'reroll':
+            if  gw.rerolled_count >= reroll_count:
+                res['success'] = False
+                res['msg'] = "You have reached rerolling limit times. you can't reroll anymore."
+                res['reroll_limit'] = 0
+                return JsonResponse(res)
+            
         sponsors = []
         if gw.followers != '':
             user_list = gw.followers.split(',')
@@ -701,6 +721,7 @@ def draw(request):
         if res['success'] == True and res['stop'] == False:
             gw = GiveawayWinners.objects.get(id=gwid)
             gw.status = 'W'
+            gw.rerolled_count += 1
             if gw.draw_id == None or gw.draw_id == '':
                 gw.draw_id = create_drawid()
             gw.save()
