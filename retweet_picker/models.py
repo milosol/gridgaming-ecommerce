@@ -114,6 +114,7 @@ class DrawPrice(models.Model):
     free_max = models.IntegerField(default=500)
     price = models.IntegerField(default=1)
     per_amount = models.IntegerField(default=100)
+    queue_count = models.IntegerField(default=3)
     
 class Rerolls(models.Model):
     reason = models.CharField(max_length=200, blank=True)

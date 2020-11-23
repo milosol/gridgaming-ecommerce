@@ -15,8 +15,8 @@ from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView
 from django.views.decorators.csrf import csrf_exempt
-
 from core.decorators import account_type_check, cleared_hot_check
+
 from core.models import Order, OrderItem
 from .forms import RetweetChooserForm
 from .models import Membership, PricingPlan, GiveawayResults, TwitterGiveawayID, TwitterGiveaway, GiveawayStats, GiveawayQueue, DrawPrice, \
@@ -207,22 +207,30 @@ def queue_retrieve(queue_id):
         print(e)
         return False
 
+def get_queue_count():
+    try:
+        dp = DrawPrice.objects.all().first()
+        return dp.queue_count
+    except Exception as e:
+        print(e)
+    return 1
 
 def process_queue(queue_type):
     try:
         rows = GiveawayQueue.objects.filter(queue_type=queue_type, status='L')
         if rows.exists():
-            row = rows[0]
-            if row.start_time is not None:
-                end_time = row.start_time + timedelta(minutes=row.duration)
-                if end_time < timezone.now():
-                    queue_retrieve(row.id)
-        else:
-            r_count = GiveawayQueue.objects.filter(queue_type=queue_type, status='R').count()
-            if r_count == 0:
-                items = GiveawayQueue.objects.filter(queue_type=queue_type, status='W')
-                if items.exists():
-                    queue_launch(items[0].id)
+            for row in rows:
+                if row.start_time is not None:
+                    end_time = row.start_time + timedelta(minutes=row.duration)
+                    if end_time < timezone.now():
+                        queue_retrieve(row.id)
+        r_count = GiveawayQueue.objects.filter(queue_type=queue_type, status__in=['R', 'L']).count()
+        queue_count = get_queue_count()
+        if r_count < queue_count:
+            items = GiveawayQueue.objects.filter(queue_type=queue_type, status='W')[:queue_count-r_count]
+            if items.exists():
+                for item in items:
+                    queue_launch(item.id)
         return True
     except Exception as e:
         print(e)
@@ -262,7 +270,7 @@ def add_queue(request, order_id, item_id):
             res['msg'] = f"Your giveaway is in queue. Current position: {count}"
     except Exception as e:
         print(e)
-        res['success'] = False
+        res['success'] = False 
     return res
 
 
