@@ -22,15 +22,17 @@ from bitpay.client import Client
 from users.models import User
 from core.decorators import account_type_check
 from slotapp.views import del_timing
-from .forms import CheckoutFormv2, CouponForm, RefundForm, PaymentForm, BitpayForm
+from .forms import CheckoutFormv2, CouponForm, RefundForm, PaymentForm, BitpayForm, CoinbaseForm
 from .models import Item, OrderItem, Order, Address, Payment, Coupon, Refund, UserProfile, Slotitem, History
 import logging
 import traceback
+from coinbase_commerce.client import Client
 # from core.extras import transact, generate_client_token
-
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
+coinbase_api_key = settings.COINBASE_API_KEY
+client = Client(api_key=coinbase_api_key)
 
 def create_ref_code():
     return ''.join(random.choices(string.ascii_lowercase + string.digits, k=20))
@@ -158,7 +160,8 @@ class CheckoutViewV2(View):
                 elif payment_option == 'P':
                     return redirect('core:process')
                 elif payment_option == 'C':
-                    return redirect('core:bitpay')
+                    # return redirect('core:bitpay')
+                    return redirect('core:coinbase')
                 else:
                     messages.warning(
                         self.request, "Invalid payment option selected")
@@ -496,6 +499,142 @@ def bitpay_notify(request):
     except Exception as e:
         logging.info(e)
     return HttpResponse(status=200)
+
+
+
+@csrf_exempt
+def coinbase_notify(request):
+    try:
+        data = json.loads(request.body)
+        print("===== coinbase-notify : ")
+        print(data['event']['type'])
+        print(data['event']['data']['name'])
+        print(data['event']['data']['description'])
+        
+        if data['event']['type'] in ['charge:pending', 'charge:confirmed']:
+            name = data['event']['data']['name']
+            order_id = name.split('order_')[1]
+            orders = Order.objects.filter(id=order_id)
+            if orders.exists():
+                order = orders[0]
+                if order.ordered == True:
+                    return HttpResponse(status=200)
+                payment = Payment()
+                payment.payment_method = 'C'
+                payment.user = order.user
+                payment.amount = order.get_total()
+                payment.save()
+
+                order_items = order.items.all()
+                order_items.update(ordered=True, status='P')
+                for item in order_items:
+                    item.save()
+
+                order.ordered = True
+                order.status = 'P'
+                order.payment = payment
+                order.ref_code = create_ref_code()
+                order.save()
+                History.objects.create(user=order.user, action='Purchased', item_str=order.get_purchased_items(),
+                                       reason="Bitcoin payment done", order_str=order.id)
+    except Exception as e:
+        logging.info(e)
+    return HttpResponse(status=200)
+
+
+
+class CoinbaseView(View):
+    """
+    View dedicated to handling payment for stripe
+    """
+
+    def get(self, *args, **kwargs):
+        order = get_user_pending_order(self.request)
+        if order != 0:
+            try:
+                amount = int(order.get_total())
+                if order.kind == 0:
+                    description = 'Giveaway Items :{}'.format(order.get_purchased_items())
+                else:
+                    description = 'Community Items :{}'.format(order.get_purchased_items())
+                checkout_info = {
+                    "name": 'order_' + str(order.id),
+                    "description": description,
+                    "pricing_type": 'fixed_price',
+                    "local_price": {
+                        "amount": amount,
+                        "currency": "USD"
+                    },
+                    "requested_info": []
+                }
+                checkouts = client.checkout.list()
+                for checkout in client.checkout.list_paging_iter():
+                    if 'order_' + str(order.id) in checkout.name:
+                        checkout.delete()
+                        
+                checkout = client.checkout.create(**checkout_info)
+                context = {
+                    'order': order,
+                    'checkout_id': checkout.id,
+                    'order_id': order.id,
+                }
+                return render(self.request, "shop_v2/coinbase.html", context)
+            except Exception as e:
+                logging.info(e)
+                messages.warning(self.request, "Creating coinbase checkout failed. Error:" + str(e))
+                return redirect("core:checkout")
+        else:
+            return redirect("core:home")
+
+    def post(self, *args, **kwargs):
+        try:
+            kind = self.request.session.get('kind', 0)
+            order = get_user_pending_order(self.request)
+            
+            form = CoinbaseForm(self.request.POST)
+            if form.is_valid() and order != 0:
+                checkout_id = form.cleaned_data.get('checkout_id')
+                order_id = form.cleaned_data.get('order_id')
+                amount = int(order.get_total())
+                if str(order.id) == order_id:
+                    # create the payment
+                    payment = Payment()
+                    payment.payment_method = 'C'
+                    payment.user = self.request.user
+                    payment.amount = order.get_total()
+                    payment.save()
+
+                    # assign the payment to the order
+
+                    order_items = order.items.all()
+                    order_items.update(ordered=True, status='P')
+                    for item in order_items:
+                        item.save()
+
+                    order.ordered = True
+                    order.status = 'P'
+                    order.payment = payment
+                    order.ref_code = create_ref_code()
+                    order.save()
+                    History.objects.create(user=order.user, action='Purchased', item_str=order.get_purchased_items(),
+                                           reason="Bitcoin payment done", order_str=order.id)
+                if order.kind == 0:
+                    messages.success(self.request,
+                                     "Head over to the Launch Pad to start your giveaway! If no one is in line, you will start immediately!",
+                                     extra_tags='order_complete')
+                    # TODO Direct to payment statuses
+                    return redirect("retweet_picker:giveaway-list")
+                else:
+                    messages.success(self.request, "Payment succeed",
+                                     extra_tags='order_complete')
+                    # TODO Direct to payment statuses
+                    del_timing(order.user.id, 'coinbase payment done')
+                    return redirect("core:user-orders")
+            
+        except Exception as e:
+            logging.info(e)
+            messages.warning(self.request, "Invalid data received")
+        return redirect("core:home")
 
 
 @method_decorator(account_type_check, name='dispatch')
