@@ -1,0 +1,67 @@
+{% extends "core/base.html" %}
+{% block extra_head %}
+    <style>
+    </style>
+{% endblock extra_head %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title text-cyan">Pay with Coinbase</h5>
+                    <div class="row">
+                        <div class="col-md-7">
+                            <div>
+                                <a class="donate-with-crypto"
+                                   href="https://commerce.coinbase.com/checkout/{{checkout_id}}">
+                                  <span>Pay with Crypto</span>
+                                </a>
+                                <script src="https://commerce.coinbase.com/v1/checkout.js?version=201807">
+                                </script>
+                            </div>
+                            <form action="." method="post" id="complete_form">
+                                {% csrf_token %}
+                                <input type="hidden" name="order_id" value="{{order_id}}">
+                                <input type="hidden" name="checkout_id" value="{{checkout_id}}">
+                                <div style="display: none;">
+                                    <button>Submit Payment</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}
+
+{% block extra_scripts %}
+    <script language="javascript">
+        var is_paid = false
+        var invoice_id = '{{checkout_id}}'
+        var order_id = '{{order_id}}'
+        
+        BuyWithCrypto.registerCallback('onSuccess', function(e){
+            // Charge was successfully completed
+            pay_complete()
+        });
+
+        BuyWithCrypto.registerCallback('onFailure', function(e){
+            // Charge failed
+        });
+
+        BuyWithCrypto.registerCallback('onPaymentDetected', function(e){
+            // Payment has been detected but not yet confirmed
+        });
+
+        function pay_complete(){
+            $("#complete_form").submit()
+        }
+        
+        $(function(){
+        })
+        
+      </script>
+{% endblock extra_scripts %}

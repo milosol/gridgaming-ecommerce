@@ -22,7 +22,9 @@ from .views import (
     PaypalPaymentProcess,
     payment_done,
     payment_canceled,
-    bitpay_notify
+    bitpay_notify,
+    coinbase_notify,
+    CoinbaseView
 )
 
 app_name = 'core'
@@ -45,6 +47,8 @@ urlpatterns = [
     path('payment/', login_required(PaymentView.as_view()), name='payment'),
     path('bitpay/', login_required(BitpayView.as_view()), name='bitpay'),
     path('bitpay-notify/', bitpay_notify, name='bitpay-notify'),
+    path('coinbase-notify', coinbase_notify, name='coinbase-notify'),
+    path('coinbase/', login_required(CoinbaseView.as_view()), name='coinbase'),
     path('request-refund/', login_required(RequestRefundView.as_view()), name='request-refund'),
     re_path(r'^paypal/',include('paypal.standard.ipn.urls')),
     re_path(r'^process/$', login_required(PaypalPaymentProcess.as_view()), name='process'),
