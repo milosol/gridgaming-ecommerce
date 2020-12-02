@@ -1,5 +1,7 @@
 {% extends "core/base.html" %}
 {% load static %}
+{% load proper_pagination %}
+
 
 {% block extra_css %}
     <link rel="{% static 'assets/extra-libs/jquery.countdown.package-2.1.0/css/jquery.countdown.css' %}">
@@ -96,37 +98,47 @@
 
     {% if is_paginated %}
         <nav class="d-flex justify-content-center wow fadeIn">
-        <ul class="pagination pg-teal">
-            {% if page_obj.has_previous %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
-                        <span aria-hidden="true" class="text-dark-success">Previous</span>
-                        <span class="sr-only text-dark-success">Previous</span>
-                    </a>
-                </li>
-            {% endif %}
+    <ul class="pagination list-inline justify-content-center">
+        {% if page_obj.number != 1 %}
+            <li class="list-inline-item"><a href="{{ pagination_base_url|default:"?" }}{{ page_url_param|default:"page" }}=1{{ url_extra }}" class="{{ pagination_button_classes|default:"btn btn-sm btn-secondary" }}">&#8249;&#8249; First</a></li>
+        {% else %}
+            <li class="list-inline-item"><a href="javascript:;" class="{{ pagination_button_classes|default:"btn btn-sm btn-secondary" }} disabled">&#8249;&#8249; First</a></li>
+        {% endif %}
 
-            {% for i in paginator.page_range %}
-                {% if page_obj.number == i %}
-                    <li class="page-item active">
-                        <a class="page-link" href="?page={{ page_obj.number }}">{{ page_obj.number }}
-                            <span class="sr-only">(current)</span>
-                        </a>
-                    </li>
-                {% else %}
-                    <li class="page-item">
-                        <a class="page-link text-dark-success" href="?page={{ i }}">{{ i }}</a></li>
-                {% endif %}
-            {% endfor %}
-            {% if page_obj.has_next %}
-                <li class="page-item">
-                    <a class="page-link " href="?page={{ page_obj.next_page_number }}" aria-label="Next">
-                        <span aria-hidden="true" class="text-dark-success">Next</span>
-                        <span class="sr-only text-dark-success">Next</span>
-                    </a>
-                </li>
+        {% if page_obj.has_previous %}
+            <li class="list-inline-item"><a href="{{ pagination_base_url|default:"?" }}{{ page_url_param|default:"page" }}={{ page_obj.previous_page_number }}{{ url_extra }}" class="{{ pagination_button_classes|default:"btn btn-sm btn-secondary" }}">&#8249; Prev</a></li>
+        {% else %}
+            <li class="list-inline-item"><a href="javascript:;" class="{{ pagination_button_classes|default:"btn btn-sm btn-secondary" }} disabled">&#8249; Prev</a></li>
+        {% endif %}
+
+        {% proper_pagination paginator page_obj.number pagination_neighbors|default:4 pagination_include_first|default:0 pagination_include_last|default:0 pagination_include_separator|default:"" as pagination_results %}
+        {% for i in pagination_results %}
+            {% if i == pagination_include_separator|default:"" %}
+                <li class="list-inline-item">{{ pagination_include_separator|default:"" }}</li>
+            {% elif page_obj.number == i %}
+                <li class="active list-inline-item"><span class="btn btn-sm btn-primary">{{ i }} <span class="sr-only">(current)</span></span></li>
+            {% else %}
+                <li class="list-inline-item"><a href="{{ pagination_base_url|default:"?" }}{{ page_url_param|default:"page" }}={{ i }}{{ url_extra }}" class="btn btn-sm btn-dark">{{ i }}</a></li>
             {% endif %}
-        </ul>
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+            <li class="list-inline-item"><a href="{{ pagination_base_url|default:"?" }}{{ page_url_param|default:"page" }}={{ page_obj.next_page_number }}{{ url_extra }}" class="{{ pagination_button_classes|default:"btn btn-sm btn-secondary" }}">Next &#8250;</a></li>
+        {% else %}
+            <li class="list-inline-item"><a href="javascript:;" class="{{ pagination_button_classes|default:"btn btn-sm btn-secondary" }} disabled">Next &#8250;</a></li>
+        {% endif %}
+
+        {% if page_obj.number != paginator.num_pages %}
+            <li class="list-inline-item">
+                <a href="{{ pagination_base_url|default:"?" }}{{ page_url_param|default:"page" }}={{ paginator.num_pages }}{{ url_extra }}" class="{{ pagination_button_classes|default:"btn btn-sm btn-secondary" }}">
+                    Last {% if pagination_include_last_page_in_last_button|default:True %}({{ paginator.num_pages }}){% endif %} &#8250;&#8250;
+                </a>
+            </li>
+        {% else %}
+            <li class="list-inline-item"><a href="javascript:;" class="{{ pagination_button_classes|default:"btn btn-sm btn-secondary" }} disabled">Last ({{ paginator.num_pages }}) &#8250;&#8250;</a></li>
+        {% endif %}
+    </ul>
+
     </nav>
     {% endif %}
 
