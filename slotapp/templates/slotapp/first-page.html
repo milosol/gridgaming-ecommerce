@@ -100,7 +100,7 @@
                                 <br>
                                 <h6 class="card-subtitle">
 
-                                    <i class="text-info text-center">You purchase a slot for one of your socials you'd like to promote. It will be shared with hundreds of thousands of people. This is an <b>AMAZING</b> way to promote and grow your brand!</i>
+                                    <i class="text-white text-center">You purchase a slot for one of your socials you'd like to promote. It will be shared with hundreds of thousands of people. This is an <b>AMAZING</b> way to promote and grow your brand!</i>
                                     <hr>
                                     <ul>
                                     <li><span class="text-success">Choose social platforms</span> to promote during the community giveaway.</li>
@@ -155,10 +155,13 @@
 
             <h3> Sorry, you are not eligible for this event!</h3>
         {% else %}
+        <div class="row">
+        <div class="col-lg-12 text-center">
             <div class="d-inline-block mx-md-5">
-                <h5 class="text-white text-uppercase">Registration closes in <b class="text-warning"><span id="launch_time"></span></b></h5></div>
-            <hr>
+                <h5 class="text-white text-uppercase">Registration closes in <br><b class="text-danger text-lowercase"><span id="launch_time"></span></b></h5></div>
             <p class="text-center text-warning"><b>REGISTER NOW</b> <span class="text-white-50">to have your social platform listed in our weekly community giveaway while slots are still available!</span></p>
+        </div>
+        </div>
         </div>
 
         <div id="slot_container" class="slot-container">
@@ -335,7 +338,7 @@
                         var hh = parseInt(launch_timer / 3600);
                         var mm = parseInt((launch_timer % 3600) / 60)
                         var ss = launch_timer % 60;
-                        $("#launch_time").html(hh + " hs " + mm + " min " + ss + " sec");
+                        $("#launch_time").html(hh + "h" + mm + "m" + ss + "s");
                         launch_timer -= 1
                         if(launch_timer < 0){
                             console.log("reload now because launch time is " + launch_timer);
