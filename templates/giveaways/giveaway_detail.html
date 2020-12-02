@@ -38,21 +38,29 @@
                                 <a href="{% url 'giveaways:giveaway-list' %}" class="btn btn-success">See Giveaways</a>
                             </div>
                         </div>
-                                                <p>
-                        <h4 class="text-center">Welcome to another Grid Gaming Giveaway!</h4> Earn as many entries as you can from the slots below.
-                            If you are having problems redeeming some entries, try disconnecting your associated
-                            social media account and reconnecting it. Also be sure to click <strong>continue</strong>
-                            for entries that require it. Be sure to turn on notifications for GridGaming to stay up to date
-                            and if you haven't already, be sure to bookmark our <a href="{% url 'giveaways:giveaway-list' %}">giveaways page</a>. Thank you for entering & <span class="text-success">Good luck!</span>
-                            </p>
+                        <p>
+                        <h4 class="text-center">Welcome to another Grid Gaming Giveaway!</h4> Earn as many entries as
+                        you can from the slots below.
+                        If you are having problems redeeming some entries, try disconnecting your associated
+                        social media account and reconnecting it. Also be sure to click <strong>continue</strong>
+                        for entries that require it. Be sure to turn on notifications for GridGaming to stay up to date
+                        and if you haven't already, be sure to bookmark our <a
+                            href="{% url 'giveaways:giveaway-list' %}">giveaways page</a>. Thank you for entering &
+                        <span class="text-success">Good luck!</span>
+                        </p>
 
                         </p>
 
                         <!--MONUMETRIC Pillar Ad Right D:160x600 START-->
 
-<div id="mmt-df716a74-9dce-4f04-8222-80cf691b1966"></div><script type="text/javascript" data-cfasync="false">$MMT = window.$MMT || {}; $MMT.cmd = $MMT.cmd || [];$MMT.cmd.push(function(){ $MMT.display.slots.push(["df716a74-9dce-4f04-8222-80cf691b1966"]); })</script>
+                        <div id="mmt-df716a74-9dce-4f04-8222-80cf691b1966"></div>
+                        <script type="text/javascript" data-cfasync="false">$MMT = window.$MMT || {};
+                        $MMT.cmd = $MMT.cmd || [];
+                        $MMT.cmd.push(function () {
+                            $MMT.display.slots.push(["df716a74-9dce-4f04-8222-80cf691b1966"]);
+                        })</script>
 
-<!--MONUMETRIC Pillar Ad Right D:160x600  ENDS-->
+                        <!--MONUMETRIC Pillar Ad Right D:160x600  ENDS-->
                     </div>
                 </div>
 
@@ -60,58 +68,61 @@
         </div>
     </div>
 
-<div class="col-12">
-                                        <br>
-                                        <br>
-                                        <hr>
-                                        <br>
-                                        <br>
-                                    </div>
+    <div class="col-12">
+        <br>
+        <br>
+        <hr>
+        <br>
+        <br>
+    </div>
 
-<div class="container-fluid">
-	<div class="row">
-{#		<div class="col-md-3">#}
-{##}
-{#		</div>#}
-		<div class="col-md-3">
-<a class="twitter-timeline" data-width="100%" data-height="410" data-theme="dark" href="https://twitter.com/GridGamingIO?ref_src=twsrc%5Etfw">Tweets by GridGamingIO</a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-		</div>
-		<div class="col-md-3">
-                                    <div class="card">
-                            <img class="card-img-top img-fluid" src="{% static 'img/icon_w.png'%}"
-                                 alt="Card image cap">
-                            <div class="card-body">
-                                <h4 class="card-title">Grow Your Brand</h4>
-                                <p class="card-text">Take your socials to the next level! Sponsor a giveaway and launch it when you're ready!</p>
-                                <a href="https://www.gridgaming.io" class="btn btn-warning">Learn More</a>
-                            </div>
-                        </div>
-		</div>
-		<div class="col-md-6">
-    <!-- Add a placeholder for the Twitch embed -->
-    <div id="twitch-embed"></div>
+    <div class="container-fluid">
+        <div class="row">
+            {#		<div class="col-md-3">#}
+            {##}
+            {#		</div>#}
+            <div class="col-md-3">
+                <a class="twitter-timeline" data-width="100%" data-height="410" data-theme="dark"
+                   href="https://twitter.com/GridGamingIO?ref_src=twsrc%5Etfw">Tweets by GridGamingIO</a>
+                <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <img class="card-img-top img-fluid" src="{% static 'img/icon_w.png' %}"
+                         alt="Card image cap">
+                    <div class="card-body">
+                        <h4 class="card-title">Grow Your Brand</h4>
+                        <p class="card-text">Take your socials to the next level! Sponsor a giveaway and launch it when
+                            you're ready!</p>
+                        <a href="https://www.gridgaming.io" class="btn btn-warning">Learn More</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <!-- Add a placeholder for the Twitch embed -->
+                <div id="twitch-embed"></div>
 
-    <!-- Load the Twitch embed script -->
-    <script src="https://embed.twitch.tv/embed/v1.js"></script>
+                <!-- Load the Twitch embed script -->
+                <script src="https://embed.twitch.tv/embed/v1.js"></script>
 
-    <!-- Create a Twitch.Embed object that will render within the "twitch-embed" root element. -->
-    <script type="text/javascript">
-      var embed = new Twitch.Embed("twitch-embed", {
-        width: 700,
-        height: 410,
-        channel: "gridgamingio",
-          theme:"dark",
-        layout: "video-with-chat",
-      });
-      embed.addEventListener(Twitch.Embed.VIDEO_READY, () => {
-      var player = embed.getPlayer();
-      player.setMuted(true);
+                <!-- Create a Twitch.Embed object that will render within the "twitch-embed" root element. -->
+                <script type="text/javascript">
+                    var embed = new Twitch.Embed("twitch-embed", {
+                        width: 700,
+                        height: 410,
+                        channel: "gridgamingio",
+                        theme: "dark",
+                        layout: "video-with-chat",
+                    });
+                    embed.addEventListener(Twitch.Embed.VIDEO_READY, () => {
+                        var player = embed.getPlayer();
+                        player.setMuted(true);
 
-        });
-    </script>
-		</div>
-	</div>
-</div>
+                    });
+                </script>
+            </div>
+        </div>
+    </div>
 
 
 
