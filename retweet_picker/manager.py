@@ -245,7 +245,7 @@ class GiveawayManager:
 
 
     def notify_winner(self):
-        winner_message = f'Congratulations! You won ${self.giveaway_amount}! What is your cashapp or paypal?'
+        winner_message = f'Congratulations! You won ${self.giveaway_amount}! What is your BTC address or cashapp?'
         logging.info(f'[*] Notifying winner with this text: {winner_message}')
         change_order_status(self.order_id, 'C')
         GiveawayQueue.objects.filter(status='R', item_id=self.order_id).update(status='E', end_time=timezone.now())
