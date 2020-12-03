@@ -17,7 +17,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView, DetailView, View
 from paypal.standard.forms import PayPalPaymentsForm
 from stripe import error
-from bitpay.client import Client
+# from bitpay.client import Client
 
 from users.models import User
 from core.decorators import account_type_check
@@ -557,8 +557,9 @@ class CoinbaseView(View):
                     description = 'Giveaway Items :{}'.format(order.get_purchased_items())
                 else:
                     description = 'Community Items :{}'.format(order.get_purchased_items())
+                order_name = 'order_' + str(order.id)
                 checkout_info = {
-                    "name": 'order_' + str(order.id),
+                    "name": order_name,
                     "description": description,
                     "pricing_type": 'fixed_price',
                     "local_price": {
@@ -569,7 +570,7 @@ class CoinbaseView(View):
                 }
                 checkouts = client.checkout.list()
                 for checkout in client.checkout.list_paging_iter():
-                    if 'order_' + str(order.id) in checkout.name:
+                    if order_name == checkout.name:
                         checkout.delete()
                         
                 checkout = client.checkout.create(**checkout_info)
