@@ -571,9 +571,11 @@ class CoinbaseView(View):
                 checkouts = client.checkout.list()
                 for checkout in client.checkout.list_paging_iter():
                     if order_name == checkout.name:
+                        print("===== same order deleting :", order_name)
                         checkout.delete()
                         
                 checkout = client.checkout.create(**checkout_info)
+                print("====== checkout created :", checkout.id, " - ", order.id)
                 context = {
                     'order': order,
                     'checkout_id': checkout.id,
