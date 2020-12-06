@@ -1,6 +1,9 @@
-# Ads.txt last updated on: 2020/11/06 17-35-555967 by MONUMETRIC
+# Ads.txt last updated on: 2020/12/02 17-40-699196 by MONUMETRIC
+# ALL CUSTOM RECORDS MUST BE BELOW THIS LINE
+
 prometric_ads = """spotxchange.com, 114948, RESELLER, 7842df1d2fe2db34  #SpotX
 spotx.tv, 114948, RESELLER, 7842df1d2fe2db34         #SpotX
+monumetric.com, 2367b39b-98ab-4988-aadb-6e6effebcc48, DIRECT, 032969285
 appnexus.com, 1360, RESELLER, f5ab79cb980f11d1 #sovrn
 gumgum.com, 11645, RESELLER, ffdef49475d318a9 #sovrn
 lijit.com, 231887, DIRECT, fafdf38b16bf6b2b #sovrn
@@ -10,6 +13,9 @@ pubmatic.com, 137711, RESELLER, 5d62403b186f2ace #sovrn
 pubmatic.com, 156212, RESELLER, 5d62403b186f2ace #sovrn
 rubiconproject.com, 17960, RESELLER, 0bfd66d529a55807 #sovrn
 sovrn.com, 231887, DIRECT, fafdf38b16bf6b2b #sovrn
+contextweb.com, 560606, RESELLER, 89ff185a4c4e857c
+rhythmone.com, 1059622079, RESELLER, a670c89d4a324e47
+sonobi.com, 4ba74d4dae, DIRECT, d1a215d9eb5aee9e
 pubmatic.com, 137711, RESELLER, 5d62403b186f2ace
 pubmatic.com, 156212, RESELLER, 5d62403b186f2ace
 pubmatic.com, 156972, DIRECT, 5d62403b186f2ace        #for PubMatic
@@ -102,6 +108,8 @@ tremorhub.com, jrkl5-0ac26, RESELLER, 1a4e959a1b50034a
 triplelift.com, 6030-EB, DIRECT, 6c33edb13117fd86
 undertone.com, 3231, DIRECT
 undertone.com, 3802, DIRECT
+beachfront.com, 5880, DIRECT, e2541279e8e2ca4d
+beachfront.com, publisher_5880, DIRECT          #for BEACHFRONT
 appnexus.com, 2854, RESELLER                     #for APPNEXUS
 adtech.com, 9505, DIRECT, e1a5b5b6e3255540                       #for AOL
 adtech.com, 9505, DIRECT                         #for AOL
