@@ -240,7 +240,7 @@ class GiveawayManager:
 
     def reply_to_original_tweet(self):
         self.end_time = datetime.datetime.now()
-        self.twitter_interact.api.update_status(f"WINNER: @{self.winner} 🏆\n\nSponsor a giveaway like this and grow your brand at gridgaming.io", in_reply_to_status_id=self.tweet_id)
+        self.twitter_interact.api.update_status(f"WINNER: @{self.winner} 🎁 \n\nSponsor a giveaway like this and grow your brand at gridgaming.io", in_reply_to_status_id=self.tweet_id)
         # self.twitter_interact.api.update_status(f"WINNER: @test 🏆", in_reply_to_status_id=self.tweet_id)
 
 
