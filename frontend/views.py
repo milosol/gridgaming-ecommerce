@@ -28,12 +28,17 @@ from retweet_picker.models import PricingPlan, Membership, PRICINGPLAN_CHOICES, 
 from paypal.standard.forms import PayPalPaymentsForm
 from django.views.decorators.csrf import csrf_exempt
 from core.models import UserProfile, Payment
-from core.forms import PaymentForm
+from core.forms import PaymentForm, CoinbaseForm
 from stripe import error
 from django.utils import timezone
 from datetime import timedelta
 from retweet_picker.views import set_donemonth
 from .ads import prometric_ads
+from coinbase_commerce.client import Client
+
+coinbase_api_key = settings.COINBASE_API_KEY
+client = Client(api_key=coinbase_api_key)
+
 
 def create_ref_code():
     return ''.join(random.choices(string.ascii_lowercase + string.digits, k=20))
@@ -152,12 +157,12 @@ def pre_checkout(request):
                 upgradeto = request.POST.get('upgradeto')
                 months = request.POST.get('months')
                 amount = request.POST.get('amount')
-                uo, created = Upgradeorder.objects.get_or_create(user_id=request.user.id, reason=reason, months=months, amount=amount, upgradeto=upgradeto)
+                uo, created = Upgradeorder.objects.get_or_create(user_id=request.user.id, reason=reason, months=months, amount=amount, upgradeto=upgradeto, payment_status='W')
             else:
                 gwid = request.POST.get('gwid')
                 amount = request.POST.get('amount')
-                uo, created = Upgradeorder.objects.get_or_create(user_id=request.user.id, reason=reason, gwid=gwid, amount=amount)
-            
+                uo, created = Upgradeorder.objects.get_or_create(user_id=request.user.id, reason=reason, gwid=gwid, amount=amount, payment_status='W')
+                
             request.session['uoid'] = uo.id
             return redirect("frontend:checkout")
         except Exception as e:
@@ -185,11 +190,12 @@ class CheckoutView(View):
         
     def post(self, request):
         method = request.POST.get('payment_option')
-        print("==== payment option : ", method)
         if method == 'paypal':
             return redirect("frontend:paypalpayment")
-        else:
+        elif method == 'stripe':
             return redirect("frontend:stripepayment")
+        else:
+            return redirect("frontend:coinbasepayment")
 
 
 class PaypalPaymentView(View):
@@ -232,6 +238,109 @@ class PaypalPaymentView(View):
 def payment_canceled(request):
     return render(request, 'frontend/canceled.html')
 
+
+
+class CoinbasePaymentView(View):
+    """
+    View dedicated to handling payment for coinbase
+    """
+
+    def get(self, request):
+        try: 
+            uoid = self.request.session.get('uoid', -1)
+            if uoid == -1:
+                messages.warning(self.request, "Please try again.")
+                return redirect("frontend:checkout")
+            
+            uo = Upgradeorder.objects.get(id=uoid)
+            host = request.get_host()
+
+            if uo.reason == 'membership':
+                # return_url = 'http://{}{}'.format(host, reverse('frontend:profile')) + "?tab=membership"
+                item_name = "Upgrade Membership : " + uo.upgradeto + "_" + str(uo.id)
+                description = 'Upgrade membership to {}'.format(uo.upgradeto)
+            else:
+                # return_url = 'http://{}{}'.format(host, "/retweet-picker/draw/" + str(uo.gwid))
+                item_name = "Pay for drawing " + str(uo.id)
+                description = 'Pay for drawing :{}'.format(uo.gwid)
+            
+            order_name = 'upgrade_order_' + str(uo.id)
+            checkout_info = {
+                "name": order_name,
+                "description": description,
+                "pricing_type": 'fixed_price',
+                "local_price": {
+                    "amount": uo.amount,
+                    "currency": "USD"
+                },
+                "requested_info": []
+            }
+            checkouts = client.checkout.list()
+            for checkout in client.checkout.list_paging_iter():
+                if order_name == checkout.name:
+                    checkout.delete()
+                    
+            checkout = client.checkout.create(**checkout_info)
+            print("====== checkout created :", checkout.id, " - ", uo.id)
+            context = {
+                'order': uo,
+                'checkout_id': checkout.id,
+                'order_id': uo.id,
+            }
+            return render(self.request, "frontend/coinbase.html", context)
+        except Exception as e:
+            print(e)
+            messages.warning(self.request, "Creating coinbase checkout failed. Error:" + str(e))
+            return redirect("frontend:checkout")
+
+    def post(self, *args, **kwargs):
+        try:
+            print("=== coinbase post")
+            form = CoinbaseForm(self.request.POST)
+            if form.is_valid():
+                checkout_id = form.cleaned_data.get('checkout_id')
+                order_id = form.cleaned_data.get('order_id')
+                uo = Upgradeorder.objects.get(id=order_id)
+                print("=== uo. payment status :", uo.payment_status)
+                if uo.payment_status != 'C':
+                    print("=== created payment")
+                    # create the payment
+                    payment = Payment()
+                    payment.payment_method = 'C'
+                    payment.user = self.request.user
+                    payment.amount = uo.amount
+                    payment.save()
+                    set_upgradeorder_paid(uo.id, payment)
+                    
+                if uo.reason == 'membership':
+                    messages.success(self.request,
+                                    "Your membership is upgraded!", extra_tags='order_complete')
+                    return redirect("/profile?tab=membership")
+                else:
+                    messages.success(self.request, "Payment succeed", extra_tags='order_complete')
+                    return redirect("/retweet-picker/" + str(uo.gwid) + "/entries")
+            
+        except Exception as e:
+            print(e)
+            messages.warning(self.request, "Invalid data received")
+        return redirect("core:home")
+
+def set_upgradeorder_paid(uoid, payment):
+    uo = Upgradeorder.objects.get(id=uoid)
+    uo.payment = payment
+    uo.payment_status = 'C'
+    uo.save()
+    if uo.reason == 'membership':
+        membership = get_object_or_404(Membership, user_id=uo.user_id)
+        membership.plan = uo.upgradeto
+        membership.paid_month = uo.months
+        membership.paid_time = timezone.now()
+        membership.end_time = membership.paid_time + timedelta(days=uo.months*30)
+        membership.done_count = 0
+        membership.done_month = 0
+        membership.save()
+    else:
+        add_drawcount(uo.id)
 
 class StripePaymentView(View):
 
@@ -341,24 +450,13 @@ class StripePaymentView(View):
                 payment.amount = amount
                 payment.save()
 
-                uo.payment = payment
-                uo.payment_status = 'C'
-                uo.save()
+                set_upgradeorder_paid(uo.id, payment)
+                
                 if uo.reason == 'membership':
-                    membership = get_object_or_404(Membership, user_id=uo.user_id)
-                    membership.plan = uo.upgradeto
-                    membership.paid_month = uo.months
-                    membership.paid_time = timezone.now()
-                    membership.end_time = membership.paid_time + timedelta(days=uo.months*30)
-                    membership.done_count = 0
-                    membership.done_month = 0
-                    membership.save()
-                    
                     messages.success(self.request,
                                     "Your membership is upgraded!", extra_tags='order_complete')
                     return redirect("/profile?tab=membership")
                 else:
-                    add_drawcount(uo.id)
                     messages.success(self.request, "Payment succeed", extra_tags='order_complete')
                     return redirect("/retweet-picker/" + str(uo.gwid) + "/entries")
                 

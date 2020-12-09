@@ -27,6 +27,8 @@ from .models import Item, OrderItem, Order, Address, Payment, Coupon, Refund, Us
 import logging
 import traceback
 from coinbase_commerce.client import Client
+from retweet_picker.models import Upgradeorder
+from frontend.views import set_upgradeorder_paid
 # from core.extras import transact, generate_client_token
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -513,32 +515,52 @@ def coinbase_notify(request):
         
         if data['event']['type'] in ['charge:pending', 'charge:confirmed']:
             name = data['event']['data']['name']
-            order_id = name.split('order_')[1]
-            orders = Order.objects.filter(id=order_id)
-            if orders.exists():
-                order = orders[0]
-                if order.ordered == True:
+            if 'upgrade_order_' in name:
+                order_id = name.split('upgrade_order_')[1]
+                uo = Upgradeorder.objects.get(id=order_id)
+                if uo.payment_status == 'C':
                     return HttpResponse(status=200)
+                
+                user = User.objects.get(id=uo.user_id)
+                # create the payment
                 payment = Payment()
                 payment.payment_method = 'C'
-                payment.user = order.user
-                payment.amount = order.get_total()
+                payment.user = user
+                payment.amount = uo.amount
                 payment.save()
 
-                order_items = order.items.all()
-                order_items.update(ordered=True, status='P')
-                for item in order_items:
-                    item.save()
+                set_upgradeorder_paid(uo.id, payment)
+                History.objects.create(user=user, action='Purchased', item_str=uo.reason,
+                                        reason="Coinbase payment done", order_str=uo.id)
+            else:
+                order_id = name.split('order_')[1]
+                orders = Order.objects.filter(id=order_id)
+                if orders.exists():
+                    order = orders[0]
+                    if order.ordered == True:
+                        return HttpResponse(status=200)
+                    payment = Payment()
+                    payment.payment_method = 'C'
+                    payment.user = order.user
+                    payment.amount = order.get_total()
+                    payment.save()
 
-                order.ordered = True
-                order.status = 'P'
-                order.payment = payment
-                order.ref_code = create_ref_code()
-                order.save()
-                History.objects.create(user=order.user, action='Purchased', item_str=order.get_purchased_items(),
-                                       reason="Bitcoin payment done", order_str=order.id)
+                    order_items = order.items.all()
+                    order_items.update(ordered=True, status='P')
+                    for item in order_items:
+                        item.save()
+
+                    order.ordered = True
+                    order.status = 'P'
+                    order.payment = payment
+                    order.ref_code = create_ref_code()
+                    order.save()
+                    History.objects.create(user=order.user, action='Purchased', item_str=order.get_purchased_items(),
+                                        reason="Bitcoin payment done", order_str=order.id)
     except Exception as e:
         logging.info(e)
+        return HttpResponse(status=500)    
+    
     return HttpResponse(status=200)
 
 
@@ -571,7 +593,6 @@ class CoinbaseView(View):
                 checkouts = client.checkout.list()
                 for checkout in client.checkout.list_paging_iter():
                     if order_name == checkout.name:
-                        print("===== same order deleting :", order_name)
                         checkout.delete()
                         
                 checkout = client.checkout.create(**checkout_info)
