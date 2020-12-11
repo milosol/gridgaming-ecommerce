@@ -10,7 +10,7 @@ class ProfileAnalysis(models.Model):
     tweet_count = models.IntegerField(null=True, blank=True)
     favorites = models.IntegerField(null=True, blank=True)
     following = models.IntegerField(null=True, blank=True)
-    default_profile = models.BooleanField(default=True)
+    default_profile_status = models.BooleanField(default=True)
     default_profile_image = models.BooleanField(default=False)
     unique_background = models.BooleanField(default=False)
     protected = models.BooleanField(default=False)
@@ -19,4 +19,11 @@ class ProfileAnalysis(models.Model):
     tweets_per_day = models.FloatField(default=0, null=True)
     bot_prediction = models.BooleanField(default=False)
     profile_grade = models.CharField(null=True, max_length=2)
+    date_analyzed = models.DateTimeField(auto_now_add=True)
+
+
+class ProfileJudgement(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
+    decision = models.BooleanField(default=False)
+    profile_analysis = models.ForeignKey(ProfileAnalysis, on_delete=models.CASCADE)
     date_analyzed = models.DateTimeField(auto_now_add=True)

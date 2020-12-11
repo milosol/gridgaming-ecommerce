@@ -1,0 +1,118 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% load remove_normal %}
+{% load humanize %}
+{% block content %}
+<style>
+.btn-outline-white {
+    color: #fff !important;
+    background-color: transparent !important;
+    border: 2px solid #fff !important;
+}
+
+
+
+</style>
+
+    <div class="container  text-center testdata">
+        <h2>  </h2>
+        <div class="jumbotron card card-image">
+          <div class="text-white text-center py-5 px-4">
+            <div>
+              <h2 id="eligible_header" class="card-title h1-responsive pt-3 font-bold text-uppercase"><strong>AM I ELIGIBLE TO WIN</strong></h2>
+                <span id="profile_decision" class="text-primary" style="font-size: 72px">?</span>
+              <p class="mx-5 mb-5" id="profile_decision_info">Determine if your account is eligible to win giveaways
+              </p>
+{#        <div id="account_tips"  class="container" style="max-width:800px;margin-right:auto;margin-left:auto;">#}
+{#            Here are some tips to become eligible to win future giveaways!<br>#}
+{#            <div class="row text-center">#}
+{#            </hr>#}
+{#            <ul class="list-group">#}
+{#                <li class="list-group-item">Cras justo odio</li>#}
+{#                <li class="list-group-item">Dapibus ac facilisis in</li>#}
+{#                <li class="list-group-item">Morbi leo risus</li>#}
+{#                <li class="list-group-item">Porta ac consectetur ac</li>#}
+{#                <li class="list-group-item">Vestibulum at eros</li>#}
+{#            </ul>#}
+{#        <ul class="column text-md-left text-info" style="list-style-type:square; padding-left: 2px;">#}
+{#            Tips to make your account eligible:#}
+{#            <li>Make sure your account is older than 60 days</li>#}
+{#            <li>Remove old giveaways from your timeline</li>#}
+{#            <li>Use your Twitter account regularly and interact with tweets</li>#}
+{#          </ul>#}
+{#            </div>#}
+        </div>
+
+
+                    <button href="javascript:void(0)"
+                           id="btn_judgement_day"
+                            type="button" class="btn btn-outline-white"><i class="fas fa-gavel ml-1"></i> Analyze Profile</button>
+{#              <a class="btn btn-outline-white btn-md"><i class="fas fa-clone left"></i> View project</a>#}
+            </div>
+          </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+    <script>
+        $("#btn_judgement_day").click(function () {
+            $("#profile_decision").html("<div class=\"spinner-border text-success\" role=\"status\">\n" +
+                "                                  <span class=\"sr-only\">Loading...</span>\n" +
+                "                                </div>")
+
+            $.ajax(
+                {
+                type: "GET",
+                url: "/analyzer/profile",
+                dataType: 'json',
+                success: function (data) {
+                    if (data.success === true) {
+                        console.log(data)
+                        /*$("#all_results").show()*/
+                        console.log(data.profile_analysis.bot_prediction)
+                        if (data.profile_analysis.bot_prediction == true) {
+                            $("#eligible_header").html("Awww man...")
+                            $("#profile_decision").html("<i class=\"fas fa-frown\"></i>")
+                            $("#profile_decision_info").html("Unfortunately your account is not currently eligible to win<br> GridGamingIO Twitter Giveaways! <hr>See our <button type=\"button\" class=\"btn btn-success\" data-toggle=\"modal\" data-target=\"#success-header-modal\">Profile Tips</button> to become eligible! ")
+                        } else if (data.profile_analysis.bot_prediction == false) {
+                            $("#eligible_header").html("Congratulations, <b class='text-warning'>{{ request.user.username }}</b>!")
+                            $("#profile_decision").html("<i class=\"text-megna fas fa-smile\"></i>")
+                            $("#profile_decision_info").html("Your account is eligible to win GridGamingIO Twitter Giveaways!")
+                        } else {
+                            $("#profile_decision").html("Please try again")
+                        }
+                    } else {
+                        $("#profile_decision").html(data.msg)
+
+                    }
+                }
+            })
+        })
+    </script>
+                                <!-- Success Header Modal -->
+                                <div id="success-header-modal" class="modal fade" tabindex="-1" role="dialog"
+                                    aria-labelledby="success-header-modalLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header modal-colored-header bg-success">
+                                                <h4 class="modal-title text-white" id="success-header-modalLabel">Profile Recommendations
+                                                </h4>
+                                                <button type="button" class="close" data-dismiss="modal"
+                                                    aria-hidden="true">×</button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <h5 class="mt-0">Follow these steps to make your account eligible</h5>
+                                        <ul class="text-md-left text-warning" style="list-style-type:none; padding-left: 2px;">
+                                            <li>- <span class="text-white">Make sure your account is older than 60 days</span></li>
+                                            <li>- <span class="text-white">Remove old giveaways from your timeline</span></li>
+                                            <li>- <span class="text-white">Use your Twitter account regularly and interact with tweets</span></li>
+                                          </ul>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-light"
+                                                    data-dismiss="modal">Close</button></div>
+                                        </div><!-- /.modal-content -->
+                                    </div><!-- /.modal-dialog -->
+                                </div><!-- /.modal -->{% endblock %}

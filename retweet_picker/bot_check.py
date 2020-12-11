@@ -99,7 +99,7 @@ class BotCheck(TwitterInteract):
         self.user_analysis['default_profile_status'] = self.get_default_profile_status()
         self.user_analysis['default_profile_image'] = self.get_default_profile_image()
         self.user_analysis['unique_background'] = self.get_profile_use_background_image()
-        self.user_analysis['giveaway_timeline_analysis'] = self.giveaway_ratio()
+        self.user_analysis['giveaway_timeline_analysis'] = p2f(self.giveaway_ratio())
         self.user_analysis['suspended'] = self.get_suspended_status()
         self.user_analysis['protected'] = self.get_protected_status()
         self.user_analysis['tweets_per_day'] = self.get_tweets_per_day()
@@ -111,7 +111,7 @@ class BotCheck(TwitterInteract):
         if self.user_analysis['days_old'] < 60:
             bot = True
 
-        if p2f(self.user_analysis['giveaway_timeline_analysis']) > .80:
+        if self.user_analysis['giveaway_timeline_analysis'] > .80:
             bot = True
         # if self.user_analysis['follower_count'] < 1000:
         #    bot = True

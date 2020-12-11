@@ -9,4 +9,5 @@ app_name = 'profile_analyzer'
 urlpatterns = [
     path('', views.main, name='profile-analyzer'),
     path('profile/', views.analyze_profile, name='analyze-profile'),
+    path('judge/', views.reroll_decision, name='profile-judge'),
 ]
