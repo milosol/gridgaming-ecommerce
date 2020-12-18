@@ -19,3 +19,7 @@ def profile_checker(username=None):
     except Exception as e:
         print(f'{username} could not be analyzed...')
         pass
+
+
+def profile_pipeline(username):
+    profile_analysis = profile_checker(username=username)

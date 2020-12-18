@@ -64,14 +64,14 @@ class BotCheck(TwitterInteract):
         Whether or not the account is in protected status. Cannot see tweets if in protected mode.
         :return:
         """
-        return self.user_obj.get('protected')
+        return self.user_obj.get('protected', False)
 
     def get_suspended_status(self):
         """
         Returns whether or not account is suspended - Obviously can't see tweets if account is suspended.
         :return:
         """
-        return self.user_obj.get('suspended')
+        return self.user_obj.get('suspended', False)
 
     def giveaway_ratio(self):
         tweet_count = []

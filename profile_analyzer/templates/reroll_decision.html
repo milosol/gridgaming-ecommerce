@@ -46,7 +46,7 @@
 
                     <button href="javascript:void(0)"
                            id="btn_judgement_day"
-                            type="button" class="btn btn-outline-white"><i class="fas fa-gavel ml-1"></i> Analyze Profile</button>
+                            type="button" class="btn btn-lg btn-block font-medium btn-outline-success block-card"><i class="fas fa-gavel ml-1"></i> Credits: <span id="judgement_credits">{{ credits }}</span></button>
 {#              <a class="btn btn-outline-white btn-md"><i class="fas fa-clone left"></i> View project</a>#}
             </div>
           </div>
@@ -69,6 +69,7 @@
                 dataType: 'json',
                 success: function (data) {
                     if (data.success === true) {
+                        $("#judgement_credits").html(data.profile_analysis.credits)
                         console.log(data)
                         /*$("#all_results").show()*/
                         console.log(data.profile_analysis.bot_prediction)
@@ -86,10 +87,222 @@
                     } else {
                         $("#profile_decision").html(data.msg)
 
+
                     }
                 }
             })
         })
+
+    $(function() {
+    $('.block-card').on('click', function() {
+        var block_ele = $(this).closest('.card');
+        $(block_ele).block({
+            message: '<i class="fas fa-spin fa-sync text-white"></i>',
+            timeout: 5000, //unblock after 2 seconds
+            overlayCSS: {
+                backgroundColor: '#000',
+                opacity: 0.5,
+                cursor: 'wait'
+            },
+            css: {
+                border: 0,
+                padding: 0,
+                backgroundColor: 'transparent'
+            }
+        });
+    });
+
+    // Block sidebar
+    $('.block-sidenav').on('click', function() {
+        var block_ele = $('.left-sidebar');
+        $(block_ele).block({
+            message: '<i class="fas fa-spin fa-sync text-white"></i>',
+            timeout: 5000, //unblock after 2 seconds
+            overlayCSS: {
+                backgroundColor: '#000',
+                opacity: 0.5,
+                cursor: 'wait'
+            },
+            css: {
+                border: 0,
+                padding: 0,
+                backgroundColor: 'transparent'
+            }
+        });
+    });
+
+
+    // Block page
+    $('.block-default').on('click', function() {
+        $.blockUI({
+            message: '<i class="fas fa-spin fa-sync text-white"></i>',
+            timeout: 10000, //unblock after 2 seconds
+            overlayCSS: {
+                backgroundColor: '#000',
+                opacity: 0.5,
+                cursor: 'wait'
+            },
+            css: {
+                border: 0,
+                padding: 0,
+                backgroundColor: 'transparent'
+            }
+        });
+    });
+
+    // onBlock callback
+    $('.onblock').on('click', function() {
+        $.blockUI({
+            message: '<i class="fas fa-spin fa-sync text-white"></i>',
+            fadeIn: 1000,
+            timeout: 10000, //unblock after 2 seconds
+            overlayCSS: {
+                backgroundColor: '#000',
+                opacity: 0.5,
+                cursor: 'wait'
+            },
+            css: {
+                border: 0,
+                padding: 0,
+                color: '#333',
+                backgroundColor: 'transparent'
+            },
+            onBlock: function() {
+                alert('Page blocked!');
+            }
+        });
+    });
+
+
+    // onUnblock callback
+    $('.onunblock').on('click', function() {
+        $.blockUI({
+            message: '<i class="fas fa-spin fa-sync text-white"></i>',
+            timeout: 5000, //unblock after 2 seconds
+            overlayCSS: {
+                backgroundColor: '#000',
+                opacity: 0.5,
+                cursor: 'wait'
+            },
+            css: {
+                border: 0,
+                padding: 0,
+                color: '#333',
+                backgroundColor: 'transparent'
+            },
+            onUnblock: function() {
+                alert('Page unblocked!');
+            }
+        });
+    });
+
+
+    // Overlay callback
+    $('.onoverlay-click').on('click', function() {
+        $.blockUI({
+            message: '<i class="fas fa-spin fa-sync text-white"></i>',
+            overlayCSS: {
+                backgroundColor: '#000',
+                opacity: 0.5,
+                cursor: 'wait'
+            },
+            css: {
+                color: '#333',
+                border: 0,
+                padding: 0,
+                backgroundColor: 'transparent'
+            },
+            onOverlayClick: $.unblockUI
+        });
+    });
+
+    // Block Without Message
+    $('.without-msg').on('click', function() {
+        var block_ele = $(this).closest('.card');
+        $(block_ele).block({
+            message: null,
+            timeout: 5000, //unblock after 2 seconds
+            overlayCSS: {
+                backgroundColor: '#000',
+                opacity: 0.5,
+                cursor: 'wait'
+            },
+            css: {
+                border: 0,
+                padding: 0,
+                backgroundColor: 'transparent'
+            }
+        });
+    });
+
+
+    // Block without overlay
+    $('.without-overlay').on('click', function() {
+        var block_ele = $(this).closest('.card');
+        $(block_ele).block({
+            message: '<i class="fas fa-spin fa-sync text-white"></i>',
+            showOverlay: false,
+            timeout: 5000, //unblock after 2 seconds
+            css: {
+                width: 50,
+                height: 50,
+                lineHeight: 1,
+                color: '#fff',
+                border: 0,
+                padding: 15,
+                backgroundColor: '#000'
+            }
+        });
+    });
+
+    // Unblock on overlay click
+    $('.overlay-unblock').on('click', function() {
+        var block_ele = $(this).closest('.card');
+        $(block_ele).block({
+            message: '<i class="fas fa-spin fa-sync text-white"></i>',
+            overlayCSS: {
+                backgroundColor: '#000',
+                opacity: 0.5,
+                cursor: 'wait'
+            },
+            css: {
+                border: 0,
+                padding: 0,
+                backgroundColor: 'transparent'
+            }
+        });
+
+        $('.blockOverlay').on('click', function() {
+            $(block_ele).unblock();
+        });
+    });
+
+    // Growl notification
+    $('.growl').on('click', function() {
+        $.blockUI({
+            message: $('.growl-notification-example'),
+            fadeIn: 700,
+            fadeOut: 700,
+            timeout: 3000,
+            showOverlay: false,
+            centerY: false,
+            css: {
+                width: '250px',
+                top: '20px',
+                left: '',
+                right: '20px',
+                border: 'none',
+                padding: '15px 5px',
+                backgroundColor: '#000',
+                '-webkit-border-radius': '10px',
+                '-moz-border-radius': '10px',
+                opacity: 0.9,
+                color: '#fff'
+            }
+        });
+    });
+
+});
     </script>
                                 <!-- Success Header Modal -->
                                 <div id="success-header-modal" class="modal fade" tabindex="-1" role="dialog"
@@ -115,4 +328,9 @@
                                                     data-dismiss="modal">Close</button></div>
                                         </div><!-- /.modal-content -->
                                     </div><!-- /.modal-dialog -->
-                                </div><!-- /.modal -->{% endblock %}
+                                </div><!-- /.modal -->
+
+
+
+
+{% endblock %}

@@ -23,7 +23,17 @@ class ProfileAnalysis(models.Model):
 
 
 class ProfileJudgement(models.Model):
+    """
+    Made to keep track of current status of users and how many times they can run
+    """
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
     decision = models.BooleanField(default=False)
-    profile_analysis = models.ForeignKey(ProfileAnalysis, on_delete=models.CASCADE)
-    date_analyzed = models.DateTimeField(auto_now_add=True)
+    credits = models.IntegerField(default=1) #Determines how many times they can run the checker
+    profile_analysis = models.ForeignKey(ProfileAnalysis, on_delete=models.CASCADE, null=True, blank=True)
+    date_analyzed = models.DateTimeField(blank=True, null=True)
+
+    def __str__(self):
+        if self.decision is True:
+            return str(self.user) + ' is eligible'
+        else:
+            return str(self.user) + ' is not eligible'
