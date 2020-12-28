@@ -17,8 +17,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView, DetailView, View
 from paypal.standard.forms import PayPalPaymentsForm
 from stripe import error
+from django.db.models import Prefetch
 # from bitpay.client import Client
-
+import time
 from users.models import User
 from core.decorators import account_type_check
 from slotapp.views import del_timing
@@ -962,8 +963,8 @@ class AllOrderView(View):
 
     def get(self, *args, **kwargs):
         try:
-            orders = Order.objects.filter(user=self.request.user, ordered=True, kind=1)
-            slot_items = OrderItem.objects.filter(ordered=True, kind=1)
+            ts1 = time.time()
+            slot_items = OrderItem.objects.filter(ordered=True, kind=1).select_related('user').select_related('slot').prefetch_related('orders')
             data = []
             for item in slot_items:
                 temp = {}
@@ -974,20 +975,20 @@ class AllOrderView(View):
                 temp['title'] = item.slot.title
                 temp['points'] = item.quantity * item.slot.points
                 temp['amount'] = item.quantity * item.slot.value
-                if item.orders.all().count() == 0:
-                    temp['order_date'] = ""
-                else:
-                    temp['order_date'] = item.orders.all()[0].ordered_date
+                temp['order_date'] = item.orders.all()[0].ordered_date
                 data.append(temp)
             # sort_data = sorted(data, key = lambda i: (i['launch_code'], i['username'], i['title'], i['slot_user'], i['points']))  
             context = {
                 'orders': data,
             }
-
+            ts2 = time.time()
+            ts3 = ts2 - ts1
+            print("======== time taken for getting orders : ", ts3)
             return render(self.request, "shop_v2/allorders.html", context)
-        except ObjectDoesNotExist:
-            messages.info(self.request, "You do not have an active order")
-            return redirect("core:home")
+        except Exception as e:
+            print(e)
+            messages.info(self.request, "Error occured on while getting community orders")
+            return render(self.request, "shop_v2/allorders.html", {'orders': []})
 
 
 @method_decorator(account_type_check, name='dispatch')

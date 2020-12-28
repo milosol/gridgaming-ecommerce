@@ -26,6 +26,7 @@ class BotCheck(TwitterInteract):
 
     def get_user_obj(self):
         return self.api.get_user(self.username)._json
+       
 
     def get_days_old(self):
         user_created_at = self.user_obj.get('created_at')
@@ -57,7 +58,10 @@ class BotCheck(TwitterInteract):
         return self.user_obj.get('profile_use_background_image')
 
     def get_tweets_per_day(self):
-        return self.user_analysis['tweet_count'] / self.user_analysis['days_old']
+        try:
+            return self.user_analysis['tweet_count'] / self.user_analysis['days_old']
+        except Exception as e:
+            return 0
 
     def get_protected_status(self):
         """
@@ -86,7 +90,10 @@ class BotCheck(TwitterInteract):
                     counter += 1
                     # print(f'Mentioned Giveaway: {tweet.full_text}')
             # print(tweet.full_text)
-        keyword_percent = "%.2f%%" % (counter / int(len(tweet_count)))
+        if len(tweet_count) == 0:
+            keyword_percent = "0.0%"
+        else:
+            keyword_percent = "%.2f%%" % (counter / int(len(tweet_count)))
         # print(f'Giveaway Mention Ratio: {counter}/{len(tweet_count)} were in the keywords. \nGiveaway Ratio: {keyword_percent}')
         return keyword_percent
 
