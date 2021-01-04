@@ -18,7 +18,9 @@ def profile_checker(username=None):
     #  TODO Add information to user record and save
     except Exception as e:
         print(f'{username} could not be analyzed...')
-        pass
+        print(e)
+        return None
+        
 
 
 def profile_pipeline(username):

@@ -8,18 +8,18 @@ from profile_analyzer.models import ProfileAnalysis, ProfileJudgement
 def analyze_profile(request):
     print(request)
     res = {'success': True, 'msg': '', 'profile_analysis': {}}
-    print("HERE HERE HERE ANALYZE TIME")
     if request.method == 'GET':
         try:
-            print("=== analyzing : ", request.user.username)
             profile_analysis = profile_checker(username=request.user.username)
             if profile_analysis:
                 res['profile_analysis'].update(profile_analysis)
-
+            else:
+                res['success'] = False
+                res['msg'] = 'This profile could not be analyzed.'
         except Exception as e:
-            print(e)
             res['success'] = False
             res['msg'] = 'This profile could not be analyzed.'
+            
     return JsonResponse(res)
 
 from .utils import update_or_create_analyzer
