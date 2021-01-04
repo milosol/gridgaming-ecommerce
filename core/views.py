@@ -964,7 +964,9 @@ class AllOrderView(View):
     def get(self, *args, **kwargs):
         try:
             ts1 = time.time()
-            slot_items = OrderItem.objects.filter(ordered=True, kind=1).select_related('user').select_related('slot').prefetch_related('orders')
+            print("====== all orders starting time :", ts1)
+            slot_items = OrderItem.objects.filter(ordered=True, kind=1).select_related('user', 'slot').prefetch_related('orders')
+            print("====== after getting all slot items from db")
             data = []
             for item in slot_items:
                 temp = {}
@@ -975,17 +977,25 @@ class AllOrderView(View):
                 temp['title'] = item.slot.title
                 temp['points'] = item.quantity * item.slot.points
                 temp['amount'] = item.quantity * item.slot.value
-                temp['order_date'] = item.orders.all()[0].ordered_date
+                try:
+                    temp['order_date'] = item.orders.all()[0].ordered_date
+                except Exception as e:
+                    print("==== this item have no orders : ", item.launch_code)
+                    temp['order_date'] = ''
+                    
                 data.append(temp)
             # sort_data = sorted(data, key = lambda i: (i['launch_code'], i['username'], i['title'], i['slot_user'], i['points']))  
+            print("===== data length :", len(data))
             context = {
                 'orders': data,
             }
             ts2 = time.time()
+            print("====== all orders end time :", ts2)
             ts3 = ts2 - ts1
             print("======== time taken for getting orders : ", ts3)
             return render(self.request, "shop_v2/allorders.html", context)
         except Exception as e:
+            print("====== error occured while getting commuity orders")
             print(e)
             messages.info(self.request, "Error occured on while getting community orders")
             return render(self.request, "shop_v2/allorders.html", {'orders': []})
