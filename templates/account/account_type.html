@@ -53,7 +53,7 @@
                                 {% if forloop.first %}
                                 <input name="user_roles" type="radio" id="radio_{{ forloop.counter0 }}" value="{{ choice.0 }}" class="with-gap material-inputs material-inputs radio-col-{{ color_choices|index:forloop.counter0 }}" checked>
                                 {% else %}
-                                <input name="user_roles" type="radio" id="radio_{{ forloop.counter0 }}" value="{{ choice.0 }}" class="with-gap material-inputs material-inputs radio-col-{{ color_choices|index:forloop.counter0 }}" checked="">
+                                <input name="user_roles" type="radio" id="radio_{{ forloop.counter0 }}" value="{{ choice.0 }}" class="with-gap material-inputs material-inputs radio-col-{{ color_choices|index:forloop.counter0 }}">
                                 {% endif %}
 
                                 <label for="radio_{{ forloop.counter0 }}">{{ choice.1 }}</label>
