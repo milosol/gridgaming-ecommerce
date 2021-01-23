@@ -45,7 +45,7 @@ class GridGiveawayTweetRetriever(TwitterInteract):
     def __init__(self,
                  tweet_url=None,
                  verbose=True,
-                 tweet_ratio=.80,
+                 tweet_ratio=1,
                  wait_on_rate_limit=False,
                  winner_count=1  # How many winners
                  ):
