@@ -108,7 +108,8 @@
                         <img src="{% static 'assets/images/coin-xs.png' %}" style="padding-top:3px;width: 22px; vertical-align: text-top;">
                         {{total_credit}}
                         {% else %}
-                        ${{ object.total_usd }}
+                        ${{total_usd }} ( = <img src="{% static 'assets/images/coin-xs.png' %}" style="padding-top:3px;width: 22px; vertical-align: text-top;">
+                        {{total_credit}})
                         {% endif %}
                     </span></h3>
                     <h4 id="h_msg" class="my-5"></h4>

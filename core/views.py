@@ -85,6 +85,7 @@ class CheckoutViewV2(View):
                 'pay_usd': pay_usd,
                 'pay_credit': pay_credit,
                 'total_credit': total_credit,
+                'total_usd': total_usd,
                 'current_credit': current_credit,
                 'cc_per_usd': get_cc_per_usd()
             }
