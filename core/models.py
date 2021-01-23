@@ -47,7 +47,8 @@ PAYMENT_METHOD = (
     ('S', 'Stripe'),
     ('B', 'Braintree'),
     ('P', 'Paypal'),
-    ('C', 'Bitcoin')
+    ('C', 'Bitcoin'),
+    ('T', 'Credit'),
 )
 
 
@@ -58,7 +59,8 @@ class UserProfile(models.Model):
     braintree_customer_id = models.CharField(max_length=50, blank=True, null=True)
     one_click_purchasing = models.BooleanField(default=False)
     twitch_account = models.CharField(max_length=250, null=True, blank=True)
-
+    credit_display = models.BooleanField(default=True)
+    
     def __str__(self):
         return str(self.user.username)
 
@@ -202,6 +204,8 @@ class Order(models.Model):
         'Address', related_name='billing_address', on_delete=models.SET_NULL, blank=True, null=True)
     payment = models.ForeignKey(
         'Payment', on_delete=models.SET_NULL, blank=True, null=True)
+    creditpayment = models.ForeignKey(
+        'CreditPayment', related_name='paid_order', on_delete=models.SET_NULL, blank=True, null=True)
     coupon = models.ForeignKey(
         'Coupon', on_delete=models.SET_NULL, blank=True, null=True)
     being_delivered = models.BooleanField(default=False)
@@ -270,6 +274,22 @@ class Address(models.Model):
     class Meta:
         verbose_name_plural = 'Addresses'
 
+class CreditPayment(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.SET_NULL, blank=True, null=True)
+    usd_amount = models.FloatField(default=0)
+    credit_amount = models.FloatField(default=0)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-id']
+
+    def __str__(self):
+        if self.user:
+            return self.user.username + " : " + str(self.credit_amount)
+        else:
+            return '_' + " : " + str(self.credit_amount)
+        
 
 class Payment(models.Model):
     stripe_charge_id = models.CharField(max_length=50)
@@ -277,7 +297,8 @@ class Payment(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
                              on_delete=models.SET_NULL, blank=True, null=True)
     payment_method = models.CharField(choices=PAYMENT_METHOD, max_length=1)
-    amount = models.FloatField()
+    amount = models.FloatField(default=0)
+    credit_amount = models.FloatField(default=0)
     timestamp = models.DateTimeField(auto_now_add=True)
 
     class Meta:

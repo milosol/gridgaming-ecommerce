@@ -41,8 +41,6 @@ def payment_notification(sender, **kwargs):
             order.items.filter(ordered=False).update(ordered=True)
             if order.kind == 1:
                 del_timing(order.user.id, 'paypal payment done')
-            History.objects.create(user=order.user, action='Purchased', item_str=order.get_purchased_items(),
-                                reason="Payment done", order_str=order.id)
         else:
             order.notes = ipn.payment_status
             order.save()

@@ -1,7 +1,34 @@
 from allauth.socialaccount.models import SocialAccount
 from .svg_icons import discord, twitch, youtube, twitter
+from .models import OneValue
+from retweet_picker.models import Membership
 
+def get_cc_per_usd():
+    try:
+        if OneValue.objects.all().count() == 0:
+            OneValue.objects.create()
+        return OneValue.objects.all().first().cc_per_usd
+    except Exception as e:
+        print(e)
+        return 1
 
+def usd2credit(usd_value):
+    cc = get_cc_per_usd()
+    return cc * usd_value
+    
+def credit2usd(credit_value):
+    cc = get_cc_per_usd()
+    return round(credit_value / cc, 1)
+    
+def get_credit_amount(user_id):
+    try:
+        membership, created = Membership.objects.get_or_create(user_id=user_id)
+        return membership.credit_amount
+    except Exception as e:
+        print(e)
+        return 0
+
+    
 def build_socials(self, user_id=None):
     all_services = ['discord', 'twitter', 'twitch', 'google']
     social_records = []

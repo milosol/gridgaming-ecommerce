@@ -15,6 +15,7 @@ from .models import (
     History,
     Counting,
     Cartget,
+    CreditPayment
 )
 
 
@@ -31,12 +32,27 @@ class PaymentAdmin(admin.ModelAdmin):
                     'stripe_charge_id',
                     'braintree_charge_id',
                     'amount',
+                    'credit_amount',
                     'timestamp',
                     ]
 
-
+class CreditPaymentAdmin(admin.ModelAdmin):
+    raw_id_fields = ("user",)
+    list_display = ['user',
+                    'credit_amount',
+                    'usd_amount',
+                    'order_id',
+                    'order_items',
+                    'timestamp',
+                    ]
+    def order_id(self, obj):
+        return str(obj.paid_order.all()[0].id)
+    
+    def order_items(self, obj):
+        return str(obj.paid_order.all()[0].get_purchased_items())
+        
 class OrderAdmin(admin.ModelAdmin):
-    raw_id_fields = ("user", 'items', 'billing_address','payment')
+    raw_id_fields = ("user", 'items', 'billing_address','creditpayment')
 
     list_display = ['id',
                     'user',
@@ -46,13 +62,13 @@ class OrderAdmin(admin.ModelAdmin):
                     'status',
                     'get_purchased_items',
                     'billing_address',
-                    'payment',
+                    'creditpayment',
                     'coupon'
                     ]
     list_display_links = [
         'user',
         'billing_address',
-        'payment',
+        'creditpayment',
         'coupon'
     ]
     list_filter = ['ordered',
@@ -228,15 +244,6 @@ class SlotitemAdmin(admin.ModelAdmin):
     ]
 
 
-class PaymentAdmin(admin.ModelAdmin):
-    list_display = [
-        'user',
-        'payment_method',
-        'stripe_charge_id',
-        'amount',
-        'timestamp'
-    ]
-
 class UserProfileAdmin(admin.ModelAdmin):
     list_display = [
         'id',
@@ -259,3 +266,4 @@ admin.site.register(Slotitem, SlotitemAdmin)
 admin.site.register(Checktime, ChecktimeAdmin)
 admin.site.register(Counting, CountingAdmin)
 admin.site.register(Cartget)
+admin.site.register(CreditPayment, CreditPaymentAdmin)

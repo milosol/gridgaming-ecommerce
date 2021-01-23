@@ -29,13 +29,14 @@ from .tasks import start_giveaway_bg,\
     load_entry_task
 from users.models import User
 from retweet_picker.manager import GiveawayManager
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+from frontend.utils import get_credit_amount
 
 import time
 import django_rq
 import random
 import string
 
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 def create_drawid():
     return ''.join(random.choices(string.ascii_lowercase + string.digits, k=20))
@@ -510,74 +511,99 @@ def import_contest(request):
     return JsonResponse(res)
 
 def pick_entries(request, gwid):
-    request.session['uoid'] = -1
-    context = {}
-    context['tab'] = request.GET.get('tab', 'download')
-    try:
-        gw = GiveawayWinners.objects.get(id=gwid)
-        if request.user.id != gw.user_id and request.user.is_staff == False:
-            messages.warning(request, "You are not allowed to visit this page.")
-            return redirect("retweet_picker:pick")
-        tgid = TwitterGiveawayID.objects.get(id=gw.giveaway_id_id)
-        tweet_url = tgid.tweet_url
-        dp = DrawPrice.objects.all().first()
-        if gw.status == 'C' or gw.status == 'E':
-            gm = GiveawayManager(new_giveaway=False, existing_tweet_url=tweet_url)
-            ret_count = gm.tweet.retweet_count
-            membership, created = Membership.objects.get_or_create(user_id=request.user.id)
-            pp, created = PricingPlan.objects.get_or_create(plan=membership.plan)
-            context['pay_price'] = 0
-            context['unlimited_count'] = pp.unlimited_count
-            context['left_times'] = pp.limit_times + membership.bonus_count - membership.done_count
-            context['total_times'] = pp.limit_times + membership.bonus_count
+    if request.method == "GET":
+        request.session['uoid'] = -1
+        context = {}
+        context['tab'] = request.GET.get('tab', 'download')
+        try:
+            gw = GiveawayWinners.objects.get(id=gwid)
+            if request.user.id != gw.user_id and request.user.is_staff == False:
+                messages.warning(request, "You are not allowed to visit this page.")
+                return redirect("retweet_picker:pick")
+            tgid = TwitterGiveawayID.objects.get(id=gw.giveaway_id_id)
+            tweet_url = tgid.tweet_url
+            dp = DrawPrice.objects.all().first()
+            if gw.status == 'C' or gw.status == 'E':
+                gm = GiveawayManager(new_giveaway=False, existing_tweet_url=tweet_url)
+                ret_count = gm.tweet.retweet_count
+                membership, created = Membership.objects.get_or_create(user_id=request.user.id)
+                pp, created = PricingPlan.objects.get_or_create(plan=membership.plan)
+                context['pay_price'] = 0
+                context['unlimited_count'] = pp.unlimited_count
+                context['left_times'] = pp.limit_times + membership.bonus_count - membership.done_count
+                context['total_times'] = pp.limit_times + membership.bonus_count
 
-            if ret_count <= dp.free_max:
-                context['pay_status'] = 0  # free to download
-            else:
-                if gw.paid_count + dp.free_max >= ret_count:
-                    context['pay_status'] = 1  # you have already paid
+                if ret_count <= dp.free_max:
+                    context['pay_status'] = 0  # free to download
                 else:
-                    set_donemonth(membership.id)
-                    if pp.unlimited_times == True:
-                        context['pay_status'] = 2  # You can be free from unlimited membership
-                    elif membership.done_count < pp.limit_times + membership.bonus_count:
-                        if pp.limit_times == 0:
-                            context['pay_status'] = 3  # you are free from bonus
-                            context['left_times'] = membership.bonus_count
-                        else:
-                            context['pay_status'] = 4  # you are free from limited membership
+                    if gw.paid_count + dp.free_max >= ret_count:
+                        context['pay_status'] = 1  # you have already paid
                     else:
-                        if pp.limit_times == 0:
-                            context['pay_status'] = 6    # you must pay
-                        elif membership.done_count >= pp.limit_times:
-                            context['pay_status'] = 5   # you exceed count this month
-                            context['left_times'] = 0
-                        rest = ret_count - gw.paid_count - dp.free_max
-                        pay_price = math.ceil(rest / dp.per_amount * dp.price)
-                        context['pay_price'] = pay_price
-            context['ret_count'] = ret_count
-        else:
-            rerolls_result = get_rerolls(gwid)     
-            context['rerolls'] = rerolls_result['rerolls']
-        draw_info = get_drawinformation(gwid)
-        context['loaded_count'] = gw.loaded_count
-        context['paid_amount'] = gw.paid_count
-        context['winner_count'] = gw.winner_count
-        context['bot_chk'] = gw.bot_chk
-        context['follow_main'] = gw.follow_main
-        context['followers'] = gw.followers
-        context['tweet_url'] = tweet_url
-        context['draw_status'] = gw.status
-        context['gwid'] = gwid
-        context['drawprice_free_max'] = dp.free_max
-        context['drawprice_per_amount'] = dp.per_amount
-        context['drawprice_price'] = dp.price
-        context['draw_info'] = draw_info['draw_info']
-        context['context'] = dumps(context) 
-    except Exception as e:
-        print(e)
-
-    return render(request, "contest.html", context)
+                        set_donemonth(membership.id)
+                        if pp.unlimited_times == True:
+                            context['pay_status'] = 2  # You can be free from unlimited membership
+                        elif membership.done_count < pp.limit_times + membership.bonus_count:
+                            if pp.limit_times == 0:
+                                context['pay_status'] = 3  # you are free from bonus
+                                context['left_times'] = membership.bonus_count
+                            else:
+                                context['pay_status'] = 4  # you are free from limited membership
+                        else:
+                            if pp.limit_times == 0:
+                                context['pay_status'] = 6    # you must pay
+                            elif membership.done_count >= pp.limit_times:
+                                context['pay_status'] = 5   # you exceed count this month
+                                context['left_times'] = 0
+                            rest = ret_count - gw.paid_count - dp.free_max
+                            pay_price = math.ceil(rest / dp.per_amount * dp.price)
+                            context['pay_price'] = pay_price
+                context['ret_count'] = ret_count
+            else:
+                rerolls_result = get_rerolls(gwid)     
+                context['rerolls'] = rerolls_result['rerolls']
+            draw_info = get_drawinformation(gwid)
+            context['current_credit'] = get_credit_amount(request.user.id)
+            context['loaded_count'] = gw.loaded_count
+            context['paid_amount'] = gw.paid_count
+            context['winner_count'] = gw.winner_count
+            context['bot_chk'] = gw.bot_chk
+            context['follow_main'] = gw.follow_main
+            context['followers'] = gw.followers
+            context['tweet_url'] = tweet_url
+            context['draw_status'] = gw.status
+            context['gwid'] = gwid
+            context['drawprice_free_max'] = dp.free_max
+            context['drawprice_per_amount'] = dp.per_amount
+            context['drawprice_price'] = dp.price
+            context['draw_info'] = draw_info['draw_info']
+            context['context'] = dumps(context) 
+        except Exception as e:
+            print(e)
+        return render(request, "contest.html", context)
+    else:
+        print("======= darw post")
+        try:
+            amount = int(request.POST.get('amount'))
+            gwid = request.POST.get('gwid')
+            current_credit = get_credit_amount(request.user.id)
+            if current_credit < amount:
+                messages.warning(request, "You have not enough credits.")
+                return redirect("/retweet-picker/draw/" + str(gwid))
+            
+            dp = DrawPrice.objects.all().first()
+            count = math.ceil(amount / dp.price * dp.per_amount)
+            gw = GiveawayWinners.objects.get(id=gwid)
+            gw.paid_count = gw.paid_count + count
+            gw.save()
+            membership, created = Membership.objects.get_or_create(user_id=request.user.id)
+            membership.credit_amount = current_credit - amount
+            membership.save()
+            messages.success(request, "Successfully paid with credits.")
+        except Exception as e:
+            print(e)
+            messages.warning(request, "Please try again.")
+        return redirect("/retweet-picker/draw/" + str(gwid))
+    
 
 def set_donemonth(membership_id):
     try:

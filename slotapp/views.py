@@ -16,6 +16,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from core.models import UserProfile, Order, OrderItem, Slotitem, Checktime, Cartget, Payment, Item, History, Counting
 from users.models import User, UserRoles
+from frontend.utils import *
 import random
 import string
 import logging
@@ -44,7 +45,6 @@ def count_launch(name):
     row = Checktime.objects.all()[0]
     launched = row.launched
     deadline = row.get_deadline()
-    History.objects.create(action='Launched Thread ' + str(name), reason="")
     while (1):
         if release_time > 10:
             release_time = 0
@@ -60,7 +60,6 @@ def count_launch(name):
         launch_check += 1
         time.sleep(1)
     setLaunch(False)
-    History.objects.create(action='Close Launch Thread ' + str(name))
 
 
 def launch_thread():
@@ -80,8 +79,7 @@ def launch_thread():
         
         
 def initialize():
-    History.objects.create(reason="Server restarted")
-    History.objects.create(action='Launch', reason="server restart")
+    # History.objects.create(reason="Server restarted")
     launch_thread()
     logging.info("========= server restarted ============")
 
@@ -117,8 +115,6 @@ def docheck(user_id, kind, usernames=[], reason=""):
         order.payment = payment
         order.ref_code = create_ref_code()
         order.save()
-        History.objects.create(user=user, action='Purchased', item_str=order.get_purchased_items(),
-                                reason=reason, order_str=order.id)
         del_timing(user_id, "Payment done")
     else:
         data_list = []
@@ -135,8 +131,8 @@ def docheck(user_id, kind, usernames=[], reason=""):
                 data_list.append(data)
             except Slotitem.DoesNotExist:
                 pass
-        History.objects.create(user=user, action='Empty cart', item_str=order.get_purchased_items(), 
-                               reason=reason, order_str=order.id)
+        # History.objects.create(user=user, action='Empty cart', item_str=order.get_purchased_items(), 
+        #                        reason=reason, order_str=order.id)
         order.items.filter(kind=1, ordered=False, user=user).delete()
         Order.objects.filter(user=user, ordered=False, kind=1).delete()
         res['slots'] = data_list
@@ -150,7 +146,7 @@ def release_carts():
     old_countings = Counting.objects.filter(deadline__lt=now)
     if old_countings.exists():
         temp = '[' + ','.join([str(x.order_id) for x in old_countings]) + ']'
-        History.objects.create(action='Erase old countings', reason="Time over", order_str=temp)
+        # History.objects.create(action='Erase old countings', reason="Time over", order_str=temp)
         old_countings.delete()
         
     if not Counting.objects.all().exists():
@@ -239,7 +235,7 @@ def first_page(request):
     if count_data.exists():
         if res['left'] == 0:
             count_data.delete()
-            History.objects.create(user=request.user, action='Delete timer', reason="left is 0")
+            # History.objects.create(user=request.user, action='Delete timer', reason="left is 0")
         else:
             count_data.update(pause=False)
             deadline = count_data[0].deadline
@@ -261,7 +257,9 @@ def first_page(request):
     # History.objects.create(user=request.user, action='Refresh', reason="GET Launched:" + str(launched) + " launch timer: " + str(data['launch_timer']))
     if res['removed'] == 1:
         messages.warning(request, res['msg'])
-    return render(request, 'slotapp/first-page.html', {'data': data, 'paypal_status':paypal_status})
+    credit_amount = get_credit_amount(request.user.id)
+    cc_per_usd = get_cc_per_usd()
+    return render(request, 'slotapp/first-page.html', {'data': data, 'paypal_status':paypal_status, 'credit_amount': credit_amount, 'cc_per_usd': cc_per_usd})
 
 @csrf_exempt
 def tocart(request):
@@ -296,7 +294,7 @@ def tocart(request):
                 ordered_date = timezone.now()
                 order = Order.objects.create(
                     user=request.user, ordered_date=ordered_date, kind=1)
-                History.objects.create(user=user, action='To cart', order_str=order.id)
+                # History.objects.create(user=user, action='To cart', order_str=order.id)
 
             order.items.add(order_item)     # first adding to cart
             item.available_count = item.available_count - 1
@@ -310,7 +308,7 @@ def tocart(request):
                     ct = cts[0].time
                 deadline = timezone.now() + timedelta(minutes=ct)
                 Counting.objects.create(user_id=user_id, pause=False, deadline=deadline, order_id=order.id)
-                History.objects.create(user=request.user, action='Add to timer', order_str=str(order.id))
+                # History.objects.create(user=request.user, action='Add to timer', order_str=str(order.id))
                 res['time_set'] = 1
                 res['time'] = ct * 60
                 new_counter()
@@ -358,7 +356,7 @@ def del_timing(user_id, reason):
         return
     temp = '[' + ','.join([str(x.order_id) for x in count_data]) + ']'
     user = get_userinstance(user_id)
-    History.objects.create(user=user, action='Delete timer', reason=reason, order_str=temp)
+    # History.objects.create(user=user, action='Delete timer', reason=reason, order_str=temp)
     count_data.delete()
 
 def get_userinstance(user_id):
@@ -530,7 +528,7 @@ def launch(request):
     value = request.GET.get('value', 0)
     setLaunch(True if value == '1' else False)
     if value == '1':
-        History.objects.create(user=request.user, action='Launch', reason="By Mannual")
+        # History.objects.create(user=request.user, action='Launch', reason="By Mannual")
         launch_thread() # launch
     return redirect('./community')
 

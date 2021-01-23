@@ -1,5 +1,5 @@
 from django.urls import path, include, re_path
-from .views import index, home, profile, account_type, update_account_type, pre_checkout, CheckoutView, PaypalPaymentView, payment_canceled, StripePaymentView, get_membership, CoinbasePaymentView
+from .views import index, home, profile, account_type, update_account_type, pre_checkout, CheckoutView, PaypalPaymentView, payment_canceled, payment_done, StripePaymentView, get_membership, CoinbasePaymentView, CreditView
 from django.contrib.auth.decorators import login_required
 
 app_name = 'frontend'
@@ -13,9 +13,11 @@ urlpatterns = [
     path('profile/update_account_type', update_account_type, name='update_account_type'),
     path('pre_checkout', pre_checkout, name='pre_checkout'),
     path('checkout', login_required(CheckoutView.as_view()), name='checkout'),
-    path('paypalpayment', login_required(PaypalPaymentView.as_view()), name='paypalpayment'),
-    path('stripepayment', login_required(StripePaymentView.as_view()), name='stripepayment'),
-    path('coinbasepayment', login_required(CoinbasePaymentView.as_view()), name='coinbasepayment'),
-    path('payment_canceled', payment_canceled, name='payment_canceled'),
+    path('wallet', login_required(CreditView.as_view()), name='credits'),
+    path('wallet/paypalpayment', login_required(PaypalPaymentView.as_view()), name='paypalpayment'),
+    path('wallet/stripepayment', login_required(StripePaymentView.as_view()), name='stripepayment'),
+    path('wallet/coinbasepayment', login_required(CoinbasePaymentView.as_view()), name='coinbasepayment'),
+    path('wallet/payment_done', payment_done, name='payment_done'),
+    path('wallet/payment_canceled', payment_canceled, name='payment_canceled'),
     re_path(r'^paypal/',include('paypal.standard.ipn.urls')),
 ]

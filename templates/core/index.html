@@ -21,13 +21,16 @@
     <div class="col-lg-3 col-md-6">
         <div class="card">
             <div class="el-card-item pb-3">
-                <div class="el-card-avatar mb-3 el-overlay-1 w-100 overflow-hidden position-relative text-center"> <img src="{{ item.image.url }}" class="d-block position-relative w-100" alt="user" />
+                <div class="el-card-avatar mb-2 el-overlay-1 w-100 overflow-hidden position-relative text-center"> <img src="{{ item.image.url }}" class="d-block position-relative w-100" alt="user" />
                     <div class="el-overlay w-100 overflow-hidden">
                         <ul class="list-style-none el-info text-white text-uppercase d-inline-block p-0">
                             <!--<li class="el-item d-inline-block my-0  mx-1"><a class="btn default btn-outline image-popup-vertical-fit el-link text-white border-white" href="{{ item.image.url }}"><i class="icon-magnifier"></i></a></li>-->
                             <li class="el-item d-inline-block my-0  mx-1"><a class="btn default btn-outline el-link text-white border-white" href="{{ item.get_absolute_url }}"><i class="icon-plus"></i></a></li>
                         </ul>
                     </div>
+                </div>
+                <div class="progress mb-2 progress-md" style="border-radius: 0;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-{{ item.progress_class }}" role="progressbar" aria-valuenow="{{ item.price_percent }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ item.progress_width }}"></div>
                 </div>
                 <div class="d-flex no-block align-items-center">
                     <div class="ml-3">
@@ -37,11 +40,11 @@
                     <div class="ml-auto mr-3">
                     <a href="{{ item.get_absolute_url }}">
                         <button type="button" class="btn btn-{{ item.get_label_display }} btn-square">
-                      {% if item.discount_price %}
-                      ${{ item.discount_price|intcomma }}
+                      {% if user.user_profile.credit_display %}
+                      <img src="{% static 'assets/images/coin-xs.png' %}" style="width: 20px; vertical-align: text-top;">
+                      {{ item.credit_price|intcomma }}
                       {% else %}
-                      ${{ item.giveaway_fee|mul:user.account_type.fee_quantifier|add:item.giveaway_value|intcomma }}
-
+                      ${{item.usd_price|intcomma }}
                       {% endif %}
                         </button>
                          </a>

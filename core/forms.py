@@ -104,6 +104,7 @@ class RefundForm(forms.Form):
 
 
 class PaymentForm(forms.Form):
+    cart_param = forms.CharField(required=False)
     braintreeToken = forms.CharField(required=False)
     stripeToken = forms.CharField(required=False)
     save = forms.BooleanField(required=False)

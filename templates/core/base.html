@@ -19,7 +19,7 @@
 
     <!-- Start of gridgaming Zendesk Widget script -->
     <script id="ze-snippet" src="https://static.zdassets.com/ekr/snippet.js?key=5aec4aa3-091c-4ed9-8a2f-b993bcf65b2f"> </script>
-
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
     <!-- End of gridgaming Zendesk Widget script -->
     <!-- Favicon icon -->
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'assets/images/apple-touch-icon.png' %}">
@@ -141,6 +141,7 @@ twq('track','PageView');
             success: function (data) {
                 if (data.success == true) {
                     $("#membership").html(data.membership)
+                    $("#credit_count span").html(data.credit_count)
                 } else {
                     console.log(data.msg)
                 }

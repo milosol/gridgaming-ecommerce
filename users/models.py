@@ -48,7 +48,7 @@ from core.models import History
 
 @receiver(user_logged_in)
 def login_user(sociallogin, user, **kwargs):
-    History.objects.create(user=user, action='Logged In')
+    # History.objects.create(user=user, action='Logged In')
     if sociallogin.account.provider == 'twitter':
         try:
             user.username = sociallogin.account.extra_data['screen_name']

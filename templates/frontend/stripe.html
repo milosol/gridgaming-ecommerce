@@ -120,6 +120,7 @@
                                 <form action="{% url 'frontend:stripepayment' %}" method="post" class="stripe-form">
                                     {% csrf_token %}
                                     <input type="hidden" name="use_default" value="true">
+                                    <input type="hidden" name="cart_param" value="{{cart_param}}">
                                     <div class="stripe-form-row current-card-button" style="display: none;">
                                         <button id="stripeBtn-previous" class="btn btn-megna">Submit Payment</button>
                                     </div>
@@ -151,6 +152,7 @@
                                     <div class="col-md-7">
                                         <form action="{% url 'frontend:stripepayment' %}" method="post" class="stripe-form" id="stripe-form">
                                             {% csrf_token %}
+                                            <input type="hidden" name="cart_param" value="{{cart_param}}">
                                             <div id="card-element"
                                                     class="StripeElement StripeElement--focus StripeElement--empty form-group mt-3 form-control">
                                             </div>
