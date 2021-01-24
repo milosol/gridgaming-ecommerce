@@ -1,6 +1,6 @@
 from django import template
 from core.models import Order
-
+from frontend.utils import *
 register = template.Library()
 
 
@@ -21,6 +21,12 @@ def cart_items(user):
             return qs[0].items.filter(kind=0)
             # return qs[0].items.all()
     return None
+
+@register.filter
+def user_credit_amount(user):
+    if user.is_authenticated:
+        return get_credit_amount(user.id)
+    return 0
 
 def adjusted_price(giveaway_value, giveaway_fee, fee_quantifier):
     return giveaway_value + (giveaway_fee * fee_quantifier)

@@ -116,6 +116,16 @@
                         <!-- Profile -->
                         <!-- ============================================================== -->
                         {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link  waves-effect waves-dark font-weight-bold" style="background-color: #478cab61;" href="{% url 'frontend:credits' %}" aria-expanded="false">
+                                <!-- <i class="fas fa-coins mx-2" style="color:#8effd0;"></i> -->
+                                <img src="{% static 'assets/images/coin-xs.png' %}" style="width: 25px; vertical-align: text-top;">
+                                <span>{{request.user|user_credit_amount}}</span>
+                            </a>
+                            <!-- <button id="btn_buy" type="button"
+                                class="btn btn-lg btn-block font-medium btn-outline-success block-card"><i
+                                    class="fas fa-coins mx-2"></i>Buy Credits</button> -->
+                        </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle waves-effect waves-dark" href="" data-toggle="dropdown"
                                 aria-haspopup="true" aria-expanded="false">
@@ -124,7 +134,7 @@
                             <div class="dropdown-menu mailbox dropdown-menu-right scale-up">
                                 <ul class="dropdown-user list-style-none">
                                     <li>
-                                        <div class="dw-user-box p-3 d-flex">
+                                        <div class="dw-user-box px-3 pt-3 pb-1 d-flex">
                                             <div class="u-img"><img src="{{ user.socialaccount_set.all.0.extra_data.profile_image_url_https|remove_normal }}" alt="user" class="rounded" width="80"></div>
                                             <div class="u-text ml-2">
                                                 <h4 class="mb-0">{{ request.user.username }}</h4>

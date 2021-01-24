@@ -445,9 +445,8 @@
         </div>
     </div>
 </div> -->
-<form action="{% url 'frontend:pre_checkout' %}" method="post" id="form_pay" hidden>
+<form action="" method="post" id="form_pay" hidden>
     {% csrf_token %}
-    <input type="hidden" name="reason" value="payfordraw" />
     <input type="hidden" name="amount" value="0" />
     <input type="hidden" name="gwid" value="0" />
 </form>
@@ -905,7 +904,42 @@
             if (context.pay_status < 3 || context.pay_price == 0) return
             $("#form_pay input[name='amount']").val(context.pay_price);
             $("#form_pay input[name='gwid']").val(context.gwid);
-            $("#form_pay").submit();
+            
+            if(context.current_credit >= context.pay_price){
+                swal.fire({
+                title: 'Are you sure?',
+                icon: 'warning',
+                text: "Are you going to pay with credits?",
+                showCancelButton: true,
+                background: '#e9ecef',
+                confirmButtonColor: '#21c1d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, pay with credit'
+                }).then((result) => {
+                    if (result.value) {
+                        $("#form_pay").submit();
+                    } else if (result.dismiss === Swal.DismissReason.cancel) {
+
+                    }
+                })
+            }else{
+                swal.fire({
+                title: 'Are you sure?',
+                icon: 'warning',
+                text: "More credits are required to pay. Are you going to buy more credits?",
+                showCancelButton: true,
+                background: '#e9ecef',
+                confirmButtonColor: '#21c1d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, buy more credits'
+                }).then((result) => {
+                    if (result.value) {
+                        location.href="/wallet?need=" + (context.pay_price - context.current_credit) + "&cart=draw_" + context.gwid
+                    } else if (result.dismiss === Swal.DismissReason.cancel) {
+
+                    }
+                })
+            }
         })
         $("#btn_loadentry").click(function () {
             if (context.pay_status > 2) {

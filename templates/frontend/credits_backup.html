@@ -1,0 +1,140 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block extra_head_tags %}
+<link href="{% static 'assets/libs/bootstrap-touchspin/dist/jquery.bootstrap-touchspin.css' %}" rel="stylesheet" />
+<!-- <link href="{% static 'css/style.min.css' %}" rel="stylesheet" /> -->
+
+
+{% endblock %} 
+
+{% block extra_css %}
+<style>
+    #div_credits h2, #div_credits span{
+        transition-property: all;
+        transition-duration: 0.5s;
+    }
+    #current_credits{
+        font-size: 72px;
+    }
+    .credits-flex #div_credits{
+        display: flex;
+        justify-content: center;
+    }
+    .credits-flex #current_credits{
+        font-size: 30px;
+    }
+    #div_container.credits-flex hr{
+        display: block;
+    }
+    #div_container hr{
+        display: none;
+    }
+    #div_checkout{
+        display: none;
+    }
+    #div_container.credits-flex #btn_buy{
+        display: none;
+    }
+    #div_container.credits-flex #div_checkout{
+        display: block;
+    }
+    #div_checkout .bootstrap-touchspin-injected{
+        min-width: 200px;
+        width: 50%;
+        margin: auto;
+    }
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+
+<div class="container  text-center">
+    <div class="jumbotron card card-image">
+        <div id="div_container" class="text-white text-center py-5 px-4">
+            <div id="div_credits" class="text-center">
+                <h2 class="card-title h1-responsive pt-2 font-bold text-uppercase"><strong>You have</strong></h2>
+                <span id="current_credits" class="text-primary mx-2">{{credit_amount}}</span>
+                <h2 class="card-title h1-responsive pt-2 font-bold text-uppercase"><strong>Credits Now</strong></h2>
+            </div>
+            <h6 class="mb-5" id="credits_usd"><span>1</span> credit (c) = <span>{{credit_price}}</span> usd ($)</h6>
+            <hr style="border-color: #21c1d6;">
+            <button id="btn_buy" type="button"
+                class="btn btn-lg btn-block font-medium btn-outline-success block-card"><i
+                    class="fas fa-coins mx-2"></i>Buy Credits</button>
+                   
+            <div id="div_checkout" class="mt-5">
+                <form action="{% url 'frontend:credits' %}" method="POST" class="form-material mt-4">
+                    {% csrf_token %}
+                    
+                    <h4 class="mb-4 text-warning" id="sent_msg"> You need at least <span id="need_credit" class="text-danger">200</span> credits to checkout</h4>
+                    <div class="form-group text-center mb-2">
+                        <input id="in_credit" type="text" value="1" name="in_credit" class="col-md-8 form-control" style="width: 200px;">
+                    </div>
+                    <h4 class="mb-5" id="pay_usd"> = <span>{{credit_price}}</span> $</h4>
+                    <div>
+                        <h4>Pay with</h4>
+                        <div class="mb-5" style="display: flex; justify-content: center;">
+                            <div class="custom-control custom-radio my-2 mx-2">
+                                <input id="in_stripe" name="payment_option" value="stripe" type="radio" class="custom-control-input" required>
+                                <label class="custom-control-label" for="in_stripe">Stripe</label>
+                            </div>
+                            <div class="custom-control custom-radio my-2 mx-2">
+                                <input id="in_coinbase" name="payment_option" value="coinbase" type="radio" class="custom-control-input" required>
+                                <label class="custom-control-label" for="in_coinbase">Crypto</label>
+                            </div>
+                        </div>
+                    </div>
+                    <input id="cart_param" type="text" value="{{cart_param}}" name="cart_param" hidden>
+                    <button id="btn_checkout" type="submit"
+                    class="btn btn-lg btn-block font-medium btn-outline-success block-card"><i
+                        class="fas fa-money-check-alt mx-2"></i> Checkout</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+
+{% endblock content %}
+
+{% block extra_scripts %}
+<script src="{% static 'assets/libs/bootstrap-touchspin/dist/jquery.bootstrap-touchspin.js' %}"></script>
+
+<script>
+    var credit_price = {{credit_price}}
+    var credit_amount = {{credit_amount}}
+    var need_param = '{{need_param}}'
+    var cart_param = '{{cart_param}}'
+    $(function(){
+        if(need_param != ''){
+            $("#need_credit").html(need_param)
+            $("#in_credit").val(parseInt(need_param))
+            $("#sent_msg").show()
+            $("#div_container").addClass('credits-flex')
+            show_usd();
+        }else{
+            $("#sent_msg").hide()
+        }
+        $("#btn_buy").click(function(){
+            $("#div_container").addClass('credits-flex')
+        })
+        $("input[name='in_credit']").TouchSpin({
+            min: 1,
+            max: 10000,
+            stepinterval: 5,
+            maxboostedstep: 100,
+            prefix: 'credits'
+        });
+        $("#in_credit").change(function(){
+            show_usd()
+        })
+        function show_usd(){
+            in_credit = parseInt($("#in_credit").val());
+            pay_usd = parseFloat(in_credit * credit_price).toFixed(1)
+            $("#pay_usd span").html(pay_usd);
+        }
+    })
+</script>
+{% endblock extra_scripts %}

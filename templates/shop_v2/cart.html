@@ -2,6 +2,7 @@
 {% load cart_template_tags %}
 {% load mathfilters %}
 {% load humanize %}
+{% load static %}
 
 {% block content %}
     <div class="row">
@@ -17,6 +18,11 @@
                     <h5 class="mb-0 text-white float-md-right">Item Count: <strong>{{ request.user|cart_item_count }}</strong></h5>
                 </div>
                 <div class="card-body">
+                    <div class="progress mb-2 progress-xl" style="border-radius: 0;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-{{progress_class}}" role="progressbar" aria-valuenow="{{credit_percent}}" aria-valuemin="0" aria-valuemax="100" style="width: {{credit_percent}}%">
+                            Your Wallet
+                        </div>
+                    </div>
                     <div class="table-responsive">
                         <table class="table product-overview">
                             <thead>
@@ -41,8 +47,15 @@
 
                                     </td>
 
-                                    <td class="font-500">${{ order_item.item.giveaway_fee|mul:user.account_type.fee_quantifier|add:order_item.item.giveaway_value|floatformat:0 }}</td>
-                                    <td width="70" align="center" class="font-500">
+                                    <td class="font-500" width="150">
+                                        {% if user.user_profile.credit_display %}
+                                        <img src="{% static 'assets/images/coin-xs.png' %}" style="padding-top:2px;width: 16px; vertical-align: text-top;">
+                                        {{ order_item.item.giveaway_fee|mul:user.account_type.fee_quantifier|add:order_item.item.giveaway_value|mul:cc_per_usd|floatformat:0 }}
+                                        {% else %}
+                                        ${{ order_item.item.giveaway_fee|mul:user.account_type.fee_quantifier|add:order_item.item.giveaway_value|floatformat:0 }}
+                                        {% endif %}
+                                    </td>
+                                        <td width="70" align="center" class="font-500">
                                         <a href="{% url 'core:remove-single-item-from-cart' order_item.item.slug %}"><i
                                                 class="fas fa-minus mr-2"></i></a>
                                         {{ order_item.quantity }}
@@ -51,10 +64,20 @@
                                     </td>
                                     <td width="150" align="center">
                                         {% if order_item.item.discount_price %}
+                                            {% if user.user_profile.credit_display %}
+                                            <img src="{% static 'assets/images/coin-xs.png' %}" style="padding-top:2px;width: 16px; vertical-align: text-top;">
+                                            {{ order_item.get_total_discount_item_price|mul:cc_per_usd }}
+                                            {% else %}
                                             ${{ order_item.get_total_discount_item_price }}
+                                            {% endif %}
                                             <span class="badge badge-primary">Saving ${{ order_item.get_amount_saved }}</span>
                                         {% else %}
+                                            {% if user.user_profile.credit_display %}
+                                            <img src="{% static 'assets/images/coin-xs.png' %}" style="padding-top:2px;width: 16px; vertical-align: text-top;">
+                                            {{ order_item.get_total_item_price|mul:cc_per_usd }}
+                                            {% else %}
                                             ${{ order_item.get_total_item_price }}
+                                            {% endif %}
                                         {% endif %}
                                     </td>
 
@@ -95,7 +118,15 @@
                     {% if object.get_total %}
                         <hr>
                         <small>Total Price</small>
-                        <h2>${{ object.get_total }}</h2>
+                        <h2>
+                            {% if user.user_profile.credit_display %}
+                            <img src="{% static 'assets/images/coin-xs.png' %}" style="padding-top:3px;width: 25px; vertical-align: text-top;">
+                            {{ object.get_total|mul:cc_per_usd }}
+                            {% else %}
+                            ${{ object.get_total }}
+                            {% endif %}
+                            
+                        </h2>
                         <hr>
                         <a href="{% url 'core:checkout' %}">
                             <button class="btn btn-success">Checkout</button>

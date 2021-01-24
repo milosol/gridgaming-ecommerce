@@ -210,6 +210,7 @@ class PricingPlan(models.Model):
     unlimited_times = models.BooleanField(default=False)
     unlimited_count = models.BooleanField(default=True)
     reroll_count = models.IntegerField(default=10)
+    credit_amount = models.IntegerField(default=1)
     class Meta:
         ordering = ['price']
         
@@ -225,6 +226,7 @@ class Membership(models.Model):
     done_count = models.IntegerField(default=0)
     done_month = models.IntegerField(default=0)
     bonus_count = models.IntegerField(default=0)
+    credit_amount = models.IntegerField(default=1)
     
     class Meta:
         ordering = ['id']
@@ -242,4 +244,6 @@ class Upgradeorder(models.Model):
     
     class Meta:
         ordering = ['id']
+        
+
         

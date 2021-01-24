@@ -1,0 +1,32 @@
+{% extends "core/base.html" %}
+{% block content %}
+<div class="container  text-center">
+    <div class="jumbotron card card-image">
+        <h2>Payment Done.</h2>
+        <a id="btn_back" class="btn btn-lg mt-5 font-medium btn-outline-success block-card"><i
+            class="far fa-hand-point-left mx-2"></i><span>Buy More Credits</span></a>
+    </div>
+ </div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+    var cart_param = '{{cart_param}}'
+    $(function(){
+        if(cart_param == 'giveaway'){
+            $("#btn_back span").html('Go to cart checkout page')
+            $("#btn_back").attr('href', '/shop/checkout?cart=giveaway')
+        }else if(cart_param == 'community'){
+            $("#btn_back span").html('Go to cart checkout page')
+            $("#btn_back").attr('href', '/shop/checkout?cart=community')
+        }else if(cart_param.indexOf('draw') != -1){
+            gwid = cart_param.split('draw_')[1]
+            console.log("======", gwid);
+            $("#btn_back span").html('Go to Retweet draw page')
+            $("#btn_back").attr('href', '/retweet-picker/draw/' + gwid)
+        }else {
+            $("#btn_back span").html('Go to Credits page')
+            $("#btn_back").attr('href', '/credits')
+        }
+    })
+</script>
+{% endblock extra_scripts %}

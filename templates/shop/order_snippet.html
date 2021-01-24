@@ -1,3 +1,5 @@
+{% load static %}
+{% load mathfilters %}
 <div class="col-md-12 mb-4">
     <h4 class="d-flex justify-content-between align-items-center mb-3">
     <span class="text-muted">Your cart</span>
@@ -11,7 +13,15 @@
             <h6 class="my-0">{{ order_item.quantity }} x {{ order_item.item.title}}</h6>
             <small class="text-muted">{{ order_item.item.description}}</small>
             </div>
-            <span class="text-muted">${{ order_item.get_final_price }}</span>
+            <span class="text-muted">
+                {% if user.user_profile.credit_display %}
+                <img src="{% static 'assets/images/coin-xs.png' %}" style="padding-top:2px;width: 16px; vertical-align: text-top;">
+                {{order_item.get_final_price|mul:cc_per_usd}}
+                {% else %}
+                ${{ order_item.get_final_price }}
+                {% endif %}
+                
+            </span>
         </li>
         {% else %}
         <li class="list-group-item d-flex justify-content-between lh-condensed">
@@ -19,7 +29,14 @@
             <h6 class="my-0">{{ order_item.quantity }} x {{ order_item.slot.title}}</h6>
             <small class="text-muted">{{ order_item.slot.description}}</small>
             </div>
-            <span class="text-muted">${{ order_item.get_final_price }}</span>
+            <span class="text-muted">
+                {% if user.user_profile.credit_display %}
+                <img src="{% static 'assets/images/coin-xs.png' %}" style="padding-top:1px;width: 16px; vertical-align: text-top;">
+                {{order_item.get_final_price|mul:cc_per_usd}}
+                {% else %}
+                ${{ order_item.get_final_price }}
+                {% endif %}
+            </span>
         </li>
         {% endif %}
     {% endfor %}
@@ -33,8 +50,21 @@
     </li>
     {% endif %}
     <li class="list-group-item d-flex justify-content-between">
-        <span>Total (USD)</span>
-        <strong>${{ order.get_total }}</strong>
+        <span>
+            {% if user.user_profile.credit_display %}
+            Total (Credits)
+            {% else %}
+            Total (USD)
+            {% endif %}
+        </span>
+        <strong class="text-warning">
+            {% if user.user_profile.credit_display %}
+            <img src="{% static 'assets/images/coin-xs.png' %}" style="padding-top:1px;width: 16px; vertical-align: text-top;">
+            {{order.get_total|mul:cc_per_usd}}
+            {% else %}
+            ${{ order.get_total }}
+            {% endif %}
+        </strong>
     </li>
     </ul>
 

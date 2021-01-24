@@ -24,12 +24,15 @@ from users.models import User
 from core.decorators import account_type_check
 from slotapp.views import del_timing
 from .forms import CheckoutFormv2, CouponForm, RefundForm, PaymentForm, BitpayForm, CoinbaseForm
-from .models import Item, OrderItem, Order, Address, Payment, Coupon, Refund, UserProfile, Slotitem, History
+from .models import Item, OrderItem, Order, Address, Payment, Coupon, Refund, UserProfile, Slotitem, History, CreditPayment
 import logging
 import traceback
 from coinbase_commerce.client import Client
-from retweet_picker.models import Upgradeorder
-from frontend.views import set_upgradeorder_paid
+from retweet_picker.models import Upgradeorder, Membership
+from frontend.views import set_upgradeorder_paid, bought_credit
+from frontend.models import BuyCredit
+from frontend.utils import *
+import math
 # from core.extras import transact, generate_client_token
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -67,13 +70,24 @@ class CheckoutViewV2(View):
                 messages.warning(self.request, res['msg'])
                 return redirect("core:order-summary")
             order = Order.objects.get(user=self.request.user, ordered=False, kind=kind)
+            current_credit = get_credit_amount(self.request.user.id)
+            total_usd = order.get_total()
+            total_credit = usd2credit(total_usd)
+            pay_credit = total_credit - current_credit
+            pay_usd = credit2usd(pay_credit)
             form = CheckoutFormv2()
             context = {
                 'form': form,
                 'couponform': CouponForm(),
-                'order': order,
                 'DISPLAY_COUPON_FORM': True,
-                'kind': kind
+                'kind': kind,
+                'order': order,
+                'pay_usd': pay_usd,
+                'pay_credit': pay_credit,
+                'total_credit': total_credit,
+                'total_usd': total_usd,
+                'current_credit': current_credit,
+                'cc_per_usd': get_cc_per_usd()
             }
 
             context.update({'giveaway_day_range': settings.GIVEAWAY_DAY_RANGE})
@@ -98,89 +112,64 @@ class CheckoutViewV2(View):
                 return redirect("slotapp:first_page")
 
     def post(self, *args, **kwargs):
-        form = CheckoutFormv2(self.request.POST or None)
         try:
             kind = self.request.session.get('kind', 0)
-            order = Order.objects.get(user=self.request.user, ordered=False, kind=kind)
-            if form.is_valid():
-
-                use_default_billing = form.cleaned_data.get(
-                    'use_default_billing')
-
-                if use_default_billing:
-                    address_qs = Address.objects.filter(
-                        user=self.request.user,
-                        address_type='B',
-                        default=True
-                    )
-                    if address_qs.exists():
-                        billing_address = address_qs[0]
-                        order.billing_address = billing_address
-                        # print(order.desired_giveaway_date)
-                        order.save()
-                    else:
-                        messages.info(
-                            self.request, "No default billing address available")
-                        return redirect('core:checkout')
-                else:
-                    # print("User is entering a new billing address")
-                    billing_address1 = form.cleaned_data.get(
-                        'billing_address')
-                    billing_address2 = form.cleaned_data.get(
-                        'billing_address2')
-                    billing_country = form.cleaned_data.get(
-                        'billing_country')
-                    billing_zip = form.cleaned_data.get('billing_zip')
-
-                    if is_valid_form([billing_address1, billing_country, billing_zip]):
-                        billing_address = Address(
-                            user=self.request.user,
-                            street_address=billing_address1,
-                            apartment_address=billing_address2,
-                            country=billing_country,
-                            zip=billing_zip,
-                            address_type='B'
-                        )
-                        billing_address.save()
-
-                        order.billing_address = billing_address
-                        order.save()
-
-                        set_default_billing = form.cleaned_data.get(
-                            'set_default_billing')
-                        if set_default_billing:
-                            billing_address.default = True
-                            billing_address.save()
-
-                    else:
-                        messages.info(
-                            self.request, "Please fill in the required billing address fields")
-
-                payment_option = form.cleaned_data.get('payment_option')
-
-                if payment_option == 'S':
-                    return redirect('core:payment')
-                elif payment_option == 'P':
-                    return redirect('core:process')
-                elif payment_option == 'C':
-                    # return redirect('core:bitpay')
-                    return redirect('core:coinbase')
-                else:
-                    messages.warning(
-                        self.request, "Invalid payment option selected")
-                    return redirect('core:checkout')
-            else:
-                modal_html = ''
-                for k, v in form.errors.items():
-                    modal_html += f'{k}: {v[0]}'
-                messages.error(self.request, f'{modal_html}', extra_tags='html')
+            res = pay_with_credit(self.request.user, kind)
+            if res['success'] == False:
+                messages.warning(self.request, res['msg'])
                 return redirect("core:checkout")
+            if kind == 0:
+                messages.success(self.request,
+                                 "Head over to the Launch Pad to start your giveaway! If no one is in line, you will start immediately!",
+                                 extra_tags='order_complete')
+                return redirect("retweet_picker:giveaway-list")
+            else:
+                messages.success(self.request, "Payment succeed",
+                                 extra_tags='order_complete')
+                del_timing(self.request.user.id, 'stripe payment done')
+                return redirect("core:user-orders")
+            
+        except Exception as e:
+            print(e)
+            messages.warning(self.request, "Error occured. Please try again.")
+        return redirect("core:checkout")
 
-        except ObjectDoesNotExist:
-            messages.warning(self.request, "You do not have an active order")
-            return redirect("core:order-summary")
-
-
+def pay_with_credit(user, kind):
+    res = {'success': True, 'msg': ''}
+    try:
+        order = Order.objects.get(user=user, ordered=False, kind=kind)
+        total_usd = order.get_total()
+        total_credit = usd2credit(total_usd)
+        current_credit = get_credit_amount(user.id)
+        if total_credit > current_credit:
+            res['success'] = False
+            res['msg'] = 'You have not enough credit'
+        order_items = order.items.all()
+        order_items.update(ordered=True, status='P')
+        for item in order_items:
+            item.save()
+            
+        cp = CreditPayment()
+        cp.user = user
+        cp.credit_amount = total_credit
+        cp.usd_amount = credit2usd(total_credit)
+        cp.save()
+                
+        order.ordered = True
+        order.status = 'P'
+        order.creditpayment = cp
+        order.ref_code = create_ref_code()
+        order.save()
+        membership, created = Membership.objects.get_or_create(user_id=user.id)
+        membership.credit_amount = current_credit - total_credit
+        membership.save()
+        
+    except Exception as e:
+        print(e)
+        res['success'] = False
+        res['msg'] = 'Error occured. Please try again later.'
+    return res
+    
 def get_user_pending_order(request):
     try:
         kind = request.session.get('kind', 0)
@@ -339,8 +328,6 @@ class PaymentView(View):
             order.payment = payment
             order.ref_code = create_ref_code()
             order.save()
-            History.objects.create(user=order.user, action='Purchased', item_str=order.get_purchased_items(),
-                                   reason="Stripe payment done", order_str=order.id)
             # TODO Add giveaway stats
             # try:
             #     GiveawayStats.objects.create(order_id=order.id)
@@ -450,8 +437,6 @@ class BitpayView(View):
                     order.payment = payment
                     order.ref_code = create_ref_code()
                     order.save()
-                    History.objects.create(user=order.user, action='Purchased', item_str=order.get_purchased_items(),
-                                           reason="Bitcoin payment done", order_str=order.id)
                 if order.kind == 0:
                     messages.success(self.request,
                                      "Head over to the Launch Pad to start your giveaway! If no one is in line, you will start immediately!",
@@ -497,8 +482,6 @@ def bitpay_notify(request):
                 order.payment = payment
                 order.ref_code = create_ref_code()
                 order.save()
-                History.objects.create(user=order.user, action='Purchased', item_str=order.get_purchased_items(),
-                                       reason="Bitcoin payment done", order_str=order.id)
     except Exception as e:
         logging.info(e)
     return HttpResponse(status=200)
@@ -516,23 +499,28 @@ def coinbase_notify(request):
         
         if data['event']['type'] in ['charge:pending', 'charge:confirmed']:
             name = data['event']['data']['name']
-            if 'upgrade_order_' in name:
-                order_id = name.split('upgrade_order_')[1]
-                uo = Upgradeorder.objects.get(id=order_id)
-                if uo.payment_status == 'C':
+            if 'buy_credt_' in name:
+                order_id = name.split('buy_credit_')[1]
+                bc = BuyCredit.objects.get(id=order_id)
+                if bc.payment_status == 'C' and bc.added_credit == True:
                     return HttpResponse(status=200)
-                
-                user = User.objects.get(id=uo.user_id)
-                # create the payment
-                payment = Payment()
-                payment.payment_method = 'C'
-                payment.user = user
-                payment.amount = uo.amount
-                payment.save()
-
-                set_upgradeorder_paid(uo.id, payment)
-                History.objects.create(user=user, action='Purchased', item_str=uo.reason,
-                                        reason="Coinbase payment done", order_str=uo.id)
+                if data['event']['type'] == 'charge:confirmed':
+                    bc.payment_status = 'C'
+                    bc.save()
+                elif bc.payment_status == 'W':
+                    bc.payment_status = 'P'
+                    bc.save()
+                    
+                if bc.added_credit == False:
+                    payment = Payment()
+                    payment.payment_method = 'C'
+                    payment.user = bc.user
+                    payment.amount = bc.usd_amount
+                    payment.save()
+                    bought_credit(bc.id)
+                    History.objects.create(user=bc.user, action='Buy Credit', item_str=str(bc.credit_amount) + ' credits',
+                                            reason="Coinbase payment done", order_str=bc.id)
+            '''
             else:
                 order_id = name.split('order_')[1]
                 orders = Order.objects.filter(id=order_id)
@@ -556,8 +544,7 @@ def coinbase_notify(request):
                     order.payment = payment
                     order.ref_code = create_ref_code()
                     order.save()
-                    History.objects.create(user=order.user, action='Purchased', item_str=order.get_purchased_items(),
-                                        reason="Bitcoin payment done", order_str=order.id)
+            '''
     except Exception as e:
         logging.info(e)
         return HttpResponse(status=500)    
@@ -641,8 +628,8 @@ class CoinbaseView(View):
                     order.payment = payment
                     order.ref_code = create_ref_code()
                     order.save()
-                    History.objects.create(user=order.user, action='Purchased', item_str=order.get_purchased_items(),
-                                           reason="Bitcoin payment done", order_str=order.id)
+                    # History.objects.create(user=order.user, action='Purchased', item_str=order.get_purchased_items(),
+                    #                        reason="Coinbase payment done", order_str=order.id)
                 if order.kind == 0:
                     messages.success(self.request,
                                      "Head over to the Launch Pad to start your giveaway! If no one is in line, you will start immediately!",
@@ -673,6 +660,24 @@ class HomeView(ListView):
         res = removefromcart(self.request)
         if res['removed'] == 1:
             messages.warning(self.request, res['msg'])
+        credit_amount = get_credit_amount(self.request.user.id)
+        for item in context['object_list']:
+            if item.discount_price:
+                item.usd_price = item.discount_price
+            else:
+                item.usd_price = item.giveaway_fee * self.request.user.account_type.fee_quantifier + item.giveaway_value
+            item.credit_price = usd2credit(item.usd_price)
+            item.price_percent = int(credit_amount / item.credit_price * 100)
+            if item.price_percent > 100:
+                item.price_percent = 100
+            item.progress_width = str(item.price_percent) + '%'
+            if item.price_percent == 100:
+                item.progress_class = 'primary'
+            elif item.price_percent > 50:
+                item.progress_class = 'warning'
+            else:
+                item.progress_class = 'danger'
+                
         return context
 
 
@@ -686,9 +691,24 @@ class OrderSummaryView(LoginRequiredMixin, View):
                 bmsg = 1
             order = Order.objects.get(user=self.request.user, ordered=False, kind=0)
             socials = Item.objects.filter(category='SB')
+            total_usd = order.get_total()
+            total_credit = usd2credit(total_usd)
+            credit_amount = get_credit_amount(self.request.user.id)
+            percent = int(credit_amount / total_credit * 100)
+            if percent > 100:
+                percent = 100
+            if percent == 100:
+                progress_class = 'primary'
+            elif percent > 50 :
+                progress_class = 'warning'
+            else:
+                progress_class = 'danger'
             context = {
                 'object': order,
-                'social_boost': socials
+                'social_boost': socials,
+                'credit_percent': percent,
+                'progress_class': progress_class,
+                'cc_per_usd': get_cc_per_usd()
             }
             self.request.session['kind'] = 0
             return render(self.request, 'shop_v2/cart.html', context)
@@ -702,7 +722,16 @@ class OrderSummaryView(LoginRequiredMixin, View):
 class ItemDetailView(DetailView):
     model = Item
     template_name = "shop_v2/product.html"
-
+    
+    def get_object(self):
+        obj = super().get_object()
+        if obj.discount_price:
+            obj.usd_price = obj.discount_price
+        else:
+            obj.usd_price = obj.giveaway_fee * self.request.user.account_type.fee_quantifier + obj.giveaway_value
+        obj.credit_price = usd2credit(obj.usd_price)
+        return obj
+    
 
 @account_type_check
 @login_required

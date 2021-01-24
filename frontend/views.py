@@ -27,7 +27,7 @@ from django.conf import settings
 from retweet_picker.models import PricingPlan, Membership, PRICINGPLAN_CHOICES, Upgradeorder, DrawPrice, GiveawayWinners
 from paypal.standard.forms import PayPalPaymentsForm
 from django.views.decorators.csrf import csrf_exempt
-from core.models import UserProfile, Payment
+from core.models import UserProfile, Payment, History
 from core.forms import PaymentForm, CoinbaseForm
 from stripe import error
 from django.utils import timezone
@@ -35,6 +35,8 @@ from datetime import timedelta
 from retweet_picker.views import set_donemonth
 from .ads import prometric_ads
 from coinbase_commerce.client import Client
+from .models import BuyCredit
+from .utils import *
 
 coinbase_api_key = settings.COINBASE_API_KEY
 client = Client(api_key=coinbase_api_key)
@@ -175,9 +177,9 @@ def pre_checkout(request):
 
 class CheckoutView(View):
     def get(self, request):
-        
-        context = {}
         try:
+            context = {} 
+            kind = request.GET.get('kind', '')
             uoid = self.request.session.get('uoid', -1)
             print(" == checkout page ", uoid)
             uo = Upgradeorder.objects.get(id=uoid)
@@ -197,37 +199,47 @@ class CheckoutView(View):
         else:
             return redirect("frontend:coinbasepayment")
 
-
+def bought_credit(bcid):
+    try:
+        bc = BuyCredit.objects.get(id=bcid)
+        if bc.added_credit == False:
+            membership = Membership.objects.get(user_id=bc.user.id)
+            membership.credit_amount += bc.credit_amount
+            membership.save()
+            bc.added_credit = True
+            bc.save()
+    except Exception as e:
+        print(e)
+    
 class PaypalPaymentView(View):
     def get(self, request):
         try: 
-            uoid = self.request.session.get('uoid', -1)
-            if uoid == -1:
-                messages.warning(self.request, "Please try again.")
-                return redirect("frontend:checkout")
-            
-            uo = Upgradeorder.objects.get(id=uoid)
+            bcid = self.request.session.get('bcid', -1)
+            if bcid < 0:
+                messages.warning(self.request, "Error occured. Please try again")
+                return redirect("frontend:credits")
+            bc = BuyCredit.objects.get(id=bcid)
             host = request.get_host()
 
-            if uo.reason == 'membership':
-                return_url = 'http://{}{}'.format(host, reverse('frontend:profile')) + "?tab=membership"
-                item_name = "Upgrade Membership : " + uo.upgradeto + "_" + str(uo.id)
-            else:
-                return_url = 'http://{}{}'.format(host, "/retweet-picker/draw/" + str(uo.gwid))
-                item_name = "Pay for drawing " + str(uo.id)
-            print(" === return url :", return_url)
+            # if uo.reason == 'membership':
+            #     return_url = 'http://{}{}'.format(host, reverse('frontend:profile')) + "?tab=membership"
+            #     item_name = "Upgrade Membership : " + uo.upgradeto + "_" + str(uo.id)
+            # else:
+            #     return_url = 'http://{}{}'.format(host, "/retweet-picker/draw/" + str(uo.gwid))
+            #     item_name = "Pay for drawing " + str(uo.id)
+                
             paypal_dict = {
                 'business': settings.PAYPAL_RECEIVER_EMAIL,
-                'amount': uo.amount,
-                'item_name': item_name,
-                'invoice': "drawormembership_" + str(uo.id),
+                'amount': bc.usd_pay,
+                'item_name': "Buy Credit",
+                'invoice': "buy_credit_" + str(bc.id),
                 'currency_code': 'USD',
                 'notify_url': 'http://{}{}'.format(host, reverse('frontend:paypal-ipn')),
-                'return_url': return_url,
+                'return_url': 'http://{}{}'.format(host, reverse('frontend:payment_done')),
                 'cancel_return': 'http://{}{}'.format(host, reverse('frontend:payment_canceled')),
             }
             form = PayPalPaymentsForm(initial=paypal_dict)
-            return render(request, 'frontend/paypalprocess.html', {'order': uo,
+            return render(request, 'frontend/paypalprocess.html', {'order': bc,
                                                             'form': form})
         except Exception as e:
             print(e)
@@ -239,6 +251,13 @@ def payment_canceled(request):
     return render(request, 'frontend/canceled.html')
 
 
+@csrf_exempt
+def payment_done(request):
+    cart_param = request.GET.get('cart', 'credit')
+    context = {'cart_param': cart_param}
+    return render(request, 'frontend/done.html', context)
+
+
 
 class CoinbasePaymentView(View):
     """
@@ -247,51 +266,50 @@ class CoinbasePaymentView(View):
 
     def get(self, request):
         try: 
-            uoid = self.request.session.get('uoid', -1)
-            if uoid == -1:
-                messages.warning(self.request, "Please try again.")
-                return redirect("frontend:checkout")
+            bcid = self.request.session.get('bcid', -1)
+            if bcid < 0:
+                messages.warning(self.request, "Error occured. Please try again")
+                return redirect("frontend:credits")
             
-            uo = Upgradeorder.objects.get(id=uoid)
+            bc = BuyCredit.objects.get(id=bcid)
             host = request.get_host()
-
-            if uo.reason == 'membership':
-                # return_url = 'http://{}{}'.format(host, reverse('frontend:profile')) + "?tab=membership"
-                item_name = "Upgrade Membership : " + uo.upgradeto + "_" + str(uo.id)
-                description = 'Upgrade membership to {}'.format(uo.upgradeto)
-            else:
-                # return_url = 'http://{}{}'.format(host, "/retweet-picker/draw/" + str(uo.gwid))
-                item_name = "Pay for drawing " + str(uo.id)
-                description = 'Pay for drawing :{}'.format(uo.gwid)
-            
-            order_name = 'upgrade_order_' + str(uo.id)
+            # if uo.reason == 'membership':
+            #     # return_url = 'http://{}{}'.format(host, reverse('frontend:profile')) + "?tab=membership"
+            #     item_name = "Upgrade Membership : " + uo.upgradeto + "_" + str(uo.id)
+            #     description = 'Upgrade membership to {}'.format(uo.upgradeto)
+            # else:
+            #     # return_url = 'http://{}{}'.format(host, "/retweet-picker/draw/" + str(uo.gwid))
+            #     item_name = "Pay for drawing " + str(uo.id)
+            #     description = 'Pay for drawing :{}'.format(uo.gwid)
+            description = 'Buy Credit [' + bc.user.username + ' : ' + str(bc.credit_amount) + ' credits]'  
+            order_name = 'buy_credit_' + str(bc.id)
             checkout_info = {
                 "name": order_name,
                 "description": description,
                 "pricing_type": 'fixed_price',
                 "local_price": {
-                    "amount": uo.amount,
+                    "amount": bc.usd_amount,
                     "currency": "USD"
                 },
                 "requested_info": []
             }
-            checkouts = client.checkout.list()
-            for checkout in client.checkout.list_paging_iter():
-                if order_name == checkout.name:
-                    checkout.delete()
+            # checkouts = client.checkout.list()
+            # for checkout in client.checkout.list_paging_iter():
+            #     if order_name == checkout.name:
+            #         checkout.delete()
                     
             checkout = client.checkout.create(**checkout_info)
-            print("====== checkout created :", checkout.id, " - ", uo.id)
+            print("====== checkout created :", checkout.id, " - ", bc.id)
             context = {
-                'order': uo,
+                'order': bc,
                 'checkout_id': checkout.id,
-                'order_id': uo.id,
+                'order_id': bc.id,
             }
             return render(self.request, "frontend/coinbase.html", context)
         except Exception as e:
             print(e)
             messages.warning(self.request, "Creating coinbase checkout failed. Error:" + str(e))
-            return redirect("frontend:checkout")
+            return redirect("frontend:credits")
 
     def post(self, *args, **kwargs):
         try:
@@ -300,25 +318,31 @@ class CoinbasePaymentView(View):
             if form.is_valid():
                 checkout_id = form.cleaned_data.get('checkout_id')
                 order_id = form.cleaned_data.get('order_id')
-                uo = Upgradeorder.objects.get(id=order_id)
-                print("=== uo. payment status :", uo.payment_status)
-                if uo.payment_status != 'C':
+                bc = BuyCredit.objects.get(id=order_id)
+                print("=== bc. payment status :", bc.payment_status)
+                if bc.payment_status != 'C':
                     print("=== created payment")
                     # create the payment
                     payment = Payment()
                     payment.payment_method = 'C'
                     payment.user = self.request.user
-                    payment.amount = uo.amount
+                    payment.amount = bc.usd_amount
+                    payment.credit_amount = bc.credit_amount
                     payment.save()
-                    set_upgradeorder_paid(uo.id, payment)
+                    bc.payment = payment
+                    bc.payment_status = 'C'
+                    bc.save()
+                    bought_credit(bc.id)
+                    return redirect("frontend:payment_done")
+                    # set_upgradeorder_paid(uo.id, payment)
                     
-                if uo.reason == 'membership':
-                    messages.success(self.request,
-                                    "Your membership is upgraded!", extra_tags='order_complete')
-                    return redirect("/profile?tab=membership")
-                else:
-                    messages.success(self.request, "Payment succeed", extra_tags='order_complete')
-                    return redirect("/retweet-picker/" + str(uo.gwid) + "/entries")
+                # if uo.reason == 'membership':
+                #     messages.success(self.request,
+                #                     "Your membership is upgraded!", extra_tags='order_complete')
+                #     return redirect("/profile?tab=membership")
+                # else:
+                #     messages.success(self.request, "Payment succeed", extra_tags='order_complete')
+                #     return redirect("/retweet-picker/" + str(uo.gwid) + "/entries")
             
         except Exception as e:
             print(e)
@@ -346,10 +370,17 @@ class StripePaymentView(View):
 
     def get(self, *args, **kwargs):
         try:
-            uoid = self.request.session.get('uoid', -1)
-            uo = Upgradeorder.objects.get(id=uoid)
+            cart_param = self.request.GET.get('cart', 'credit')
+            bcid = self.request.session.get('bcid', -1)
+            if bcid < 0:
+                messages.warning(self.request, "Error occured. Please try again")
+                return redirect("frontend:credits")
+            
+            bc = BuyCredit.objects.get(id=bcid)
+            
             context = {
-                'order': uo,
+                'order': bc,
+                'cart_param': cart_param,
                 'DISPLAY_COUPON_FORM': False,
                 'STRIPE_PUBLIC_KEY': settings.STRIPE_PUBLIC_KEY,
                 # 'client_token': client_token,
@@ -372,22 +403,24 @@ class StripePaymentView(View):
             return render(self.request, "frontend/stripe.html", context)
         except Exception as e:
             print(e)
-            messages.warning(self.request, "There is no pay order. Please try again.")
-            return redirect("frontend:checkout")
+            messages.warning(self.request, "Please try again.")
+            return redirect("frontend:credits")
             
     def post(self, *args, **kwargs):
         try:
             
+            bcid = self.request.session.get('bcid', -1)
+            # cart_param = self.request.session.get('cart', 'credit')
+            bc = BuyCredit.objects.get(id=bcid)
             form = PaymentForm(self.request.POST)
-            uoid = self.request.session.get('uoid', -1)
-            uo = Upgradeorder.objects.get(id=uoid)
             userprofile, created = UserProfile.objects.get_or_create(user=self.request.user)
             charge = None
             if form.is_valid():
                 stripe_token = form.cleaned_data.get('stripeToken')
                 save = form.cleaned_data.get('save')
                 use_default = form.cleaned_data.get('use_default')
-                amount = uo.amount
+                cart_param = form.cleaned_data.get('cart_param')
+                amount = bc.usd_amount
                 try:
                     if stripe_token:
                         if save:
@@ -409,7 +442,7 @@ class StripePaymentView(View):
                                 userprofile.save()
                         else:
                             charge = stripe.Charge.create(
-                                amount=amount * 100,
+                                amount=int(amount * 100),
                                 currency='usd',
                                 source=stripe_token,
                             )
@@ -417,29 +450,29 @@ class StripePaymentView(View):
                     if use_default or save:
                         # charge the customer because we cannot charge the token more than once
                         charge = stripe.Charge.create(
-                            amount=amount * 100,  # cents
+                            amount=int(amount * 100),  # cents
                             currency="usd",
                             customer=userprofile.stripe_customer_id
                         )
 
                 except error.AuthenticationError as e:
                     messages.warning(self.request, "Payment not processed! Not authenticated")
-                    return redirect("frontend:checkout")
+                    return redirect("frontend:credits")
 
                 except error.StripeError as e:
                     body = e.json_body
                     err = body.get('error', {})
                     messages.warning(self.request, f"{err.get('message')}")
-                    return redirect("frontend:checkout")
+                    return redirect("frontend:credits")
 
                 except stripe.error.InvalidRequestError as e:
                     # Invalid parameters were supplied to Stripe's API
                     messages.warning(self.request, "Payment not processed! Invalid parameters")
-                    return redirect("frontend:checkout")
+                    return redirect("frontend:credits")
 
                 except Exception as e:
                     messages.warning(self.request, "A serious error occurred. We have been notifed.")
-                    return redirect("frontend:checkout")
+                    return redirect("frontend:credits")
 
                 payment = Payment()
                 if charge:
@@ -448,17 +481,22 @@ class StripePaymentView(View):
 
                 payment.user = self.request.user
                 payment.amount = amount
+                payment.credit_amount = bc.credit_amount
                 payment.save()
-
-                set_upgradeorder_paid(uo.id, payment)
-                
-                if uo.reason == 'membership':
-                    messages.success(self.request,
-                                    "Your membership is upgraded!", extra_tags='order_complete')
-                    return redirect("/profile?tab=membership")
-                else:
-                    messages.success(self.request, "Payment succeed", extra_tags='order_complete')
-                    return redirect("/retweet-picker/" + str(uo.gwid) + "/entries")
+                bc.payment = payment
+                bc.payment_status = 'C'
+                bc.save()
+                bought_credit(bc.id)
+                History.objects.create(user=bc.user, action='Buy Credit', item_str=str(bc.credit_amount) + ' credits',
+                                            reason="Coinbase payment done", order_str=bc.id)
+                return redirect(reverse("frontend:payment_done")+ '?cart=' + cart_param)
+                # if uo.reason == 'membership':
+                #     messages.success(self.request,
+                #                     "Your membership is upgraded!", extra_tags='order_complete')
+                #     return redirect("/profile?tab=membership")
+                # else:
+                #     messages.success(self.request, "Payment succeed", extra_tags='order_complete')
+                #     return redirect("/retweet-picker/" + str(uo.gwid) + "/entries")
                 
             messages.warning(self.request, "Invalid data received")
             return redirect("frontend:stripepayment")
@@ -497,6 +535,8 @@ def account_type(request):
         form = UserAccountForm()
     context['form'] = form
     return render(request, "account/account_type.html", context=context)
+
+
 @csrf_exempt
 def get_membership(request):
     res = {'success': True, 'msg': '', 'membership': 'Free'}
@@ -505,6 +545,7 @@ def get_membership(request):
             for choice, label in PRICINGPLAN_CHOICES:
                 PricingPlan.objects.create(plan=choice, label=label)
         membership, created = Membership.objects.get_or_create(user_id=request.user.id)
+        res['credit_count'] = membership.credit_amount
         if membership.plan != 'F':
             if membership.end_time < timezone.now():
                 membership.plan = 'F'
@@ -520,8 +561,48 @@ def get_membership(request):
         print(e)
         res['success'] = False
         res['membership'] = 'Free'
+        res['credit_count'] = 0
         res['msg'] = 'Error occured while getting membership'
     return JsonResponse(res)
+
+
+class CreditView(View):
+    def get(self, request):
+        request.session['bcid'] = -1
+        need_param = request.GET.get('need', '')
+        cart_param = request.GET.get('cart', '')
+        context = {}
+        cc_per_usd = get_cc_per_usd()
+        credit_amount = get_credit_amount(request.user.id)
+        context = {
+            'cc_per_usd' : cc_per_usd,
+            'credit_amount' : credit_amount,
+            'need_param' : need_param,
+            'cart_param' : cart_param
+        }
+        return render(request, 'frontend/credits.html', context=context)
+        
+    def post(self, request):
+        cart_param = request.POST.get('cart_param')
+        credit_amount = int(request.POST.get('in_credit'))
+        if cart_param == '':
+            cart_param = 'credit'
+        if credit_amount <= 0:
+            messages.warning(self.request, "Please input correct credit amount")
+            return redirect("frontend:credits")
+        usd_pay = credit2usd(credit_amount)
+        bc = BuyCredit.objects.create(user=self.request.user, credit_amount=credit_amount, usd_amount=usd_pay)
+        request.session['bcid'] = bc.id
+        
+        method = request.POST.get('payment_option')
+        if method == 'paypal':
+            return redirect("frontend:paypalpayment")
+        elif method == 'stripe':
+            return redirect(reverse('frontend:stripepayment') + '?cart=' + cart_param)
+            # return redirect("frontend:stripepayment")
+        else:
+            return redirect(reverse("frontend:coinbasepayment") + '?cart=' + cart_param)
+
 
 def update_account_type(request):
     if request.method == "POST":
