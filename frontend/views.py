@@ -129,11 +129,14 @@ def profile(request):
     pps = PricingPlan.objects.all()
     pp_array = []
     selected = False
+    cc_per_usd = get_cc_per_usd()
     for pp in pps:
+        pp.price_credit = pp.price * cc_per_usd
         temp = {}
         temp['plan'] = pp.plan
         temp['label'] = pp.label
         temp['price'] = pp.price
+        temp['price_credit'] = pp.price_credit
         temp['limit_times'] = pp.limit_times
         temp['limit_count'] = pp.limit_count
         if pp.plan == membership.plan:
@@ -144,6 +147,8 @@ def profile(request):
         temp['status'] = pp.status
         pp_array.append(temp)
     
+    context['cc_per_usd'] = cc_per_usd
+    context['current_credit'] = get_credit_amount(request.user.id)
     context['plan'] = membership.plan
     context['pricing_plans_set'] = pps
     context['pricing_plans_json'] = dumps(pp_array)
@@ -154,25 +159,30 @@ def pre_checkout(request):
     context = {}
     if request.method == "POST":
         try:
-            reason = request.POST.get('reason')
-            if reason == 'membership':
-                upgradeto = request.POST.get('upgradeto')
-                months = request.POST.get('months')
-                amount = request.POST.get('amount')
-                uo, created = Upgradeorder.objects.get_or_create(user_id=request.user.id, reason=reason, months=months, amount=amount, upgradeto=upgradeto, payment_status='W')
+            upgradeto = request.POST.get('upgradeto')
+            months = int(request.POST.get('months'))
+            amount = int(request.POST.get('amount'))
+            current_credit = get_credit_amount(request.user.id)
+            cc_per_usd = get_cc_per_usd()
+            if current_credit >= amount * cc_per_usd:
+                membership, created = Membership.objects.get_or_create(user_id=request.user.id)
+                membership.plan = upgradeto
+                membership.paid_month = months
+                membership.paid_time = timezone.now()
+                membership.end_time = membership.paid_time + timedelta(days=months*30)
+                membership.done_count = 0
+                membership.done_month = 0
+                membership.save()
+                credit_minus(request.user.id, amount*cc_per_usd)
             else:
-                gwid = request.POST.get('gwid')
-                amount = request.POST.get('amount')
-                uo, created = Upgradeorder.objects.get_or_create(user_id=request.user.id, reason=reason, gwid=gwid, amount=amount, payment_status='W')
-                
-            request.session['uoid'] = uo.id
-            return redirect("frontend:checkout")
+                messages.warning(request, "You have not enough credits. Buy credit and try again.")
+            # uo, created = Upgradeorder.objects.get_or_create(user_id=request.user.id, reason=reason, months=months, amount=amount, upgradeto=upgradeto, payment_status='W')
         except Exception as e:
             print(e)
-            messages.warning(request, "Error occured while pre checkout. Please try again.")
-            return redirect("core:home")
+            messages.warning(request, "Error occured while upgrading membership. Please try again.")
+        return redirect("/profile?tab=membership")
     else:
-        return redirect("core:home")
+        return redirect("/profile?tab=membership")
 
 
 class CheckoutView(View):

@@ -11,7 +11,25 @@ def get_cc_per_usd():
     except Exception as e:
         print(e)
         return 1
+    
+def get_min_buy_credit():
+    try:
+        if OneValue.objects.all().count() == 0:
+            OneValue.objects.create()
+        return OneValue.objects.all().first().min_buy_credit
+    except Exception as e:
+        print(e)
+        return 1
 
+def get_judge_credit_price():
+    try:
+        if OneValue.objects.all().count() == 0:
+            OneValue.objects.create()
+        return OneValue.objects.all().first().judge_credit_price
+    except Exception as e:
+        print(e)
+        return 1
+    
 def usd2credit(usd_value):
     cc = get_cc_per_usd()
     return cc * usd_value
@@ -28,6 +46,16 @@ def get_credit_amount(user_id):
         print(e)
         return 0
 
+def credit_minus(user_id, amount):
+    try:
+        membership, created = Membership.objects.get_or_create(user_id=user_id)
+        membership.credit_amount = max(membership.credit_amount - amount, 0)
+        membership.save()
+        return membership.credit_amount
+    except Exception as e:
+        print(e)
+        return 0
+    
     
 def build_socials(self, user_id=None):
     all_services = ['discord', 'twitter', 'twitch', 'google']

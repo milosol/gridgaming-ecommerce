@@ -1,6 +1,6 @@
 {% load cart_template_tags %}
 {% load remove_normal %}
-
+{% load humanize %}
 {% load static %}
 
         <!-- ============================================================== -->
@@ -120,7 +120,7 @@
                             <a class="nav-link  waves-effect waves-dark font-weight-bold" style="background-color: #478cab61;" href="{% url 'frontend:credits' %}" aria-expanded="false">
                                 <!-- <i class="fas fa-coins mx-2" style="color:#8effd0;"></i> -->
                                 <img src="{% static 'assets/images/coin-xs.png' %}" style="width: 25px; vertical-align: text-top;">
-                                <span>{{request.user|user_credit_amount}}</span>
+                                <span>{{request.user|user_credit_amount|intcomma}}</span>
                             </a>
                             <!-- <button id="btn_buy" type="button"
                                 class="btn btn-lg btn-block font-medium btn-outline-success block-card"><i

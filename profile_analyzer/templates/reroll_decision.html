@@ -46,7 +46,7 @@
 
                     <button href="javascript:void(0)"
                            id="btn_judgement_day"
-                            type="button" class="btn btn-lg btn-block font-medium btn-outline-success block-card"><i class="fas fa-gavel ml-1"></i> Credits: <span id="judgement_credits">{{ credits }}</span></button>
+                            type="button" class="btn btn-lg btn-block font-medium btn-outline-success block-card"><i class="fas fa-gavel ml-1"></i> Credits: <span id="judgement_credits">{{ credit_price }}</span></button>
 {#              <a class="btn btn-outline-white btn-md"><i class="fas fa-clone left"></i> View project</a>#}
             </div>
           </div>
@@ -57,7 +57,14 @@
 
 {% block extra_scripts %}
     <script>
-        $("#btn_judgement_day").click(function () {
+        var credit_price = {{credit_price}};
+        var current_credit = {{current_credit}};
+
+        function numberWithCommas(x) {
+            return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        function do_analyze(){
             $("#profile_decision").html("<div class=\"spinner-border text-success\" role=\"status\">\n" +
                 "                                  <span class=\"sr-only\">Loading...</span>\n" +
                 "                                </div>")
@@ -69,10 +76,10 @@
                 dataType: 'json',
                 success: function (data) {
                     if (data.success === true) {
-                        $("#judgement_credits").html(data.profile_analysis.credits)
-                        console.log(data)
                         /*$("#all_results").show()*/
-                        console.log(data.profile_analysis.bot_prediction)
+                        if(data.profile_analysis){
+                            $("a[href='/wallet'] span").html(numberWithCommas(data.current_credit));
+                        }
                         if (data.profile_analysis.bot_prediction == true) {
                             $("#eligible_header").html("Awww man...")
                             $("#profile_decision").html("<i class=\"fas fa-frown\"></i>")
@@ -86,11 +93,31 @@
                         }
                     } else {
                         $("#profile_decision").html(data.msg)
-
-
                     }
                 }
             })
+        }
+        $("#btn_judgement_day").click(function () {
+            if(current_credit >= credit_price){
+                do_analyze();
+            }else{
+                swal.fire({
+                title: 'Are you sure?',
+                icon: 'warning',
+                text: "You have not enough credit for analyzing. Are you going to buy credit?",
+                showCancelButton: true,
+                background: '#e9ecef',
+                confirmButtonColor: '#21c1d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, buy credit'
+                }).then((result) => {
+                    if (result.value) {
+                        location.href="/wallet?need=" + (credit_price - current_credit) + "&cart=judge";
+                    } else if (result.dismiss === Swal.DismissReason.cancel) {
+
+                    }
+                })
+            }
         })
 
     $(function() {

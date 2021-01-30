@@ -13,8 +13,8 @@ def update_or_create_analyzer(user_obj, profile_analysis):
                                        defaults={'decision': profile_analysis.bot_prediction,
                                                  'profile_analysis': profile_analysis}
                                       )
-    if not created:
-        # Remove one credit after analysis was ran
-        obj.credits -= 1
-        obj.save()
+    # if not created:
+    #     # Remove one credit after analysis was ran
+    #     obj.credits -= 1
+    #     obj.save()
     return obj

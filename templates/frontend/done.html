@@ -23,9 +23,15 @@
             console.log("======", gwid);
             $("#btn_back span").html('Go to Retweet draw page')
             $("#btn_back").attr('href', '/retweet-picker/draw/' + gwid)
+        }else if(cart_param.indexOf('judge') != -1){
+            $("#btn_back span").html('Go to Analyzing page')
+            $("#btn_back").attr('href', '/analyzer/judge/')
+        }else if(cart_param == 'membership'){
+            $("#btn_back span").html('Go to Membership page')
+            $("#btn_back").attr('href', '/profile?tab=membership')
         }else {
             $("#btn_back span").html('Go to Credits page')
-            $("#btn_back").attr('href', '/credits')
+            $("#btn_back").attr('href', '/wallet')
         }
     })
 </script>

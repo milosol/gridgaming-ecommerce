@@ -1,6 +1,7 @@
 {% extends "core/base.html" %}
 {% load static %}
 {% load mathfilters %}
+{% load humanize %}
 {% load cart_template_tags %}
 {% load crispy_forms_tags %}
 {% block extra_css %}
@@ -106,13 +107,19 @@
                     <h3><span class="text-warning">
                         {% if user.user_profile.credit_display %}
                         <img src="{% static 'assets/images/coin-xs.png' %}" style="padding-top:3px;width: 22px; vertical-align: text-top;">
-                        {{total_credit}}
+                        {{total_credit|intcomma}}
                         {% else %}
-                        ${{total_usd }} ( = <img src="{% static 'assets/images/coin-xs.png' %}" style="padding-top:3px;width: 22px; vertical-align: text-top;">
+                        ${{total_usd|intcomma}} ( = <img src="{% static 'assets/images/coin-xs.png' %}" style="padding-top:3px;width: 22px; vertical-align: text-top;">
                         {{total_credit}})
                         {% endif %}
                     </span></h3>
                     <h4 id="h_msg" class="my-5"></h4>
+                    {% if total_credit > current_credit %}
+                    <h5 class="mb-3"><span class="text-success"> Need more
+                        <img src="{% static 'assets/images/coin-xs.png' %}" style="padding-top:4px;width: 14px; vertical-align: text-top;">{{pay_credit|intcomma}}
+                        ( = ${{pay_usd }})
+                    </span></h5>
+                    {% endif %}
                     <form id="form_paycredit" method="POST" class="form-material mt-4" hidden>
                         {% csrf_token %}
                         <input name="total_credit" value="{{ total_credit }}" hidden>

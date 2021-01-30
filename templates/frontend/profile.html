@@ -1,5 +1,7 @@
 {% extends "core/base.html" %}
 {% load account %}
+{% load humanize %}
+{% load static %}
 {% block extra_head_tags %}
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <style>
@@ -105,7 +107,11 @@
                                             <h5>Load limit counts of entries <br>Or pay manually</h5>
                                             <h5>Draw {{pp.limit_times}} times / month</h5>
                                         {% else %}
+                                            {% if user.user_profile.credit_display %}
+                                            <h5><img src="{% static 'assets/images/coin-xs.png' %}" style="padding-top: 2px;width: 16px; vertical-align: text-top;">{{pp.price_credit|intcomma}} / month</h5>
+                                            {% else %}
                                             <h5>${{pp.price}} / month</h5>
+                                            {% endif %}
                                             <h5>Draw {{pp.limit_times}} times / month</h5>
                                         {% endif %}
                                         </div>
@@ -148,7 +154,7 @@
                         <h2 id="h_plan" class="mb-3">Basic</h2>
                         <ul>
                             <li><h5 id="h_drawtimes">You can draw <span id="spn_drawtimes">2</span> times by free per month</h5></li>
-                            <li><h5 id="h_pay">Pay <span id="spn_price">$10</span> per month</h5></li>
+                            <li><h5 id="h_pay">Pay <img src="{% static 'assets/images/coin-xs.png' %}" style="padding-top: 2px;width: 16px; vertical-align: text-top;"><span id="spn_price_credit"></span>( = <span id="spn_price">$10</span>) per month</h5></li>
                         </ul>
                         
                         <div class="d-flex justify-content-center">
@@ -163,7 +169,7 @@
                         </div>
                         <ul>
                             <li>
-                                <h5 id="h_result" class="mt-3">Please pay <span id="spn_result">$10</span> now for your plan</h5>
+                                <h5 id="h_result" class="mt-3">Please pay <img src="{% static 'assets/images/coin-xs.png' %}" style="padding-top: 2px;width: 16px; vertical-align: text-top;"><span id="spn_result_credit"></span>( = <span id="spn_result">$10</span>) now for your plan</h5>
                             </li>
                         </ul>
                     </div>
@@ -202,13 +208,15 @@
 
 {% block extra_scripts %}
 <script type="text/javascript">
+     var credit_display = "{{user.user_profile.credit_display}}";
+     var cc_per_usd = {{cc_per_usd}};
+     var current_credit = {{current_credit}};
      var tab = '{{ tab }}'
      var current_plan = '{{ plan }}'
      var minus_price = '{{ minus_price }}'
      var pricing_plans = JSON.parse("{{pricing_plans_json|escapejs}}");
      var modal_plan = 'F'
      var modal_data = {}
-     console.log("minus price :", minus_price)
      function fnupgrade(plan){
         modal_plan = plan
         for(i=0;i<pricing_plans.length;i++){
@@ -219,6 +227,7 @@
         }
         $("#h_plan").html(plan == 'B'? 'Basic' : 'Pro');
         $("#spn_price").html('$' + modal_data.price)
+        $("#spn_price_credit").html(modal_data.price * cc_per_usd)
         $("#spn_drawtimes").html(modal_data.limit_times)
         $("#sel_month").val(1)
         fnshowresult();
@@ -231,6 +240,7 @@
              result = 0
          }
          $("#spn_result").html('$' + result);
+         $("#spn_result_credit").html(result * cc_per_usd);
          $("#form_pay input[name='upgradeto']").val(modal_plan);
          $("#form_pay input[name='amount']").val(result);
          $("#form_pay input[name='months']").val(mv);
@@ -241,7 +251,27 @@
              $("[href='#settings-b1']").trigger('click');
          }
          $("#btn_paynow").click(function(){
-            $("#form_pay").submit();
+            amount = parseInt($("#form_pay input[name='amount']").val());
+            if(current_credit >= amount * cc_per_usd){
+                $("#form_pay").submit();
+            }else{
+                swal.fire({
+                title: 'Are you sure?',
+                icon: 'warning',
+                text: "You have not enough credit for upgrade. Are you going to buy credit?",
+                showCancelButton: true,
+                background: '#e9ecef',
+                confirmButtonColor: '#21c1d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, buy credit'
+                }).then((result) => {
+                    if (result.value) {
+                        location.href="/wallet?need=" + (amount * cc_per_usd - current_credit) + "&cart=membership";
+                    } else if (result.dismiss === Swal.DismissReason.cancel) {
+
+                    }
+                })
+            }
          })
      })
      
