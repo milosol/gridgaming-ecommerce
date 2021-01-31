@@ -1,6 +1,6 @@
 {% extends "core/base.html" %}
 {% load static %}
-
+{% load humanize %}
 {% block extra_head_tags %}
 <link href="{% static 'assets/libs/bootstrap-touchspin/dist/jquery.bootstrap-touchspin.css' %}" rel="stylesheet" />
 <!-- <link href="{% static 'css/style.min.css' %}" rel="stylesheet" /> -->
@@ -49,15 +49,15 @@
 
 {% block content %}
 
-<div class="container  text-center">
+<div class="text-center">
     <div class="jumbotron card card-image">
-        <div id="div_container" class="text-white text-center py-5 px-4">
+        <div id="div_container" class="text-white text-center py-5 px-sm-4">
             <div id="div_credits" class="text-center">
                 <h2 class="card-title h1-responsive pt-2 font-bold text-uppercase"><strong>You have</strong></h2>
-                <span id="current_credits" class="text-primary mx-2">{{credit_amount}}</span>
+                <span id="current_credits" class="text-primary mx-2" style="align-self: center;">{{credit_amount|intcomma}}</span>
                 <h2 class="card-title h1-responsive pt-2 font-bold text-uppercase"><strong>Credits Now</strong></h2>
             </div>
-            <h6 class="mb-5" id="credits_usd"><span>1</span> usd ($) = <span>{{cc_per_usd}}</span> credits (<img src="{% static 'assets/images/coin-xs.png' %}" style="padding-top: 2px;width: 16px; vertical-align: text-top;">)</h6>
+            <h6 class="mb-5" id="credits_usd"><span>1</span> USD ($) = <span>{{cc_per_usd}}</span> Credits (<img src="{% static 'assets/images/coin-xs.png' %}" style="padding-top: 2px;width: 16px; vertical-align: text-top;">)</h6>
             <hr style="border-color: #21c1d6;">
             <button id="btn_buy" type="button"
                 class="btn btn-lg btn-block font-medium btn-outline-success block-card"><i
@@ -67,12 +67,20 @@
                 <form action="{% url 'frontend:credits' %}" method="POST" class="form-material mt-4">
                     {% csrf_token %}
                     
-                    <h4 class="mb-4 text-warning" id="sent_msg"> You need at least <span id="need_credit" class="text-danger">200</span> credits to checkout</h4>
+                    <h4 class="mb-4 text-warning" id="sent_msg"> You need at least <span id="need_credit" class="text-danger">
+                        {% if need_param != '' %}
+                        {{need_param|intcomma}}
+                        {% endif %}
+                    </span> credits to checkout</h4>
                     <div class="form-group text-center mb-2">
-                        <input id="in_credit" type="text" value="1" name="in_credit" class="col-md-8 form-control" style="width: 200px;">
+                        <input id="in_credit" type="text" value="1" name="in_credit" class="col-md-8 form-control text-warning" style="width: 200px;">
                     </div>
-                    <h4 class="mb-5" id="pay_usd"> = <span>{{credit_price}}</span> $</h4>
-                    <div>
+                    ||
+                    <div class="form-group text-center mb-5">
+                        <input id="in_usd" type="text" value="1" name="in_usd" class="col-md-8 form-control text-info" style="width: 200px;">
+                    </div>
+                    <!-- <h4 class="mb-5" id="pay_usd"> = <span>{{credit_price}}</span> $</h4> -->
+                    <div class="pt-3">
                         <h4>Pay with</h4>
                         <div class="mb-5" style="display: flex; justify-content: center;">
                             <div class="custom-control custom-radio my-2 mx-2">
@@ -109,7 +117,7 @@
     var cart_param = '{{cart_param}}'
     $(function(){
         if(need_param != ''){
-            $("#need_credit").html(need_param)
+            // $("#need_credit").html(need_param)
             $("#in_credit").val(parseInt(need_param))
             $("#sent_msg").show()
             $("#div_container").addClass('credits-flex')
@@ -121,20 +129,46 @@
             $("#div_container").addClass('credits-flex')
         })
         $("input[name='in_credit']").TouchSpin({
-            min: 1,
-            max: 10000,
-            stepinterval: 5,
+            min: 5,
+            max: 100000000,
+            stepinterval: 50,
+            bootstat: 5,
+            maxboostedstep: 10,
+            prefix: 'Credits',
+            buttondown_class: "btn btn-warning",
+            buttonup_class: "btn btn-warning",
+        });
+        $("input[name='in_usd']").TouchSpin({
+            min: 0,
+            max: 100000000,
+            step: 0.01,
+            stepinterval: 50,
+            decimals: 2,
+            bootstat: 50,
             maxboostedstep: 100,
-            prefix: 'credits'
+            prefix: 'USD($)',
+            buttondown_class: "btn btn-info",
+            buttonup_class: "btn btn-info",
         });
         $("#in_credit").change(function(){
             show_usd()
         })
+        $("#in_usd").change(function(){
+            show_credit()
+        })
         function show_usd(){
             in_credit = parseInt($("#in_credit").val());
-            pay_usd = parseFloat(in_credit / cc_per_usd).toFixed(1)
+            pay_usd = parseFloat(in_credit / cc_per_usd).toFixed(2)
             $("#pay_usd span").html(pay_usd);
+            $("#in_usd").val(pay_usd)
         }
+        function show_credit(){
+            in_usd = parseFloat($("#in_usd").val());
+            pay_credit = Math.floor(in_usd * cc_per_usd)
+            $("#in_credit").val(pay_credit)
+            // $("#pay_usd span").html(pay_usd);
+        }
+        show_usd()
     })
 </script>
 {% endblock extra_scripts %}

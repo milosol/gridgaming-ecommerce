@@ -3,7 +3,7 @@ import time
 from retweet_picker.manager import GiveawayManager
 from background_task import background
 from .models import  Membership, GiveawayWinners, DrawPrice, ContestUserParticipation, ContestUserAccounts, TwitterGiveawayID
-
+from background_task.models import Task
 
 def start_giveaway_bg(user_id=None,
                       order_id=None,
@@ -111,3 +111,14 @@ def sleeper():
     connection.close()
     print('sleeping for 10 sec')
     time.sleep(10)
+
+def set_membership_management():
+    count = Task.objects.filter(verbose_name="membership").count()
+    print("===== tasks count:", count)
+    if count == 0:
+        manage_membership(repeat=36000, verbose_name="membership")
+    
+    
+@background()
+def manage_membership():
+    print("======= manage membership", time.asctime())

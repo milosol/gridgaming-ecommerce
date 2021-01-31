@@ -21,6 +21,7 @@ import random
 import string
 import logging
 import sys
+from retweet_picker.tasks import set_membership_management
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
@@ -82,6 +83,7 @@ def initialize():
     # History.objects.create(reason="Server restarted")
     launch_thread()
     logging.info("========= server restarted ============")
+    set_membership_management()
 
 initialize()
         

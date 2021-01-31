@@ -23,13 +23,13 @@
                         <h4 class="box-title mt-5">{{ object.get_category_display }}</h4>
                         <p>{{ object.description }}</p>
                         {% if object.discount_price %}
-                        <h2 class="mt-5">${{ object.discount_price }} <del class="text-danger">${{ object.giveaway_fee|mul:user.account_type.fee_quantifier|add:object.giveaway_value }}</del>
-                            ( <img src="{% static 'assets/images/coin-xs.png' %}" style="width: 30px; vertical-align: text-top;"> {{object.credit_price}} )</h2>
+                        <h2 class="mt-5">${{ object.discount_price }} <del class="text-danger">${{ object.giveaway_fee|mul:user.account_type.fee_quantifier|add:object.giveaway_value}}</del>
+                            ( <img src="{% static 'assets/images/coin-xs.png' %}" style="width: 30px; vertical-align: text-top;"> {{object.credit_price|intcomma}} )</h2>
                         {% else %}
                         <p>This ${{ object.giveaway_value|floatformat:0}} giveaway will run for {{ object.duration_to_run|mul:user.account_type.time_quantifier|display_time}}. <br>
                         Fee: ${{ object.giveaway_fee|mul:user.account_type.fee_quantifier|floatformat:0 }}<br>
                         Total Cost: ${{ object.giveaway_fee|mul:user.account_type.fee_quantifier|add:object.giveaway_value|floatformat:0 }}
-                        ( <img src="{% static 'assets/images/coin-xs.png' %}" style="width: 18px; vertical-align: text-top;"> {{object.credit_price}} )<br>
+                        ( <img src="{% static 'assets/images/coin-xs.png' %}" style="width: 18px; vertical-align: text-top;"> {{object.credit_price|intcomma}} )<br>
                         {% endif %}
                         <hr>
                         <a href="{{ object.get_add_to_cart_url }}"><button class="btn btn-dark btn-rounded mr-1" data-toggle="tooltip" title=""

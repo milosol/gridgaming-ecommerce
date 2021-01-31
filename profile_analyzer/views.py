@@ -4,6 +4,7 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from .tasks import profile_checker
 from profile_analyzer.models import ProfileAnalysis, ProfileJudgement
+from frontend.utils import *
 
 def analyze_profile(request):
     print(request)
@@ -13,6 +14,9 @@ def analyze_profile(request):
             profile_analysis = profile_checker(username=request.user.username)
             if profile_analysis:
                 res['profile_analysis'].update(profile_analysis)
+                amount = get_judge_credit_price()
+                current_amount = credit_minus(request.user.id, amount)
+                res['current_credit'] = current_amount
             else:
                 res['success'] = False
                 res['msg'] = 'This profile could not be analyzed.'
@@ -25,7 +29,6 @@ def analyze_profile(request):
 from .utils import update_or_create_analyzer
 
 def profile_judgement(request):
-    print(request)
     res = {'success': True, 'msg': '', 'profile_analysis': {}}
     print("Making Prediction")
     if request.method == 'GET':
@@ -39,7 +42,6 @@ def profile_judgement(request):
             #profile_analysis.bot_prediction
             if profile_analysis:
                 res['profile_analysis'].update(profile_analysis)
-                res['credits'] = obj.credits
 
         except Exception as e:
             print(e)
@@ -60,14 +62,14 @@ def main(request):
 
 def reroll_decision(request):
     context = {}
-    credits = 1
+    current_credit = get_credit_amount(request.user.id)
+    credit_price = get_judge_credit_price()
     obj, created = ProfileJudgement.objects.get_or_create(user=request.user)
-    if obj:
-        credits = obj.credits
-    try:
-        context['credits'] = credits
-    except Exception as e:
-        pass
+
+    context = {
+        'current_credit': current_credit,
+        'credit_price': credit_price
+    }
 
     return render(request, "reroll_decision.html", context)
 

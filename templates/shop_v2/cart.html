@@ -50,7 +50,7 @@
                                     <td class="font-500" width="150">
                                         {% if user.user_profile.credit_display %}
                                         <img src="{% static 'assets/images/coin-xs.png' %}" style="padding-top:2px;width: 16px; vertical-align: text-top;">
-                                        {{ order_item.item.giveaway_fee|mul:user.account_type.fee_quantifier|add:order_item.item.giveaway_value|mul:cc_per_usd|floatformat:0 }}
+                                        {{ order_item.item.giveaway_fee|mul:user.account_type.fee_quantifier|add:order_item.item.giveaway_value|mul:cc_per_usd|floatformat:0|intcomma}}
                                         {% else %}
                                         ${{ order_item.item.giveaway_fee|mul:user.account_type.fee_quantifier|add:order_item.item.giveaway_value|floatformat:0 }}
                                         {% endif %}
@@ -66,7 +66,7 @@
                                         {% if order_item.item.discount_price %}
                                             {% if user.user_profile.credit_display %}
                                             <img src="{% static 'assets/images/coin-xs.png' %}" style="padding-top:2px;width: 16px; vertical-align: text-top;">
-                                            {{ order_item.get_total_discount_item_price|mul:cc_per_usd }}
+                                            {{ order_item.get_total_discount_item_price|mul:cc_per_usd|intcomma }}
                                             {% else %}
                                             ${{ order_item.get_total_discount_item_price }}
                                             {% endif %}
@@ -74,7 +74,7 @@
                                         {% else %}
                                             {% if user.user_profile.credit_display %}
                                             <img src="{% static 'assets/images/coin-xs.png' %}" style="padding-top:2px;width: 16px; vertical-align: text-top;">
-                                            {{ order_item.get_total_item_price|mul:cc_per_usd }}
+                                            {{ order_item.get_total_item_price|mul:cc_per_usd|intcomma}}
                                             {% else %}
                                             ${{ order_item.get_total_item_price }}
                                             {% endif %}
@@ -121,7 +121,7 @@
                         <h2>
                             {% if user.user_profile.credit_display %}
                             <img src="{% static 'assets/images/coin-xs.png' %}" style="padding-top:3px;width: 25px; vertical-align: text-top;">
-                            {{ object.get_total|mul:cc_per_usd }}
+                            {{ object.get_total|mul:cc_per_usd|intcomma}}
                             {% else %}
                             ${{ object.get_total }}
                             {% endif %}

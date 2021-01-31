@@ -24,6 +24,7 @@ class BuyCredit(models.Model):
 
 class OneValue(models.Model):
     cc_per_usd = models.IntegerField(default=1)
-    
+    min_buy_credit = models.IntegerField(default=5)
+    judge_credit_price = models.IntegerField(default=1)
     class Meta:
         ordering = ['id']
