@@ -227,6 +227,7 @@ class Membership(models.Model):
     done_month = models.IntegerField(default=0)
     bonus_count = models.IntegerField(default=0)
     credit_amount = models.IntegerField(default=1)
+    analyzed_time = models.DateTimeField(auto_now=False, null=True)
     
     class Meta:
         ordering = ['id']

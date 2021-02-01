@@ -584,8 +584,10 @@ class CreditView(View):
         context = {}
         cc_per_usd = get_cc_per_usd()
         credit_amount = get_credit_amount(request.user.id)
+        min_price = get_min_buy_credit()
         context = {
             'cc_per_usd' : cc_per_usd,
+            'min_price': min_price,
             'credit_amount' : credit_amount,
             'need_param' : need_param,
             'cart_param' : cart_param

@@ -150,21 +150,21 @@ class PricingPlanAdmin(admin.ModelAdmin):
         'label',
         'price',
         'limit_times',
-        'limit_count',
         'unlimited_times',
-        'unlimited_count',
+        'credit_amount'
     ]
 
 class MembershipAdmin(admin.ModelAdmin):
     list_display = [
         'user_id',
+        'credit_amount',
         'plan',
         'paid_month',
         'paid_time',
         'end_time',
         'bonus_count',
-        'done_count',
         'done_month',
+        'done_count',
     ]  
  
 class UpgradeorderAdmin(admin.ModelAdmin):
