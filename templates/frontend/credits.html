@@ -112,6 +112,7 @@
 
 <script>
     var cc_per_usd = {{cc_per_usd}}
+    var min_price = {{min_price}}
     var credit_amount = {{credit_amount}}
     var need_param = '{{need_param}}'
     var cart_param = '{{cart_param}}'
@@ -129,7 +130,7 @@
             $("#div_container").addClass('credits-flex')
         })
         $("input[name='in_credit']").TouchSpin({
-            min: 5,
+            min: min_price,
             max: 100000000,
             stepinterval: 50,
             bootstat: 5,
@@ -139,7 +140,7 @@
             buttonup_class: "btn btn-warning",
         });
         $("input[name='in_usd']").TouchSpin({
-            min: 0,
+            min: parseFloat(min_price / cc_per_usd).toFixed(2),
             max: 100000000,
             step: 0.01,
             stepinterval: 50,

@@ -24,7 +24,10 @@ class BuyCreditAdmin(admin.ModelAdmin):
             ''
             
 class OneValueAdmin(admin.ModelAdmin):
-    list_display = ['cc_per_usd']
+    list_display = ['cc_per_usd', 
+                    'min_buy_credit',
+                    'judge_credit_price'
+                    ]
 
 
 admin.site.register(BuyCredit, BuyCreditAdmin)

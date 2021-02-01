@@ -1,7 +1,7 @@
 from allauth.socialaccount.models import SocialAccount
 from .svg_icons import discord, twitch, youtube, twitter
 from .models import OneValue
-from retweet_picker.models import Membership
+from retweet_picker.models import Membership, PricingPlan, PRICINGPLAN_CHOICES
 
 def get_cc_per_usd():
     try:
@@ -55,6 +55,20 @@ def credit_minus(user_id, amount):
     except Exception as e:
         print(e)
         return 0
+    
+def get_pricing_plans():
+    result = {}
+    try:
+        if PricingPlan.objects.all().count() == 0:
+            for choice, label in PRICINGPLAN_CHOICES:
+                PricingPlan.objects.create(plan=choice, label=label)
+        pps = PricingPlan.objects.all()
+        for pp in pps:
+            if pp.plan not in result:
+                result[pp.plan] = pp.credit_amount
+    except Exception as e:
+        print(e)
+    return result
     
     
 def build_socials(self, user_id=None):

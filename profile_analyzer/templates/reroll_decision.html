@@ -43,10 +43,16 @@
 {#            </div>#}
         </div>
 
+        <button href="javascript:void(0)"
+        id="btn_buy"
+         type="button" class="btn btn-lg btn-block font-medium btn-outline-success">
+         <i class="far fa-hand-point-left ml-1 mr-3"></i>Need more grid coins</button>
 
                     <button href="javascript:void(0)"
                            id="btn_judgement_day"
-                            type="button" class="btn btn-lg btn-block font-medium btn-outline-success block-card"><i class="fas fa-gavel ml-1"></i> Credits: <span id="judgement_credits">{{ credit_price }}</span></button>
+                            type="button" class="btn btn-lg btn-block font-medium btn-outline-success block-card">
+                            <i class="fas fa-gavel ml-1"></i> 
+                            Cost: <span id="judgement_credits"><img src="{% static 'assets/images/coin-xs.png' %}" style="padding-top: 3px;width: 16px; vertical-align: text-top;">{{ credit_price }}</span></button>
 {#              <a class="btn btn-outline-white btn-md"><i class="fas fa-clone left"></i> View project</a>#}
             </div>
           </div>
@@ -59,11 +65,22 @@
     <script>
         var credit_price = {{credit_price}};
         var current_credit = {{current_credit}};
-
+        
         function numberWithCommas(x) {
             return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
-
+        $(function(){
+            if(current_credit < credit_price){
+                $("#btn_buy").show()
+                $("#btn_judgement_day").hide()
+            }else{
+                $("#btn_buy").hide()
+                $("#btn_judgement_day").show()
+            }
+            $("#btn_buy").click(function(){
+                location.href="/wallet?need=" + (credit_price - current_credit) + "&cart=judge";
+            })
+        })
         function do_analyze(){
             $("#profile_decision").html("<div class=\"spinner-border text-success\" role=\"status\">\n" +
                 "                                  <span class=\"sr-only\">Loading...</span>\n" +
@@ -98,6 +115,8 @@
             })
         }
         $("#btn_judgement_day").click(function () {
+            do_analyze();
+            return;
             if(current_credit >= credit_price){
                 do_analyze();
             }else{

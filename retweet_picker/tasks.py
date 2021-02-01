@@ -1,9 +1,13 @@
 from django_rq import job
 import time
+from datetime import timedelta
+from django.utils import timezone
 from retweet_picker.manager import GiveawayManager
 from background_task import background
-from .models import  Membership, GiveawayWinners, DrawPrice, ContestUserParticipation, ContestUserAccounts, TwitterGiveawayID
+from .models import  Membership, GiveawayWinners, DrawPrice, ContestUserParticipation, ContestUserAccounts, TwitterGiveawayID, PricingPlan
 from background_task.models import Task
+from django.db.models import Q
+from frontend.utils import *
 
 def start_giveaway_bg(user_id=None,
                       order_id=None,
@@ -113,12 +117,24 @@ def sleeper():
     time.sleep(10)
 
 def set_membership_management():
+    Task.objects.all().delete()
     count = Task.objects.filter(verbose_name="membership").count()
-    print("===== tasks count:", count)
     if count == 0:
-        manage_membership(repeat=36000, verbose_name="membership")
+        manage_membership(repeat=6*3600, verbose_name="membership")
     
     
 @background()
 def manage_membership():
-    print("======= manage membership", time.asctime())
+    print("=== manage membership", time.asctime())
+    try:
+        last_month = timezone.now() - timedelta(days=30)
+        memberships = Membership.objects.filter(Q(analyzed_time__lt=last_month) | Q(analyzed_time=None))
+        pps = get_pricing_plans()
+        for mb in memberships:
+            if mb.plan in pps:
+                mb.credit_amount += pps[mb.plan]
+                mb.analyzed_time = timezone.now()
+                mb.save()
+    except Exception as e:
+        print(e)
+        
