@@ -157,6 +157,7 @@ class PricingPlanAdmin(admin.ModelAdmin):
 class MembershipAdmin(admin.ModelAdmin):
     list_display = [
         'user_id',
+        'user_name',
         'credit_amount',
         'plan',
         'paid_month',
@@ -167,6 +168,14 @@ class MembershipAdmin(admin.ModelAdmin):
         'done_count',
     ]  
  
+    def user_name(self, obj):
+        try:
+            u = User.objects.get(id=obj.user_id)
+            return u.username
+        except Exception as e:
+            print(e)
+            return ''
+        
 class UpgradeorderAdmin(admin.ModelAdmin):
     list_display = [
         'user_id',

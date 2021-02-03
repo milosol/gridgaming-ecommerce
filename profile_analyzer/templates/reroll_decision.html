@@ -2,6 +2,7 @@
 {% load static %}
 {% load remove_normal %}
 {% load humanize %}
+{% load mathfilters %}
 {% block content %}
 <style>
 .btn-outline-white {
@@ -46,13 +47,17 @@
         <button href="javascript:void(0)"
         id="btn_buy"
          type="button" class="btn btn-lg btn-block font-medium btn-outline-success">
-         <i class="far fa-hand-point-left ml-1 mr-3"></i>Need more grid coins</button>
+         <i class="far fa-hand-point-left ml-1 mr-3"></i>
+         Cost: <span id="judgement_credits"><img src="{% static 'assets/images/coin-xs.png' %}" style="padding-top: 3px;width: 16px; vertical-align: text-top;">{{ credit_price }}.</span>
+         <span class="text-warning">Need more grid coins</span></button>
 
                     <button href="javascript:void(0)"
                            id="btn_judgement_day"
                             type="button" class="btn btn-lg btn-block font-medium btn-outline-success block-card">
                             <i class="fas fa-gavel ml-1"></i> 
-                            Cost: <span id="judgement_credits"><img src="{% static 'assets/images/coin-xs.png' %}" style="padding-top: 3px;width: 16px; vertical-align: text-top;">{{ credit_price }}</span></button>
+                            Cost: <span id="judgement_credits"><img src="{% static 'assets/images/coin-xs.png' %}" style="padding-top: 3px;width: 16px; vertical-align: text-top;">{{ credit_price }}</span>
+                            <span class="text-info" style="font-size:0.9rem;">(you will have remaing : <img src="{% static 'assets/images/coin-xs.png' %}" style="padding-top: 3px;width: 16px; vertical-align: text-top;">{{ current_credit|sub:credit_price }})</span>
+                        </button>
 {#              <a class="btn btn-outline-white btn-md"><i class="fas fa-clone left"></i> View project</a>#}
             </div>
           </div>
@@ -65,7 +70,7 @@
     <script>
         var credit_price = {{credit_price}};
         var current_credit = {{current_credit}};
-        
+        console.log(current_credit, credit_price)
         function numberWithCommas(x) {
             return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
@@ -94,6 +99,8 @@
                 success: function (data) {
                     if (data.success === true) {
                         /*$("#all_results").show()*/
+                        $("#btn_buy").hide()
+                        $("#btn_judgement_day").hide()
                         if(data.profile_analysis){
                             $("a[href='/wallet'] span").html(numberWithCommas(data.current_credit));
                         }
