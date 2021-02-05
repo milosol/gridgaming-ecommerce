@@ -9,7 +9,7 @@ def profile_checker(username=None):
     print(f'Performing analysis for {username}')
     profile_analysis = {'user':username}
     try:
-        bc = BotCheck(username=username)
+        bc = BotCheck(username=username, api_index=1)
         res = bc.build_profile()
         res['bot_prediction'] = bc.bot_prediction()
         #res['bot_prediction'] = True

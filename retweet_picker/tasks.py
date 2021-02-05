@@ -40,7 +40,7 @@ def fetch_content_from_url(existing_tweet_url=None):
     res = {'success': True, 'msg': ''}
     try:
         gm = GiveawayManager(new_giveaway=False,
-                             existing_tweet_url=existing_tweet_url)
+                             existing_tweet_url=existing_tweet_url, api_index=1)
         if gm.tweet_id:
             res['tweet_id'] = gm.tweet_id
             res['tweet_url'] = gm.tweet_url
@@ -61,7 +61,8 @@ def draw_winner(existing_tweet_url=None, winner_count=1, actions=None, user_id=N
                          existing_tweet_url=existing_tweet_url,
                          winner_count=winner_count,
                          sponsors=actions['sponsors'],
-                         user_id=user_id)
+                         user_id=user_id,
+                         api_index=1)
     res = gm.drawwinner(actions=actions)
     return res
 
@@ -73,7 +74,7 @@ def load_entry_task(gwid, user_id, pay_status):
         tweet_url = tgid.tweet_url
         gm = GiveawayManager(new_giveaway=False,
                              existing_tweet_url=tweet_url,
-                             user_id=user_id)
+                             user_id=user_id, api_index=1)
         ret_count = gm.tweet.retweet_count
         dp = DrawPrice.objects.all().first()
         gw.retweet_count = ret_count

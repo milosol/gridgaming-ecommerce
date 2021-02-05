@@ -1,6 +1,7 @@
 {% extends 'core/base.html' %} 
 {% load static %} 
 {% load mathfilters %} 
+{% load humanize %}
 {% block extra_head_tags %}
 
 <link href="{% static 'taginput/jquery.tagsinput-revisited.css' %}" rel="stylesheet" />
@@ -270,7 +271,13 @@
                                                 You are free from membership
                                             </h6>
                                             <h6 style="width: fit-content" id="h_pay">
-                                                You should pay ${{drawprice_price}} per more
+                                                You should pay
+                                                {% if user.user_profile.credit_display %}
+                                                <img src="{% static 'assets/images/coin-xs.png' %}" style="padding-top:4px;width: 12px; vertical-align: text-top;">{{drawprice_price|mul:cc_per_usd|intcomma}}
+                                                {% else %}
+                                                ${{drawprice_price|intcomma}} ( = <img src="{% static 'assets/images/coin-xs.png' %}" style="padding-top:4px;width: 12px; vertical-align: text-top;">{{drawprice_price|mul:cc_per_usd|intcomma}})
+                                                {% endif %}
+                                                per more
                                                 {{drawprice_per_amount}} retweets
                                             </h6>
                                             <button id="btn_pay" class="btn btn-outline-success mt-3 mb-3 py-2 font-18"
@@ -471,6 +478,8 @@
     var entry_table = 0;
     var start_from = 100
     var drawing_handle = 0;
+    var credit_display = '{{user.user_profile.credit_display}}';
+    var cc_per_usd = {{cc_per_usd}};
     function initialize() {
         init_entrypanel()
         init_drawpanel()
@@ -514,7 +523,11 @@
                 $("#h_pay").show()
                 $("#h_lefttimes").hide()
                 $("#h_membership").hide()
-                str = "Pay $" + context.pay_price;
+                if(credit_display == 'True'){
+                    str = "Pay " + context.pay_price * cc_per_usd + " credits"
+                }else{
+                    str = "Pay $" + context.pay_price;
+                }
                 $("#btn_pay").html(str)
                 $("#btn_pay").prop('disabled', false);
                 $("#h_or").show();
@@ -904,17 +917,17 @@
             if (context.pay_status < 3 || context.pay_price == 0) return
             $("#form_pay input[name='amount']").val(context.pay_price);
             $("#form_pay input[name='gwid']").val(context.gwid);
-            
-            if(context.current_credit >= context.pay_price){
+            pay_credit = context.pay_price * cc_per_usd
+            if(context.current_credit >= pay_credit){
                 swal.fire({
                 title: 'Are you sure?',
                 icon: 'warning',
-                text: "Are you going to pay with credits?",
+                text: "This will remove " + pay_credit + " credits from your account. Are you sure you want to continue?",
                 showCancelButton: true,
                 background: '#e9ecef',
                 confirmButtonColor: '#21c1d6',
                 cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, pay with credit'
+                confirmButtonText: 'Yes, I am sure'
                 }).then((result) => {
                     if (result.value) {
                         $("#form_pay").submit();
@@ -926,7 +939,7 @@
                 swal.fire({
                 title: 'Are you sure?',
                 icon: 'warning',
-                text: "More credits are required to pay. Are you going to buy more credits?",
+                text: (pay_credit-context.current_credit) + " more credits are required to pay. Are you going to buy more credits?",
                 showCancelButton: true,
                 background: '#e9ecef',
                 confirmButtonColor: '#21c1d6',
@@ -934,7 +947,7 @@
                 confirmButtonText: 'Yes, buy more credits'
                 }).then((result) => {
                     if (result.value) {
-                        location.href="/wallet?need=" + (context.pay_price - context.current_credit) + "&cart=draw_" + context.gwid
+                        location.href="/wallet?need=" + (pay_credit - context.current_credit) + "&cart=draw_" + context.gwid
                     } else if (result.dismiss === Swal.DismissReason.cancel) {
 
                     }
