@@ -38,7 +38,27 @@ def create_ref_code():
 
 def setLaunch(value): 
     Checktime.objects.all().update(launched=value, launch_code=create_ref_code(), action_time=timezone.now())
-    
+
+
+def release_carts():
+    now = timezone.now() - timedelta(seconds=10)
+    old_countings = Counting.objects.filter(deadline__lt=now)
+    if old_countings.exists():
+        temp = '[' + ','.join([str(x.order_id) for x in old_countings]) + ']'
+        # History.objects.create(action='Erase old countings', reason="Time over", order_str=temp)
+        old_countings.delete()
+
+    if not Counting.objects.all().exists():
+        Checktime.objects.all().update(cartcounter_run=False)
+
+    order_qs = Order.objects.filter(start_date__lt=now, ordered=False, kind=1)
+    if not order_qs.exists():
+        return
+    for order in order_qs:
+        count_data = Counting.objects.filter(order_id=order.id)
+        if not count_data.exists():
+            docheck(order.user.id, 2, [], "By system")
+
 def count_launch(name):
     release_time = 11
     launch_check = 0
@@ -140,26 +160,6 @@ def docheck(user_id, kind, usernames=[], reason=""):
         del_timing(user_id, "Empty command " + reason)
     
     return res
-
-
-def release_carts():
-    now = timezone.now() - timedelta(seconds=10)
-    old_countings = Counting.objects.filter(deadline__lt=now)
-    if old_countings.exists():
-        temp = '[' + ','.join([str(x.order_id) for x in old_countings]) + ']'
-        # History.objects.create(action='Erase old countings', reason="Time over", order_str=temp)
-        old_countings.delete()
-        
-    if not Counting.objects.all().exists():
-        Checktime.objects.all().update(cartcounter_run=False)
-            
-    order_qs = Order.objects.filter(start_date__lt=now, ordered=False, kind=1)
-    if not order_qs.exists():
-        return
-    for order in order_qs:  
-        count_data = Counting.objects.filter(order_id=order.id)
-        if not count_data.exists():
-            docheck(order.user.id, 2, [], "By system")
 
 def count_handle(name):
     brun = Checktime.objects.all()[0].cartcounter_run
