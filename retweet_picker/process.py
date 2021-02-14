@@ -12,8 +12,8 @@ from retweet_picker.twitter_interact import GridGiveawayTweetRetriever
 # Prep to just retrieve tweets and upload in chunks of 1000 instead of holding all in memory
 
 class ProcessRetrievedTweets(GridGiveawayTweetRetriever):
-    def __init__(self, user_id=None, tweet_url=None, process_tweets=True):
-        super(ProcessRetrievedTweets, self).__init__(tweet_url)
+    def __init__(self, user_id=None, tweet_url=None, process_tweets=True, api_index=0):
+        super(ProcessRetrievedTweets, self).__init__(tweet_url=tweet_url, api_index=api_index)
         try:
             self.process_tweets = process_tweets
             # self.user_ids = set(tweets_df['user.id_str']) #User Twitter IDs

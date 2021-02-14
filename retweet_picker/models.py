@@ -130,11 +130,11 @@ class GiveawayWinners(models.Model):
     price = models.IntegerField(default=0)
     status = models.CharField(choices=DRAWSTATUS_CHOICES, max_length=1, default='C')
     load_error = models.CharField(max_length=200, blank=True)
-    winner = models.ManyToManyField(ContestUserAccounts, related_name='draw_giveaway_winner')
-    re_rolls = models.ManyToManyField(Rerolls)
-    participants = models.IntegerField(null=True)  # Count of total entries
+    winner = models.ManyToManyField(ContestUserAccounts, related_name='draw_giveaway_winner', blank=True)
+    re_rolls = models.ManyToManyField(Rerolls, blank=True)
+    participants = models.IntegerField(null=True, blank=True)  # Count of total entries
     created_at = models.DateTimeField(auto_now_add=True)
-    drawed_at = models.DateTimeField(null=True)
+    drawed_at = models.DateTimeField(null=True, blank=True)
     winner_count = models.IntegerField(default=1)
     follow_main = models.BooleanField(default=True)
     bot_chk = models.BooleanField(default=True)

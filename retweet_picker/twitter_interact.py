@@ -7,28 +7,29 @@ from .models import GiveawayWinners
 
 import re
 
-TWITTER_CONSUMER_KEY = config('TWITTER_CONSUMER_KEY')
-TWITTER_CONSUMER_SECRET = config('TWITTER_CONSUMER_SECRET')
-TWITTER_ACCESS_TOKEN = config('TWITTER_ACCESS_TOKEN')
-TWITTER_ACCESS_SECRET = config('TWITTER_ACCESS_SECRET')
+TWITTER_CONSUMER_KEY = [config('TWITTER_CONSUMER_KEY'), config('PROFILE_ANALYZER_TWITTER_CONSUMER_KEY')]
+TWITTER_CONSUMER_SECRET = [config('TWITTER_CONSUMER_SECRET'), config('PROFILE_ANALYZER_TWITTER_CONSUMER_SECRET')]
+TWITTER_ACCESS_TOKEN = [config('TWITTER_ACCESS_TOKEN'), config('PROFILE_ANALYZER_TWITTER_ACCESS_TOKEN')]
+TWITTER_ACCESS_SECRET = [config('TWITTER_ACCESS_SECRET'), config('PROFILE_ANALYZER_TWITTER_ACCESS_SECRET')]
 
 
 class TwitterBase(object):
     """ Base class for auth and returns API object"""
 
     def __init__(self,
-                 wait_on_rate_limit=True
+                 wait_on_rate_limit=True, api_index=0
                  ):
-        self.auth = tweepy.OAuthHandler(TWITTER_CONSUMER_KEY, TWITTER_CONSUMER_SECRET)
-        self.auth.set_access_token(TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_SECRET)
+        print("========== api_index", api_index)
+        self.auth = tweepy.OAuthHandler(TWITTER_CONSUMER_KEY[api_index], TWITTER_CONSUMER_SECRET[api_index])
+        self.auth.set_access_token(TWITTER_ACCESS_TOKEN[api_index], TWITTER_ACCESS_SECRET[api_index])
         self.api = tweepy.API(self.auth,
                               wait_on_rate_limit=wait_on_rate_limit,
                               wait_on_rate_limit_notify=True)
 
 
 class TwitterInteract(TwitterBase):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, api_index=0):
+        super().__init__(api_index=api_index)
 
     def send_user_message(self, username, message):
         if username:
@@ -47,9 +48,9 @@ class GridGiveawayTweetRetriever(TwitterInteract):
                  verbose=True,
                  tweet_ratio=1,
                  wait_on_rate_limit=False,
-                 winner_count=1  # How many winners
-                 ):
-        super().__init__()
+                 winner_count=1,  # How many winners
+                 api_index=0):
+        super().__init__(api_index)
         self.user = None
         self.tweet_id = None
         self.tweet = None

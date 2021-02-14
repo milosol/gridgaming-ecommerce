@@ -68,87 +68,80 @@
 
 {% block extra_scripts %}
     <script>
-        var credit_price = {{credit_price}};
-        var current_credit = {{current_credit}};
-        console.log(current_credit, credit_price)
-        function numberWithCommas(x) {
-            return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    var credit_price = {{credit_price}};
+    var current_credit = {{current_credit}};
+    console.log(current_credit, credit_price)
+    function numberWithCommas(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+    $(function(){
+        if(current_credit < credit_price){
+            $("#btn_buy").show()
+            $("#btn_judgement_day").hide()
+        }else{
+            $("#btn_buy").hide()
+            $("#btn_judgement_day").show()
         }
-        $(function(){
-            if(current_credit < credit_price){
-                $("#btn_buy").show()
-                $("#btn_judgement_day").hide()
-            }else{
-                $("#btn_buy").hide()
-                $("#btn_judgement_day").show()
-            }
-            $("#btn_buy").click(function(){
-                location.href="/wallet?need=" + (credit_price - current_credit) + "&cart=judge";
-            })
+        $("#btn_buy").click(function(){
+            location.href="/wallet?need=" + (credit_price - current_credit) + "&cart=judge";
         })
-        function do_analyze(){
-            $("#profile_decision").html("<div class=\"spinner-border text-success\" role=\"status\">\n" +
-                "                                  <span class=\"sr-only\">Loading...</span>\n" +
-                "                                </div>")
+    })
+    function do_analyze(){
+        $("#profile_decision").html("<div class=\"spinner-border text-success\" role=\"status\">\n" +
+            "                                  <span class=\"sr-only\">Loading...</span>\n" +
+            "                                </div>")
 
-            $.ajax(
-                {
-                type: "GET",
-                url: "/analyzer/profile",
-                dataType: 'json',
-                success: function (data) {
-                    if (data.success === true) {
-                        /*$("#all_results").show()*/
-                        $("#btn_buy").hide()
-                        $("#btn_judgement_day").hide()
-                        if(data.profile_analysis){
-                            $("a[href='/wallet'] span").html(numberWithCommas(data.current_credit));
-                        }
-                        if (data.profile_analysis.bot_prediction == true) {
-                            $("#eligible_header").html("Awww man...")
-                            $("#profile_decision").html("<i class=\"fas fa-frown\"></i>")
-                            $("#profile_decision_info").html("Unfortunately your account is not currently eligible to win<br> GridGamingIO Twitter Giveaways! <hr>See our <button type=\"button\" class=\"btn btn-success\" data-toggle=\"modal\" data-target=\"#success-header-modal\">Profile Tips</button> to become eligible! ")
-                        } else if (data.profile_analysis.bot_prediction == false) {
-                            $("#eligible_header").html("Congratulations, <b class='text-warning'>{{ request.user.username }}</b>!")
-                            $("#profile_decision").html("<i class=\"text-megna fas fa-smile\"></i>")
-                            $("#profile_decision_info").html("Your account is eligible to win GridGamingIO Twitter Giveaways!")
-                        } else {
-                            $("#profile_decision").html("Please try again")
-                        }
+        $.ajax(
+            {
+            type: "GET",
+            url: "/analyzer/profile",
+            dataType: 'json',
+            success: function (data) {
+                if (data.success === true) {
+                    /*$("#all_results").show()*/
+                    $("#btn_buy").hide()
+                    $("#btn_judgement_day").hide()
+                    if(data.profile_analysis){
+                        $("a[href='/wallet'] span").html(numberWithCommas(data.current_credit));
+                    }
+                    if (data.profile_analysis.bot_prediction == true) {
+                        $("#eligible_header").html("Awww man...")
+                        $("#profile_decision").html("<i class=\"fas fa-frown\"></i>")
+                        $("#profile_decision_info").html("Unfortunately your account is not currently eligible to win<br> GridGamingIO Twitter Giveaways! <hr>See our <button type=\"button\" class=\"btn btn-success\" data-toggle=\"modal\" data-target=\"#success-header-modal\">Profile Tips</button> to become eligible! ")
+                    } else if (data.profile_analysis.bot_prediction == false) {
+                        $("#eligible_header").html("Congratulations, <b class='text-warning'>{{ request.user.username }}</b>!")
+                        $("#profile_decision").html("<i class=\"text-megna fas fa-smile\"></i>")
+                        $("#profile_decision_info").html("Your account is eligible to win GridGamingIO Twitter Giveaways!")
                     } else {
-                        $("#profile_decision").html(data.msg)
+                        $("#profile_decision").html("Please try again")
                     }
+                } else {
+                    $("#profile_decision").html(data.msg)
                 }
-            })
-        }
-        $("#btn_judgement_day").click(function () {
-            do_analyze();
-            return;
-            if(current_credit >= credit_price){
-                do_analyze();
-            }else{
-                swal.fire({
-                title: 'Are you sure?',
-                icon: 'warning',
-                text: "You have not enough credit for analyzing. Are you going to buy credit?",
-                showCancelButton: true,
-                background: '#e9ecef',
-                confirmButtonColor: '#21c1d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, buy credit'
-                }).then((result) => {
-                    if (result.value) {
-                        location.href="/wallet?need=" + (credit_price - current_credit) + "&cart=judge";
-                    } else if (result.dismiss === Swal.DismissReason.cancel) {
-
-                    }
-                })
             }
         })
+    }
+    $("#btn_judgement_day").click(function () {
+        swal.fire({
+        title: 'Are you sure?',
+        icon: 'warning',
+        text: "This will remove " + credit_price + " credits from your account. Are you sure you want to continue?",
+        showCancelButton: true,
+        background: '#e9ecef',
+        confirmButtonColor: '#21c1d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, I am sure'
+        }).then((result) => {
+            if (result.value) {
+                do_progress();
+                do_analyze();
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
 
-    $(function() {
-    $('.block-card').on('click', function() {
-        var block_ele = $(this).closest('.card');
+            }
+        })
+    })
+    function do_progress(){
+        var block_ele = $("#btn_judgement_day").closest('.card');
         $(block_ele).block({
             message: '<i class="fas fa-spin fa-sync text-white"></i>',
             timeout: 5000, //unblock after 2 seconds
@@ -163,7 +156,8 @@
                 backgroundColor: 'transparent'
             }
         });
-    });
+    }
+    $(function() {
 
     // Block sidebar
     $('.block-sidenav').on('click', function() {

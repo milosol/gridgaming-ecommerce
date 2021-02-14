@@ -29,7 +29,7 @@ from .tasks import start_giveaway_bg,\
     load_entry_task
 from users.models import User
 from retweet_picker.manager import GiveawayManager
-from frontend.utils import get_credit_amount
+from frontend.utils import *
 
 import time
 import django_rq
@@ -524,7 +524,7 @@ def pick_entries(request, gwid):
             tweet_url = tgid.tweet_url
             dp = DrawPrice.objects.all().first()
             if gw.status == 'C' or gw.status == 'E':
-                gm = GiveawayManager(new_giveaway=False, existing_tweet_url=tweet_url)
+                gm = GiveawayManager(new_giveaway=False, existing_tweet_url=tweet_url, api_index=1)
                 ret_count = gm.tweet.retweet_count
                 membership, created = Membership.objects.get_or_create(user_id=request.user.id)
                 pp, created = PricingPlan.objects.get_or_create(plan=membership.plan)
@@ -578,6 +578,7 @@ def pick_entries(request, gwid):
             context['drawprice_price'] = dp.price
             context['draw_info'] = draw_info['draw_info']
             context['context'] = dumps(context) 
+            context['cc_per_usd'] = get_cc_per_usd()
         except Exception as e:
             print(e)
         return render(request, "contest.html", context)
@@ -585,9 +586,10 @@ def pick_entries(request, gwid):
         print("======= darw post")
         try:
             amount = int(request.POST.get('amount'))
+            cc_per_usd = get_cc_per_usd()
             gwid = request.POST.get('gwid')
             current_credit = get_credit_amount(request.user.id)
-            if current_credit < amount:
+            if current_credit < amount * cc_per_usd:
                 messages.warning(request, "You have not enough credits.")
                 return redirect("/retweet-picker/draw/" + str(gwid))
             
@@ -597,7 +599,7 @@ def pick_entries(request, gwid):
             gw.paid_count = gw.paid_count + count
             gw.save()
             membership, created = Membership.objects.get_or_create(user_id=request.user.id)
-            membership.credit_amount = current_credit - amount
+            membership.credit_amount = current_credit - amount * cc_per_usd
             membership.save()
             messages.success(request, "Successfully paid with credits.")
         except Exception as e:

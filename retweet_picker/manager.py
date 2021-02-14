@@ -54,7 +54,8 @@ class GiveawayManager:
                  scheduled_task=False,
                  existing_tweet_url=None,
                  tweet_text=None,
-                 winner_count=1):
+                 winner_count=1,
+                 api_index=0):
         """
 
         :param user_id: user_id
@@ -82,7 +83,8 @@ class GiveawayManager:
         self.winner_count = winner_count
         self.scheduled_task = scheduled_task # When True it will skip sleep mechanism
         self.tweet_id = None
-        self.twitter_interact = TwitterInteract()
+        self.api_index = api_index
+        self.twitter_interact = TwitterInteract(api_index=api_index)
         self.launched_tweet = None
         self.participants = None
         self.user_id = user_id
@@ -94,9 +96,10 @@ class GiveawayManager:
         self.results = None
         self.existing_tweet_url = None
         self.tweet = None
+        
         if existing_tweet_url:
             self.existing_tweet_url = existing_tweet_url
-            self.process_retrieved_tweets = ProcessRetrievedTweets(tweet_url=existing_tweet_url, user_id=self.user_id)
+            self.process_retrieved_tweets = ProcessRetrievedTweets(tweet_url=existing_tweet_url, user_id=self.user_id, api_index=api_index)
             self.build_tweet_url()
 
     logging.info("Ready to go")
@@ -193,7 +196,7 @@ class GiveawayManager:
             reason = None
             if botchk:
                 print("=== checking bot")
-                bc = BotCheck(username=winner)
+                bc = BotCheck(username=winner, api_index=self.api_index)
                 logging.info(bc.user_analysis)
                 bot = bc.bot_prediction()
                 if bot:

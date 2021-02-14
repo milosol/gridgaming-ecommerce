@@ -210,7 +210,21 @@
             $("#btn_buycredit").show()
         }
         $("#btn_checkout").click(function(){
-            $("#form_paycredit").submit();
+            swal.fire({
+                title: 'Are you sure?',
+                icon: 'warning',
+                text: "This will remove " + total_credit + " credits from your account. Are you sure you want to continue?",
+                showCancelButton: true,
+                background: '#e9ecef',
+                confirmButtonColor: '#21c1d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, I am sure'
+                }).then((result) => {
+                    if (result.value) {
+                        $("#form_paycredit").submit();
+                    } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    }
+                })
         })
         $("#btn_buycredit").click(function(){
             location.href="/wallet?need=" + (total_credit-current_credit) + "&cart=giveaway"

@@ -14,8 +14,8 @@ def p2f(x):
 
 class BotCheck(TwitterInteract):
 
-    def __init__(self, username=None):
-        super(BotCheck, self).__init__()
+    def __init__(self, username=None, api_index=0):
+        super(BotCheck, self).__init__(api_index=api_index)
         self.username = username
         self.user_obj = self.get_user_obj()
         self.user_analysis = {}
