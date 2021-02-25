@@ -63,7 +63,7 @@ def main(request):
     return render(request, "profile_analyzer.html", context)
 
 
-
+@login_required
 def reroll_decision(request):
     context = {}
     current_credit = get_credit_amount(request.user.id)
