@@ -167,7 +167,9 @@ class MembershipAdmin(admin.ModelAdmin):
         'done_month',
         'done_count',
     ]  
- 
+
+    search_fields = ('user_name',)
+
     def user_name(self, obj):
         try:
             u = User.objects.get(id=obj.user_id)
