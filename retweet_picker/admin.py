@@ -168,7 +168,7 @@ class MembershipAdmin(admin.ModelAdmin):
         'done_count',
     ]  
 
-    search_fields = ('user_name',)
+    search_fields = ('user_id',)
 
     def user_name(self, obj):
         try:
