@@ -37,6 +37,7 @@ import random
 import string
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+lock = threading.Lock()
 
 def create_drawid():
     return ''.join(random.choices(string.ascii_lowercase + string.digits, k=20))
@@ -151,11 +152,14 @@ def retrieve_tweets_choose_winner(request, existing_tweet_url):
 
 def queue_launch(queue_id):
     try:
+        lock.acquire()
         row = GiveawayQueue.objects.get(id=queue_id)
         if row.status == 'L':
             return False
         row.status = 'L'
         row.save()
+        lock.release()
+        print("=== launching:", queue_id, ":", row.queue_type, ":", row.tweet_url, )
         user = User.objects.get(id=row.user_id)
         if user.username == 'GridGamingIO':
             sponsors = ['@GridGamingIO']
@@ -179,12 +183,14 @@ def queue_launch(queue_id):
 
 def queue_retrieve(queue_id):
     try:
+        lock.acquire()
         row = GiveawayQueue.objects.get(id=queue_id)
         if row.status == 'R':
             return False
         row.status = 'R'
         row.save()
-        print("======== retrieving:", queue_id, ":", row.queue_type, ":", row.tweet_url, )
+        lock.release()
+        print("=== retrieving:", queue_id, ":", row.queue_type, ":", row.tweet_url, )
 
         if row.queue_type == 'H':
             queue = django_rq.get_queue('high')
@@ -240,7 +246,7 @@ def process_queue(queue_type):
 
 def queue_thread(name):
     while (1):
-        # break
+        break
         process_queue('H')
         process_queue('D')
         process_queue('L')
