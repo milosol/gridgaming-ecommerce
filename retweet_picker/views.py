@@ -539,8 +539,8 @@ def pick_entries(request, gwid):
                     if gw.paid_count + dp.free_max >= ret_count:
                         context['pay_status'] = 1  # you have already paid
                     else:
-                        set_donemonth(membership.id)
-                        membership = Membership.objects.get(user_id=request.user.id)
+                        # set_donemonth(membership.id)
+                        # membership = Membership.objects.get(user_id=request.user.id)
                         if pp.unlimited_times == True:
                             context['pay_status'] = 2  # You can be free from unlimited membership
                         elif membership.done_count < pp.limit_times + membership.bonus_count:
@@ -606,26 +606,6 @@ def pick_entries(request, gwid):
             print(e)
             messages.warning(request, "Please try again.")
         return redirect("/retweet-picker/draw/" + str(gwid))
-    
-
-def set_donemonth(membership_id):
-    try:
-        membership = Membership.objects.get(id=membership_id)
-        if membership.plan != 'F':
-            diff = timezone.now() - membership.paid_time
-            diff_month = math.floor(diff.total_seconds()/(3600*24*30))
-            if membership.done_month != diff_month:
-                membership.done_month = diff_month
-                membership.done_count = 0
-                membership.save()
-            if membership.done_month >= membership.paid_month:
-                membership.plan = 'F'
-                membership.done_count = 0
-                membership.done_month = 0
-                membership.paid_month = 0
-                membership.save()
-    except Exception as e:
-        print(e)
                             
 @csrf_exempt
 def load_entries(request):
