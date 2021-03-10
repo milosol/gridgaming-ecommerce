@@ -552,6 +552,7 @@ def coinbase_notify(request):
                     order.save()
             '''
     except Exception as e:
+        print("=== error on coinbase notify")
         logging.info(e)
         return HttpResponse(status=500)    
     
