@@ -8,6 +8,7 @@ from .models import  Membership, GiveawayWinners, DrawPrice, ContestUserParticip
 from background_task.models import Task
 from django.db.models import Q
 from frontend.utils import *
+import math
 
 def start_giveaway_bg(user_id=None,
                       order_id=None,
@@ -118,10 +119,8 @@ def sleeper():
     time.sleep(10)
 
 def set_membership_management():
-    Task.objects.all().delete()
-    count = Task.objects.filter(verbose_name="membership").count()
-    if count == 0:
-        manage_membership(repeat=6*3600, verbose_name="membership")
+    Task.objects.filter(verbose_name="membership").delete()
+    manage_membership(repeat=6*3600, verbose_name="membership")
     
     
 @background()
@@ -130,12 +129,8 @@ def manage_membership():
     try:
         last_month = timezone.now() - timedelta(days=30)
         memberships = Membership.objects.filter(Q(analyzed_time__lt=last_month) | Q(analyzed_time=None))
-        pps = get_pricing_plans()
         for mb in memberships:
-            if mb.plan in pps:
-                mb.credit_amount += pps[mb.plan]
-                mb.analyzed_time = timezone.now()
-                mb.save()
+            set_donemonth(mb.id)
     except Exception as e:
         print(e)
         

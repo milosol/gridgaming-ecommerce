@@ -7,7 +7,7 @@ from retweet_picker.bot_check import BotCheck
 #@background(schedule=timezone.now())
 def profile_checker(username=None):
     print(f'Performing analysis for {username}')
-    profile_analysis = {'user':username}
+    profile_analysis = {}
     try:
         bc = BotCheck(username=username, api_index=1)
         res = bc.build_profile()

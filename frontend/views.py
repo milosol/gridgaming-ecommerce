@@ -32,7 +32,6 @@ from core.forms import PaymentForm, CoinbaseForm
 from stripe import error
 from django.utils import timezone
 from datetime import timedelta
-from retweet_picker.views import set_donemonth
 from .ads import prometric_ads
 from coinbase_commerce.client import Client
 from .models import BuyCredit
@@ -169,10 +168,14 @@ def pre_checkout(request):
                 membership.plan = upgradeto
                 membership.paid_month = months
                 membership.paid_time = timezone.now()
+                membership.analyzed_time = timezone.now()
                 membership.end_time = membership.paid_time + timedelta(days=months*30)
                 membership.done_count = 0
                 membership.done_month = 0
+                membership.freecredit_donemonth = 0
+                membership.ended_alert = 0
                 membership.save()
+                add_free_credit(request.user.id)
                 credit_minus(request.user.id, amount*cc_per_usd)
             else:
                 messages.warning(request, "You have not enough credits. Buy credit and try again.")
@@ -554,25 +557,43 @@ def get_membership(request):
         if PricingPlan.objects.all().count() == 0:
             for choice, label in PRICINGPLAN_CHOICES:
                 PricingPlan.objects.create(plan=choice, label=label)
-        membership, created = Membership.objects.get_or_create(user_id=request.user.id)
+        membership = user_membership(request.user.id)
         res['credit_count'] = membership.credit_amount
-        if membership.plan != 'F':
-            if membership.end_time < timezone.now():
-                membership.plan = 'F'
-                membership.paid_month = 0
-                membership.done_count = 0
-                membership.done_month = 0
-                membership.save()
-            else:
-                set_donemonth(membership.id)
-                membership = Membership.objects.get(user_id=request.user.id)
-                res['membership'] = PricingPlan.objects.filter(plan=membership.plan).first().label
+        last_month = timezone.now() - timedelta(days=30)
+        if membership.analyzed_time < last_month:
+            print("=== set_donemonth when get membership : ", request.user.id)
+            set_donemonth(membership.id)
+            
+        add_free_credit(request.user.id)
+        membership = Membership.objects.get(user_id=request.user.id)
+        res['membership'] = PricingPlan.objects.filter(plan=membership.plan).first().label
+        res['ended_alert'] = membership.ended_alert
+        res['freecredit_alert'] = membership.freecredit_alert
+        if membership.freecredit_alert > 0:
+            res['added_count'] = get_freecredit_amount(request.user.id)
     except Exception as e:
         print(e)
         res['success'] = False
         res['membership'] = 'Free'
         res['credit_count'] = 0
         res['msg'] = 'Error occured while getting membership'
+    return JsonResponse(res)
+
+
+@csrf_exempt
+def set_membership_alert(request):
+    res = {'success': True, 'msg': ''}
+    try:
+        membership = user_membership(request.user.id)
+        kind = request.POST.get('kind')
+        if kind == '0':
+            membership.ended_alert = 0
+        else:
+            membership.freecredit_alert = 0
+        membership.save()
+    except Exception as e:
+        print(e)
+        res['success'] = False
     return JsonResponse(res)
 
 

@@ -20,7 +20,13 @@ class ProfileAnalysis(models.Model):
     bot_prediction = models.BooleanField(default=False)
     profile_grade = models.CharField(null=True, max_length=2)
     date_analyzed = models.DateTimeField(auto_now_add=True)
-
+    
+    def __str__(self):
+        if self.user:
+            return str(self.user)
+        else:
+            return ''
+        
 
 class ProfileJudgement(models.Model):
     """

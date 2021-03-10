@@ -1,5 +1,5 @@
 from django.urls import path, include, re_path
-from .views import index, home, profile, account_type, update_account_type, pre_checkout, CheckoutView, PaypalPaymentView, payment_canceled, payment_done, StripePaymentView, get_membership, CoinbasePaymentView, CreditView
+from .views import index, home, profile, account_type, update_account_type, pre_checkout, CheckoutView, PaypalPaymentView, payment_canceled, payment_done, StripePaymentView, get_membership, CoinbasePaymentView, CreditView, set_membership_alert
 from django.contrib.auth.decorators import login_required
 
 app_name = 'frontend'
@@ -9,6 +9,7 @@ urlpatterns = [
     path('', home, name='home'),
     path('profile', profile, name='profile'),
     path('profile/get_membership', get_membership, name='get_membership'),
+    path('profile/set_membership_alert', set_membership_alert, name='set_membership_alert'),
     path('profile/account_type', account_type, name='account_type'),
     path('profile/update_account_type', update_account_type, name='update_account_type'),
     path('pre_checkout', pre_checkout, name='pre_checkout'),

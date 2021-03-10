@@ -140,8 +140,14 @@ twq('track','PageView');
             url: "/profile/get_membership",
             success: function (data) {
                 if (data.success == true) {
+                    console.log(data)
                     $("#membership").html(data.membership)
                     $("#credit_count span").html(data.credit_count)
+                    if(data.ended_alert > 0){
+                        alert_membership(0)
+                    }else if(data.freecredit_alert > 0 && 'added_count' in data){
+                        alert_membership(1, data.added_count)
+                    }
                 } else {
                     console.log(data.msg)
                 }
@@ -150,6 +156,36 @@ twq('track','PageView');
             }
         })
     })
+    function alert_membership(kind, amount=0){
+        if(kind == 0){
+            msg = "Your membership has ended."
+        }else{
+            msg = "You got " + amount + " free credit this month."
+        }
+        console.log(kind, amount)
+        swal.fire({
+            position: 'top-end',
+            animation: false,
+            text: msg,
+            showCancelButton: false,
+            confirmButtonText: 'OK'
+        }).then((result) => {
+            if (result.value) {
+                $.ajax({
+                    type: "POST",
+                    url: "/profile/set_membership_alert",
+                    data: {'kind':kind},
+                    success: function (data) {
+                        if (data.success == true) {
+                        } else {
+                        }
+                    },error: function(e){
+                        
+                    }
+                })
+            }
+        })
+    }
 </script>
 {% endif %}
 </html>

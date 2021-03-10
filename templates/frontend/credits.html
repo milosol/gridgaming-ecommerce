@@ -94,9 +94,13 @@
                         </div>
                     </div>
                     <input id="cart_param" type="text" value="{{cart_param}}" name="cart_param" hidden>
-                    <button id="btn_checkout" type="submit"
+                    <button id="btn_checkout" type="submit" disabled
                     class="btn btn-lg btn-block font-medium btn-outline-success block-card"><i
                         class="fas fa-money-check-alt mx-2"></i> Checkout</button>
+                    <div id="div_policy" class="form-check mt-4 px-3 py-2">
+                        <input type="checkbox" class="form-check-input" id="chk_policy" hidden>
+                        <label class="form-check-label" for="chk_policy">No Chargeback Policy </label>
+                    </div>
                 </form>
             </div>
         </div>
@@ -117,6 +121,7 @@
     var need_param = '{{need_param}}'
     var cart_param = '{{cart_param}}'
     $(function(){
+        $("#chk_policy").prop('checked', false);
         if(need_param != ''){
             // $("#need_credit").html(need_param)
             $("#in_credit").val(parseInt(need_param))
@@ -128,6 +133,15 @@
         }
         $("#btn_buy").click(function(){
             $("#div_container").addClass('credits-flex')
+        })
+        $("#chk_policy").click(function(){
+            val = $("#chk_policy").prop('checked');
+            console.log("===", val)
+            if(val){
+                $("#btn_checkout").prop('disabled', false)
+            }else{
+                $("#btn_checkout").prop('disabled', true)
+            }
         })
         $("input[name='in_credit']").TouchSpin({
             min: min_price,

@@ -17,8 +17,19 @@
 
     <div class="container  text-center testdata">
         <h2>  </h2>
+        <div>
+            {% if judge.date_analyzed %}
+                <h5 class="text-right">last analyzed time: <span>{{judge.date_analyzed}}</span></h5>
+                {% if judge.bot_prediction %}
+                <h5 class="text-right text-warning">was not eliglbe</h5>
+                {% else %}
+                <h5 class="text-right text-primary">was eligible</h5>
+                {% endif %}
+            {% endif %}
+        </div>
         <div class="jumbotron card card-image">
           <div class="text-white text-center py-5 px-4">
+            
             <div>
               <h2 id="eligible_header" class="card-title h1-responsive pt-3 font-bold text-uppercase"><strong>AM I ELIGIBLE TO WIN</strong></h2>
                 <span id="profile_decision" class="text-primary" style="font-size: 72px">?</span>
@@ -43,21 +54,33 @@
 {#          </ul>#}
 {#            </div>#}
         </div>
-
-        <button href="javascript:void(0)"
-        id="btn_buy"
-         type="button" class="btn btn-lg btn-block font-medium btn-outline-success">
-         <i class="far fa-hand-point-left ml-1 mr-3"></i>
-         Cost: <span id="judgement_credits"><img src="{% static 'assets/images/coin-xs.png' %}" style="padding-top: 3px;width: 16px; vertical-align: text-top;">{{ credit_price }}.</span>
-         <span class="text-warning">Need more grid coins</span></button>
-
-                    <button href="javascript:void(0)"
-                           id="btn_judgement_day"
-                            type="button" class="btn btn-lg btn-block font-medium btn-outline-success block-card">
-                            <i class="fas fa-gavel ml-1"></i> 
-                            Cost: <span id="judgement_credits"><img src="{% static 'assets/images/coin-xs.png' %}" style="padding-top: 3px;width: 16px; vertical-align: text-top;">{{ credit_price }}</span>
-                            <span class="text-info" style="font-size:0.9rem;">(you will have remaing : <img src="{% static 'assets/images/coin-xs.png' %}" style="padding-top: 3px;width: 16px; vertical-align: text-top;">{{ current_credit|sub:credit_price }})</span>
-                        </button>
+        <div id="div_before">
+            <h3 class="text-warning mb-3">Cost: <span id="judgement_credits"><img src="{% static 'assets/images/coin-xs.png' %}" style="padding-top: 7px;width: 16px; vertical-align: text-top;">{{ credit_price }}</span></h3>
+        
+            <button href="javascript:void(0)" id="btn_buy" type="button" class="btn btn-lg btn-block font-medium btn-outline-success">
+            <i class="far fa-hand-point-left ml-1 mr-3"></i>
+            Need More Grid Coins <span id="judgement_credits"><img src="{% static 'assets/images/coin-xs.png' %}" style="padding-top: 4px;width: 16px; vertical-align: text-top;">{{ credit_price|sub:current_credit}}</span></button>
+            <div id="div_analyze">
+                <button href="javascript:void(0)" disabled
+                        id="btn_judgement_day"
+                        type="button" class="btn btn-lg btn-block font-medium btn-outline-success block-card">
+                        <i class="fas fa-gavel ml-1"></i> 
+                        Analyze Judgement</span>
+                </button>
+            
+                <h5 class="text-info mt-2">You will have remaining <span ><img src="{% static 'assets/images/coin-xs.png' %}" style="padding-top: 4px;width: 16px; vertical-align: text-top;">{{current_credit|sub:credit_price }}</span></h5>
+                <div id="div_policy" class="form-check mt-4 px-3 py-2">
+                    <input type="checkbox" class="form-check-input" id="chk_policy" hidden>
+                    <label class="form-check-label" for="chk_policy">No Chargeback Policy </label>
+                </div>
+            </div>
+        </div>
+        <div id="div_after" style="display: none;">
+            <button href="javascript:void(0)" id="btn_refresh"
+                type="button" class="btn btn-lg btn-block font-medium btn-outline-success block-card">
+                Analyze again</span>
+            </button>
+        </div>
 {#              <a class="btn btn-outline-white btn-md"><i class="fas fa-clone left"></i> View project</a>#}
             </div>
           </div>
@@ -70,20 +93,32 @@
     <script>
     var credit_price = {{credit_price}};
     var current_credit = {{current_credit}};
-    console.log(current_credit, credit_price)
+
     function numberWithCommas(x) {
         return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     }
     $(function(){
+        $("#chk_policy").prop('checked', false);
         if(current_credit < credit_price){
             $("#btn_buy").show()
-            $("#btn_judgement_day").hide()
+            $("#div_analyze").hide()
         }else{
             $("#btn_buy").hide()
-            $("#btn_judgement_day").show()
+            $("#div_analyze").show()
         }
         $("#btn_buy").click(function(){
             location.href="/wallet?need=" + (credit_price - current_credit) + "&cart=judge";
+        })
+        $("#btn_refresh").click(function(){
+            location.href="/analyzer/judge";
+        })
+        $("#chk_policy").click(function(){
+            val = $("#chk_policy").prop('checked');
+            if(val){
+                $("#btn_judgement_day").prop('disabled', false)
+            }else{
+                $("#btn_judgement_day").prop('disabled', true)
+            }
         })
     })
     function do_analyze(){
@@ -99,11 +134,13 @@
             success: function (data) {
                 if (data.success === true) {
                     /*$("#all_results").show()*/
-                    $("#btn_buy").hide()
-                    $("#btn_judgement_day").hide()
+                    $("#div_before").hide()
+                    $("#div_after").show()
                     if(data.profile_analysis){
                         $("a[href='/wallet'] span").html(numberWithCommas(data.current_credit));
                     }
+                    var block_ele = $("#btn_judgement_day").closest('.card');
+                    $(block_ele).unblock();
                     if (data.profile_analysis.bot_prediction == true) {
                         $("#eligible_header").html("Awww man...")
                         $("#profile_decision").html("<i class=\"fas fa-frown\"></i>")
@@ -143,8 +180,8 @@
     function do_progress(){
         var block_ele = $("#btn_judgement_day").closest('.card');
         $(block_ele).block({
-            message: '<i class="fas fa-spin fa-sync text-white"></i>',
-            timeout: 5000, //unblock after 2 seconds
+            message: '',
+            timeout: 7000, //unblock after 2 seconds
             overlayCSS: {
                 backgroundColor: '#000',
                 opacity: 0.5,

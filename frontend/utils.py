@@ -2,6 +2,8 @@ from allauth.socialaccount.models import SocialAccount
 from .svg_icons import discord, twitch, youtube, twitter
 from .models import OneValue
 from retweet_picker.models import Membership, PricingPlan, PRICINGPLAN_CHOICES
+from django.utils import timezone
+import math
 
 def get_cc_per_usd():
     try:
@@ -70,7 +72,65 @@ def get_pricing_plans():
         print(e)
     return result
     
+def add_free_credit(user_id):
+    res = 0
+    try:
+        mb, created = Membership.objects.get_or_create(user_id=user_id)
+        pps = get_pricing_plans()
+        if mb.plan in pps and mb.freecredit_donemonth <= mb.done_month:
+            mb.freecredit_donemonth = mb.done_month + 1
+            if pps[mb.plan] > 0:
+                mb.credit_amount += pps[mb.plan]
+                mb.freecredit_alert = 1
+                res = pps[mb.plan]
+            mb.save()
+    except Exception as e:
+        print("Error while adding free credit :", user_id)
+        print(e)
+    return res
+
+def get_freecredit_amount(user_id):
+    mb, created = Membership.objects.get_or_create(user_id=user_id)
+    pps = get_pricing_plans()
+    if mb.plan in pps:
+        return pps[mb.plan]
+    else:
+        return 0
     
+def set_donemonth(membership_id):
+    try:
+        membership = Membership.objects.get(id=membership_id)
+        if membership.paid_time == None:
+            membership.paid_time = timezone.now()
+            
+        diff = timezone.now() - membership.paid_time
+        diff_month = math.floor(diff.total_seconds()/(3600*24*30))
+        membership.analyzed_time = timezone.now()
+        if membership.done_month != diff_month:
+            membership.done_month = diff_month
+            membership.done_count = 0
+        if membership.done_month >= membership.paid_month and membership.plan == 'F':
+            membership.plan = 'F'
+            membership.paid_month = 0
+            membership.done_count = 0
+            membership.done_month = 0
+            membership.freecredit_donemonth = 0
+            membership.paid_time = timezone.now()
+            membership.ended_alert = 1
+            membership.freecredit_alert = 0
+        membership.save()
+    except Exception as e:
+        print(e)
+    
+def user_membership(user_id):
+    membership, created = Membership.objects.get_or_create(user_id=user_id)
+    if created or membership.paid_time == None:
+        membership.paid_time = timezone.now()
+    if created or membership.analyzed_time == None:
+        membership.analyzed_time = timezone.now()
+    membership.save()
+    return membership
+       
 def build_socials(self, user_id=None):
     all_services = ['discord', 'twitter', 'twitch', 'google']
     social_records = []

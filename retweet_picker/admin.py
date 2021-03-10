@@ -167,14 +167,25 @@ class MembershipAdmin(admin.ModelAdmin):
         'done_month',
         'done_count',
     ]  
- 
+
+    search_fields = ['user_id']
+    
     def user_name(self, obj):
         try:
             u = User.objects.get(id=obj.user_id)
             return u.username
         except Exception as e:
-            print(e)
             return ''
+    
+    def get_search_results(self, request, queryset, search_term):
+        queryset, use_distinct = super(MembershipAdmin, self).get_search_results(request, queryset, search_term)
+        
+        users = User.objects.filter(username__contains=search_term)
+        if users.exists():
+            ids = map(lambda x: x.id, users) 
+            queryset |= self.model.objects.filter(user_id__in=ids)
+
+        return queryset, use_distinct
         
 class UpgradeorderAdmin(admin.ModelAdmin):
     list_display = [

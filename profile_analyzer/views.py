@@ -2,6 +2,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 # Create your views here.
 from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
 from .tasks import profile_checker
 from profile_analyzer.models import ProfileAnalysis, ProfileJudgement
 from frontend.utils import *
@@ -17,10 +18,16 @@ def analyze_profile(request):
                 amount = get_judge_credit_price()
                 current_amount = credit_minus(request.user.id, amount)
                 res['current_credit'] = current_amount
+                pobj, created = ProfileAnalysis.objects.update_or_create(user=request.user)
+
+                obj = update_or_create_analyzer(request.user, pobj)
+                obj.date_analyzed = timezone.now()
+                obj.save()
             else:
                 res['success'] = False
                 res['msg'] = 'This profile could not be analyzed.'
         except Exception as e:
+            print(e)
             res['success'] = False
             res['msg'] = 'This profile could not be analyzed.'
             
@@ -37,7 +44,8 @@ def profile_judgement(request):
             profile_analysis = profile_checker(username=request.user.username)
 
             #Update request
-            obj = update_or_create_analyzer(request.user, profile_analysis)
+            
+            # obj = update_or_create_analyzer(request.user, pobj)
 
             #profile_analysis.bot_prediction
             if profile_analysis:
@@ -68,7 +76,8 @@ def reroll_decision(request):
 
     context = {
         'current_credit': current_credit,
-        'credit_price': credit_price
+        'credit_price': credit_price,
+        'judge': obj,
     }
 
     return render(request, "reroll_decision.html", context)
