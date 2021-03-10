@@ -23,6 +23,7 @@ import sys
 from retweet_picker.tasks import set_membership_management
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+lock = threading.Lock()
 
 count_data = []
 cart_get = []
@@ -57,7 +58,9 @@ def release_carts():
     for order in order_qs:
         count_data = Counting.objects.filter(order_id=order.id)
         if not count_data.exists():
+            lock.acquire()
             docheck(order.user.id, 2, [], "By system")
+            lock.release()
 
 def count_launch(name):
     release_time = 11
@@ -176,7 +179,9 @@ def count_handle(name):
                 continue
             if item.deadline < timezone.now():
                 Cartget.objects.create(user_id=item.user_id)
+                lock.acquire()
                 docheck(item.user_id, 2, [], "Time out")
+                lock.release()
         time.sleep(1)
 
 
