@@ -493,21 +493,27 @@ def coinbase_notify(request):
     try:
         print("===== coinbase-notify : ")
         data = json.loads(request.body)
-        print(data['event']['type'])
-        print(data['event']['data']['name'])
-        print(data['event']['data']['description'])
+        print("== type: ", data['event']['type'])
+        print("== name: ", data['event']['data']['name'])
+        print("== description: ", data['event']['data']['description'])
         
         if data['event']['type'] in ['charge:pending', 'charge:confirmed']:
             name = data['event']['data']['name']
+            print("===== this is pending or confirm")
             if 'buy_credt_' in name:
                 order_id = name.split('buy_credit_')[1]
                 bc = BuyCredit.objects.get(id=order_id)
+                print("=== this is buy credit : ", str(bc.id), " : ", bc.user.username)
                 if bc.payment_status == 'C' and bc.added_credit == True:
+                    print("=== already confirmed and added")
                     return HttpResponse(status=200)
+                
                 if data['event']['type'] == 'charge:confirmed':
+                    print("==== set as confirm")
                     bc.payment_status = 'C'
                     bc.save()
                 elif bc.payment_status == 'W':
+                    print("==== set as pending")
                     bc.payment_status = 'P'
                     bc.save()
                     
