@@ -169,7 +169,7 @@ class MembershipAdmin(admin.ModelAdmin):
     ]  
 
     search_fields = ['user_id']
-    
+
     def user_name(self, obj):
         try:
             u = User.objects.get(id=obj.user_id)

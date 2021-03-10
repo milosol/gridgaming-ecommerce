@@ -6,7 +6,10 @@ from django.utils import timezone
 from .tasks import profile_checker
 from profile_analyzer.models import ProfileAnalysis, ProfileJudgement
 from frontend.utils import *
+from django.contrib.auth.decorators import login_required
 
+
+@login_required
 def analyze_profile(request):
     print(request)
     res = {'success': True, 'msg': '', 'profile_analysis': {}}
@@ -34,6 +37,7 @@ def analyze_profile(request):
     return JsonResponse(res)
 
 from .utils import update_or_create_analyzer
+
 
 def profile_judgement(request):
     res = {'success': True, 'msg': '', 'profile_analysis': {}}
@@ -67,7 +71,7 @@ def main(request):
     return render(request, "profile_analyzer.html", context)
 
 
-
+@login_required
 def reroll_decision(request):
     context = {}
     current_credit = get_credit_amount(request.user.id)
