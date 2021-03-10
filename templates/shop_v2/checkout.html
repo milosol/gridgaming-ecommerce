@@ -124,8 +124,13 @@
                         {% csrf_token %}
                         <input name="total_credit" value="{{ total_credit }}" hidden>
                     </form>
-                    <button id="btn_checkout" class="btn btn-lg  font-medium btn-outline-success block-card"><i
+                    <div id="div_policy" class="form-check mb-2 px-3 py-2">
+                        <input type="checkbox" class="form-check-input" id="chk_policy" hidden>
+                        <label class="form-check-label text-info" for="chk_policy">No Chargeback Policy </label>
+                    </div>
+                    <button disabled id="btn_checkout" class="btn btn-lg  font-medium btn-outline-success block-card"><i
                             class="fas fa-money-check-alt mx-2"></i>Pay With Credits</button>
+                    
                     <button id="btn_buycredit" style="display: none;" class="btn btn-lg  font-medium btn-outline-success block-card"><i
                         class="fas fa-money-check-alt mx-2"></i>Buy Credits</button>
                     <div class="mt-4">
@@ -200,15 +205,26 @@
     var total_credit = {{ total_credit }}
     var current_credit = {{ current_credit }}
     $(function () {
+        $("#chk_policy").prop('checked', false);
         if(pay_credit <= 0){
             $("#h_msg").html("You have enough credits.")
             $("#btn_checkout").show()
+            $("#div_policy").show()
             $("#btn_buycredit").hide()
         }else{
             $("#h_msg").html("Additional credits are required for this purchase.")
             $("#btn_checkout").hide()
+            $("#div_policy").hide()
             $("#btn_buycredit").show()
         }
+        $("#chk_policy").click(function(){
+            val = $("#chk_policy").prop('checked');
+            if(val){
+                $("#btn_checkout").prop('disabled', false)
+            }else{
+                $("#btn_checkout").prop('disabled', true)
+            }
+        })
         $("#btn_checkout").click(function(){
             swal.fire({
                 title: 'Are you sure?',
