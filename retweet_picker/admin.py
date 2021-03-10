@@ -180,7 +180,7 @@ class MembershipAdmin(admin.ModelAdmin):
     def get_search_results(self, request, queryset, search_term):
         queryset, use_distinct = super(MembershipAdmin, self).get_search_results(request, queryset, search_term)
         
-        users = User.objects.filter(username__contains=search_term)
+        users = User.objects.filter(username=search_term)
         if users.exists():
             ids = map(lambda x: x.id, users) 
             queryset |= self.model.objects.filter(user_id__in=ids)

@@ -52,7 +52,7 @@ class CreditPaymentAdmin(admin.ModelAdmin):
         return str(obj.paid_order.all()[0].get_purchased_items())
         
 class OrderAdmin(admin.ModelAdmin):
-    raw_id_fields = ("user", 'items', 'billing_address','creditpayment')
+    raw_id_fields = ("user", 'items', 'billing_address','shipping_address', 'creditpayment', 'payment', 'coupon')
 
     list_display = ['id',
                     'user',
@@ -61,13 +61,11 @@ class OrderAdmin(admin.ModelAdmin):
                     'ordered_date',
                     'status',
                     'get_purchased_items',
-                    'billing_address',
                     'creditpayment',
                     'coupon'
                     ]
     list_display_links = [
         'user',
-        'billing_address',
         'creditpayment',
         'coupon'
     ]
@@ -210,7 +208,7 @@ class HistoryAdmin(admin.ModelAdmin):
     def get_search_results(self, request, queryset, search_term):
         queryset, use_distinct = super(HistoryAdmin, self).get_search_results(request, queryset, search_term)
         
-        queryset |= self.model.objects.filter(user__username__contains=search_term)
+        queryset |= self.model.objects.filter(user__username=search_term)
         if search_term.isnumeric():
             queryset |= self.model.objects.filter(user__id=int(search_term))
         return queryset, use_distinct

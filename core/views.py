@@ -491,8 +491,8 @@ def bitpay_notify(request):
 @csrf_exempt
 def coinbase_notify(request):
     try:
-        data = json.loads(request.body)
         print("===== coinbase-notify : ")
+        data = json.loads(request.body)
         print(data['event']['type'])
         print(data['event']['data']['name'])
         print(data['event']['data']['description'])

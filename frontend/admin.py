@@ -46,7 +46,7 @@ class BuyCreditAdmin(admin.ModelAdmin):
         # if users.exists():
         #     ids = map(lambda x: x.id, users) 
         #     queryset |= self.model.objects.filter(user__id__in=ids)
-        queryset |= self.model.objects.filter(user__username__contains=search_term)
+        queryset |= self.model.objects.filter(user__username=search_term)
         if search_term.isnumeric():
             queryset |= self.model.objects.filter(user__id=int(search_term))
         return queryset, use_distinct
