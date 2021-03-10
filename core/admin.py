@@ -199,14 +199,21 @@ class HistoryAdmin(admin.ModelAdmin):
         'user',
     ]
     list_filter = ['user']
-    search_fields = ['order_str']
+    search_fields = ['order_str',]
 
     def user_id(self, obj):
         if obj.user:
             return obj.user.id
         else:
             return 0
-
+    
+    def get_search_results(self, request, queryset, search_term):
+        queryset, use_distinct = super(HistoryAdmin, self).get_search_results(request, queryset, search_term)
+        
+        queryset |= self.model.objects.filter(user__username__contains=search_term)
+        if search_term.isnumeric():
+            queryset |= self.model.objects.filter(user__id=int(search_term))
+        return queryset, use_distinct
 
 class CountingAdmin(admin.ModelAdmin):
     list_display = [

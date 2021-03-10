@@ -10,6 +10,7 @@ class BuyCreditAdmin(admin.ModelAdmin):
                     'credit_amount',
                     'usd_amount',
                     'payment_status',
+                    'payment_method',
                     'added_credit',
                     'created_at',
                     ]
@@ -24,6 +25,20 @@ class BuyCreditAdmin(admin.ModelAdmin):
         else:
             ''
     
+    def payment_method(self, obj):
+        if obj.payment:
+            method = obj.payment.payment_method
+            if method == 'S':
+                return 'Stripe'
+            elif method == 'C':
+                return 'Bitcoin'
+            elif method == 'T':
+                return 'Credit'
+            else:
+                return ''
+        else:
+            ''
+            
     def get_search_results(self, request, queryset, search_term):
         queryset, use_distinct = super(BuyCreditAdmin, self).get_search_results(request, queryset, search_term)
         

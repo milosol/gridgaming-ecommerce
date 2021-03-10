@@ -501,7 +501,7 @@ class StripePaymentView(View):
                 bc.save()
                 bought_credit(bc.id)
                 History.objects.create(user=bc.user, action='Buy Credit', item_str=str(bc.credit_amount) + ' credits',
-                                            reason="Coinbase payment done", order_str=bc.id)
+                                            reason="Stripe payment done", order_str=bc.id)
                 return redirect(reverse("frontend:payment_done")+ '?cart=' + cart_param)
                 # if uo.reason == 'membership':
                 #     messages.success(self.request,
