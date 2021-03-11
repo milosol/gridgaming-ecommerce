@@ -183,13 +183,14 @@ def queue_launch(queue_id):
 
 def queue_retrieve(queue_id):
     try:
-        lock.acquire()
+        # lock.acquire()
+        print("==== procesing queue :", queue_id)
         row = GiveawayQueue.objects.get(id=queue_id)
         if row.status == 'R':
             return False
         row.status = 'R'
         row.save()
-        lock.release()
+        # lock.release()
         print("=== retrieving:", queue_id, ":", row.queue_type, ":", row.tweet_url, )
 
         if row.queue_type == 'H':
@@ -246,7 +247,7 @@ def process_queue(queue_type):
 
 def queue_thread(name):
     while (1):
-        break
+        # break
         process_queue('H')
         process_queue('D')
         process_queue('L')
