@@ -221,7 +221,7 @@ class Membership(models.Model):
     user_id = models.IntegerField(default=0)
     plan = models.CharField(choices=PRICINGPLAN_CHOICES, max_length=1, default='F')
     paid_month = models.IntegerField(default=0)
-    paid_time = models.DateTimeField(auto_now=False)
+    paid_time = models.DateTimeField(auto_now=False, null=True, blank=True)
     end_time = models.DateTimeField(auto_now=False, null=True, blank=True)
     done_count = models.IntegerField(default=0)
     done_month = models.IntegerField(default=0)

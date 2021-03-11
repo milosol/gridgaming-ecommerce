@@ -128,7 +128,7 @@ def manage_membership():
     print("=== manage membership", time.asctime())
     try:
         last_month = timezone.now() - timedelta(days=30)
-        memberships = Membership.objects.filter(Q(analyzed_time__lt=last_month) | Q(analyzed_time=None))
+        memberships = Membership.objects.filter(Q(analyzed_time=None) | Q(analyzed_time__lt=last_month))
         for mb in memberships:
             set_donemonth(mb.id)
     except Exception as e:
