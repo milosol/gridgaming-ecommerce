@@ -117,3 +117,4 @@ class BitpayForm(forms.Form):
 class CoinbaseForm(forms.Form):
     checkout_id = forms.CharField(required=False)
     order_id = forms.CharField(required=False)
+    cart_param = forms.CharField(required=False)

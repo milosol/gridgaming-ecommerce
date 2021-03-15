@@ -284,16 +284,10 @@ class CoinbasePaymentView(View):
                 messages.warning(self.request, "Error occured. Please try again")
                 return redirect("frontend:credits")
             
+            cart_param = self.request.GET.get('cart', 'credit')
             bc = BuyCredit.objects.get(id=bcid)
             host = request.get_host()
-            # if uo.reason == 'membership':
-            #     # return_url = 'http://{}{}'.format(host, reverse('frontend:profile')) + "?tab=membership"
-            #     item_name = "Upgrade Membership : " + uo.upgradeto + "_" + str(uo.id)
-            #     description = 'Upgrade membership to {}'.format(uo.upgradeto)
-            # else:
-            #     # return_url = 'http://{}{}'.format(host, "/retweet-picker/draw/" + str(uo.gwid))
-            #     item_name = "Pay for drawing " + str(uo.id)
-            #     description = 'Pay for drawing :{}'.format(uo.gwid)
+            # return_url = 'http://{}{}'.format(host, reverse('frontend:payment_done')) + '?cart=' + cart_param
             description = 'Buy Credit [' + bc.user.username + ' : ' + str(bc.credit_amount) + ' credits]'  
             order_name = 'buy_credit_' + str(bc.id)
             checkout_info = {
@@ -317,6 +311,7 @@ class CoinbasePaymentView(View):
                 'order': bc,
                 'checkout_id': checkout.id,
                 'order_id': bc.id,
+                'cart_param': cart_param
             }
             return render(self.request, "frontend/coinbase.html", context)
         except Exception as e:
@@ -331,6 +326,7 @@ class CoinbasePaymentView(View):
             if form.is_valid():
                 checkout_id = form.cleaned_data.get('checkout_id')
                 order_id = form.cleaned_data.get('order_id')
+                cart_param = form.cleaned_data.get('cart_param')
                 bc = BuyCredit.objects.get(id=order_id)
                 print("=== bc. payment status :", bc.payment_status)
                 if bc.payment_status != 'C':
@@ -346,7 +342,8 @@ class CoinbasePaymentView(View):
                     bc.payment_status = 'C'
                     bc.save()
                     bought_credit(bc.id)
-                    return redirect("frontend:payment_done")
+                    # return redirect("frontend:payment_done")
+                    return redirect(reverse("frontend:payment_done")+ '?cart=' + cart_param)
                     # set_upgradeorder_paid(uo.id, payment)
                     
                 # if uo.reason == 'membership':

@@ -20,10 +20,11 @@
                                 <script src="https://commerce.coinbase.com/v1/checkout.js?version=201807">
                                 </script>
                             </div>
-                            <form action="/coinbasepayment" method="post" id="complete_form">
+                            <form action="/wallet/coinbasepayment" method="post" id="complete_form">
                                 {% csrf_token %}
                                 <input type="hidden" name="order_id" value="{{order_id}}">
                                 <input type="hidden" name="checkout_id" value="{{checkout_id}}">
+                                <input type="hidden" name="cart_param" value="{{cart_param}}">
                                 <div style="display: none;">
                                     <button>Submit Payment</button>
                                 </div>
