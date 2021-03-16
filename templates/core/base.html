@@ -134,7 +134,19 @@ twq('track','PageView');
 </body>
 {% if user.is_authenticated %}
 <script>
+    var black_listed = '{{user.blacklisted}}';
     $(function(){
+        if(black_listed == 'True'){
+            swal.fire({
+                // position: 'top-end',
+                animation: false,
+                title:'Warning',
+                type:'warning',
+                text: 'You are not eligible to use this site',
+                showCancelButton: false,
+                confirmButtonText: 'OK'
+            })
+        }
         $.ajax({
             type: "POST",
             url: "/profile/get_membership",
