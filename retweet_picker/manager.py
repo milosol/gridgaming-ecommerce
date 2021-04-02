@@ -144,12 +144,14 @@ class GiveawayManager:
         try:
 
             giveaway_title = f'${self.giveaway_amount} Giveaway'
+            order_item = OrderItem.objects.get(id=self.order_id)
+            img_value = order_item.item.image
             Giveaway.objects.create(title=giveaway_title,
                                     description=f'${self.giveaway_amount} lasting for {display_time(self.duration)}',
                                     url=self.build_tweet_url(),
                                     giveaway_end_date=giveaway_ends(self.duration),
                                     visible=True,
-                                    sponsored=True)
+                                    sponsored=True, image=img_value)
         except Exception as e:
             print('Error creating giveaway entry')
             print(e)

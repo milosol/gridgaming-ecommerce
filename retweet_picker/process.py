@@ -53,7 +53,8 @@ class ProcessRetrievedTweets(GridGiveawayTweetRetriever):
     def retrieve_filter_tweets(self):
         """Responsible for building data and creating or uploading to database"""
         if self.process_tweets:
-            self.get_all_tweets()  # creates self.all_tweets
+            # self.get_all_tweets()  # creates self.all_tweets
+            self.get_all_tweets_v2()  # creates self.all_tweets
             if len(self.all_tweets) > 0:
                 print("=== all got tweets len: ", len(self.all_tweets))
                 filtered_tweets = self.filter_and_rename_fields()

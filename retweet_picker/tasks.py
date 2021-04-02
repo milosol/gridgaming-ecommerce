@@ -69,6 +69,7 @@ def draw_winner(existing_tweet_url=None, winner_count=1, actions=None, user_id=N
 
 @background(schedule=60)
 def load_entry_task(gwid, user_id, pay_status):
+    res = {'success': True, 'msg': ''}
     try:
         gw = GiveawayWinners.objects.get(id=gwid)
         tgid = TwitterGiveawayID.objects.get(id=gw.giveaway_id_id)
@@ -131,6 +132,8 @@ def manage_membership():
         memberships = Membership.objects.filter(Q(analyzed_time=None) | Q(analyzed_time__lt=last_month))
         for mb in memberships:
             set_donemonth(mb.id)
+        set_ads()
     except Exception as e:
         print(e)
+        
         

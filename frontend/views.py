@@ -32,11 +32,10 @@ from core.forms import PaymentForm, CoinbaseForm
 from stripe import error
 from django.utils import timezone
 from datetime import timedelta
-from .ads import prometric_ads
 from coinbase_commerce.client import Client
 from .models import BuyCredit
 from .utils import *
-
+from frontend.utils import get_ads
 coinbase_api_key = settings.COINBASE_API_KEY
 client = Client(api_key=coinbase_api_key)
 
@@ -47,10 +46,11 @@ def create_ref_code():
 class AdsView(View):
     """Replace pub-0000000000000000 with your own publisher ID"""
     #ad_string = "google.com, pub-2399779593674817, DIRECT, f08c47fec0942fa0"
-    ad_string = prometric_ads
+    ad_string = get_ads()
     
     def get(self, request, *args, **kwargs):
-        return HttpResponse(self.ad_string, content_type="text/plain")
+        ad_string = get_ads()
+        return HttpResponse(ad_string, content_type="text/plain")
 
 
 @register.filter
@@ -555,6 +555,7 @@ def get_membership(request):
             for choice, label in PRICINGPLAN_CHOICES:
                 PricingPlan.objects.create(plan=choice, label=label)
         membership = user_membership(request.user.id)
+        user_profile, created = UserProfile.objects.get_or_create(user=request.user)
         res['credit_count'] = membership.credit_amount
         last_month = timezone.now() - timedelta(days=30)
         if membership.analyzed_time < last_month:

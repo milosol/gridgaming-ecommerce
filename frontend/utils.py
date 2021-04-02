@@ -4,6 +4,8 @@ from .models import OneValue
 from retweet_picker.models import Membership, PricingPlan, PRICINGPLAN_CHOICES
 from django.utils import timezone
 import math
+from core.models import UserProfile
+import requests
 
 def get_cc_per_usd():
     try:
@@ -130,7 +132,23 @@ def user_membership(user_id):
         membership.analyzed_time = timezone.now()
     membership.save()
     return membership
-       
+
+def set_ads():
+    try:
+        response = requests.get("http://monu.delivery/adstxt/2/3/67b39b-98ab-4988-aadb-6e6effebcc48.txt")
+        ov = OneValue.objects.all().first()
+        ov.ads = response.text
+        ov.save()
+    except Exception as e:
+        print("Error while setting ads :", e)
+
+def get_ads():
+    try:
+        ov = OneValue.objects.all().first()
+        return ov.ads
+    except Exception as e:
+        print("Error while getting ads :", e)
+    
 def build_socials(self, user_id=None):
     all_services = ['discord', 'twitter', 'twitch', 'google']
     social_records = []

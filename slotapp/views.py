@@ -20,7 +20,8 @@ import random
 import string
 import logging
 import sys
-from retweet_picker.tasks import set_membership_management
+from retweet_picker.tasks import set_membership_management, set_ads
+from retweet_picker.models import DrawPrice
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 lock = threading.Lock()
@@ -103,9 +104,15 @@ def launch_thread():
         
 def initialize():
     # History.objects.create(reason="Server restarted")
+    if DrawPrice.objects.all().count() == 0:
+        DrawPrice.objects.create(price=1)
+    if OneValue.objects.all().count() == 0:
+            OneValue.objects.create()
+                
     launch_thread()
     logging.info("========= server restarted ============")
     set_membership_management()
+    
 
 initialize()
         
