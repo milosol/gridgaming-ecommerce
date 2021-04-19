@@ -858,11 +858,11 @@ def user_settings(request):
             temp['cleared_hot'] = item.cleared_hot
             temp['blacklisted'] = item.blacklisted
             temp['credit_amount'] = ''
-            mss = Membership.objects.filter(user_id=item.id)
-            if mss.exists():
-                ms = mss[0]
-                if ms.credit_amount != 0:
-                    temp['credit_amount'] = ms.credit_amount
+            # mss = Membership.objects.filter(user_id=item.id)
+            # if mss.exists():
+            #     ms = mss[0]
+            #     if ms.credit_amount != 0:
+            #         temp['credit_amount'] = ms.credit_amount
             user_list.append(temp)
     except Exception as e:
         print("error while getting users :", e)
