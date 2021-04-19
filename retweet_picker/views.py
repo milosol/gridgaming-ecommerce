@@ -668,7 +668,10 @@ def load_all_entries(request):
                 temp = {'user_id': p.user_id, 
                         'screen_name': p.user_screen_name, 
                         'profile_img': p.profile_img, 
-                        'account_created': p.account_created}
+                        'account_created': p.account_created,
+                        'id_str': p.id_str,
+                        'is_quote_status': p.is_quote_status
+                        }
                 res['participants'].append(temp)
     except Exception as e:
         print(e)
@@ -841,6 +844,53 @@ def draw_result(request, draw_id):
                     {'id': reroll.id, 'reason': reroll.reason, 'kind': reroll.kind, 'user_info': temp})
     context['context'] = dumps(context)
     return render(request, "draw_result.html", context)
+
+def user_settings(request):
+    user_list = []
+    try:
+        users = User.objects.all().order_by('id')
+        for item in users:
+            temp = {}
+            temp['id'] = item.id
+            temp['username'] = item.username
+            temp['email'] = item.email
+            temp['is_staff'] = item.is_staff
+            temp['cleared_hot'] = item.cleared_hot
+            temp['blacklisted'] = item.blacklisted
+            temp['credit_amount'] = ''
+            mss = Membership.objects.filter(user_id=item.id)
+            if mss.exists():
+                ms = mss[0]
+                if ms.credit_amount != 0:
+                    temp['credit_amount'] = ms.credit_amount
+            user_list.append(temp)
+    except Exception as e:
+        print("error while getting users :", e)
+    context = {'users': user_list, 'user_list': dumps(user_list)}
+    return render(request, "user_settings.html", context)
+
+
+@csrf_exempt
+def edit_profile(request):
+    res = {'success': True, 'msg': ''}
+    try:
+        data = json.loads(request.POST['data'])
+        print("=== data:", data)
+        user_id = data['user_id']
+        cleared_hot = data['cleared_hot']
+        is_staff = data['is_staff']
+        blacklisted = data['blacklisted']
+        credit_amount = int(data['credit_amount'])
+        User.objects.filter(id=user_id).update(is_staff=is_staff, cleared_hot=cleared_hot, blacklisted=blacklisted)
+        ms = user_membership(user_id)
+        ms.credit_amount = credit_amount
+        ms.save()
+    except Exception as e:
+        print(e)
+        res['success'] = False
+        res['msg'] = 'Error occured. Please try again.'
+    return JsonResponse(res)
+
 
 # def get_ipaddress(request):
 #     # if this is a POST request we need to process the form data
