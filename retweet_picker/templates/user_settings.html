@@ -1,0 +1,336 @@
+{% extends 'core/base.html' %} 
+{% load static %} 
+{% load mathfilters %} 
+{% load humanize %}
+{% block extra_head_tags %}
+
+<link href="{% static 'taginput/jquery.tagsinput-revisited.css' %}" rel="stylesheet" />
+<link href="{% static 'assets/libs/datatables.net-bs4/css/dataTables.bootstrap4.css' %}" rel="stylesheet">
+<link href="{% static 'assets/libs/bootstrap-touchspin/dist/jquery.bootstrap-touchspin.css' %}" rel="stylesheet" />
+
+<style>
+@media (min-width: 992px){
+    .page-wrapper {
+        max-width: 90%!important;
+    }
+}
+.back-text{
+    color: #4e4e4e;
+    margin-left: 5px;
+}
+#default_order tbody td i{
+    font-size: 18px;
+}
+.action-btn{
+    text-align: center;
+}
+</style>
+{% endblock %} 
+{% block content %}
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="default_order" class="table table-striped table-bordered display"
+                            style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Staff</th>
+                                    <th>Cleared Hot</th>
+                                    <th>Black List</th>
+                                    <th>Credit Amount</th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                <tr>
+                                    <td>{{user.username}}</td>
+                                    <td>{{user.email}}</td>
+                                    {% if user.is_staff %}
+                                    <td><i class="mdi mdi-check-circle-outline" style="color: #26e80e;"></i><span class="back-text">staff</span></td>
+                                    {% else %}
+                                    <td><i class="mdi mdi-close-circle-outline" style="color: #4e4e4e;"></i></td>
+                                    {% endif %}
+                                    {% if user.cleared_hot %}
+                                    <td><i class="mdi mdi-check-circle-outline" style="color: #26e80e;"></i><span class="back-text">cleared</span></td>
+                                    {% else %}
+                                    <td><i class="mdi mdi-close-circle-outline" style="color: #4e4e4e;"></i></td>
+                                    {% endif %}
+                                    {% if user.blacklisted %}
+                                    <td><i class="mdi mdi-check-circle-outline" style="color:red;"></i><span class="back-text">black</span></td>
+                                    {% else %}
+                                    <td><i class="mdi mdi-close-circle-outline" style="color: #4e4e4e;"></i></td>
+                                    {% endif %}
+                                    <td>{{user.credit_amount|intcomma}}</td>
+                                    <td>
+                                        <div class="action-btn">
+                                            <a id="edit_{{forloop.counter0}}" href="javascript:void(0)" class="text-info edit"><i class="mdi mdi-account-edit font-20"></i></a>
+                                        </div>
+                                </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <!-- <tfoot>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Position</th>
+                                    <th>Office</th>
+                                    <th>Age</th>
+                                    <th>Start date</th>
+                                    <th>Salary</th>
+                                </tr>
+                            </tfoot> -->
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editmodel" tabindex="-1" role="dialog" aria-labelledby="addContactModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit User Profile</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="add-contact-box">
+                        <div class="add-contact-content">
+                            <div class="row ">
+                                <div class="col-sm-12 col-lg-6">
+                                    <div class="form-group row align-items-center mb-0">
+                                        <label for="inputname" class="col-md-4 text-right control-label col-form-label">User Name</label>
+                                        <div class="col-md-8 pt-2 pb-2">
+                                            <input type="text" class="form-control" id="inputname" placeholder="" disabled>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-12 col-lg-6">
+                                    <div class="form-group row align-items-center mb-0">
+                                        <label for="inputemail" class="col-md-4 text-right control-label col-form-label">Email</label>
+                                        <div class="col-md-8 pt-2 pb-2">
+                                            <input type="text" class="form-control" id="inputemail" placeholder="" disabled>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mt-4">
+                                <div class="col-md-2"></div>
+                                <div class="col-md-3 col-sm-4">
+                                    <input type="checkbox" class="material-inputs" id="chk_staff" checked="" >
+                                    <label for="chk_staff">Staff</label>
+                                </div>
+                                <div class="col-md-3 col-sm-3">
+                                    <input type="checkbox" class="material-inputs" id="chk_hot" checked="">
+                                    <label for="chk_hot">Cleared Hot</label>
+                                </div>
+                                <div class="col-md-3 col-sm-4">
+                                    <input type="checkbox" class="material-inputs chk-col-red" id="chk_black" checked="">
+                                    <label for="chk_black">Black Listed</label>
+                                </div>
+                                <div class="col-md-1"></div>
+                            </div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-md-12 col-lg-8">
+                                <div class="form-group row align-items-center mb-0">
+                                    <label for="inputcredit" class="col-md-4 text-right control-label col-form-label">Credit Amount</label>
+                                    <div class="col-md-8 pb-2 pt-2">
+                                        <input id="inputcredit" type="text" value="1" name="inputcredit" class="col-md-8 form-control text-warning" style="width: 200px;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="btn_edit" class="btn btn-success">Save</button>
+                    <button class="btn btn-danger" data-dismiss="modal">Discard</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %} 
+{% block extra_scripts %}
+<script src="{% static 'assets/libs/datatables/media/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'dist/js/pages/datatable/custom-datatable.js' %}"></script>
+<script src="{% static 'assets/libs/bootstrap-touchspin/dist/jquery.bootstrap-touchspin.js' %}"></script>
+
+<script type="text/javascript">
+    var user_list =  JSON.parse("{{user_list|escapejs}}");
+    var edit_index = 0;
+    var data_table;
+    $(function () {
+        $("input[name='inputcredit']").TouchSpin({
+            min: 0,
+            max: 100000000,
+            stepinterval: 50,
+            bootstat: 5,
+            maxboostedstep: 10,
+            prefix: 'Credits',
+            buttondown_class: "btn btn-warning",
+            buttonup_class: "btn btn-warning",
+        });
+
+        data_table = $('#default_order').DataTable({
+            // "order": [
+            //     [3, "desc"]
+            // ]
+        });
+        $("a.edit").click(function(){
+            edit_id = $(this).attr('id');
+            index = edit_id.split('_')[1]
+            edit_index = index
+            $("#inputname").val(user_list[index].username)
+            $("#inputemail").val(user_list[index].email)
+            $("#inputcredit").val(user_list[index].credit_amount == '' ? 0:user_list[index].credit_amount)
+            $("#chk_staff").prop('checked', user_list[index].is_staff)
+            $("#chk_hot").prop('checked', user_list[index].cleared_hot)
+            $("#chk_black").prop('checked', user_list[index].blacklisted)
+            $("#editmodel").modal()
+        })
+        $("#btn_edit").click(function(){
+            temp = {}
+            temp.index = edit_index
+            temp.user_id = user_list[edit_index].id;
+            temp.credit_amount = $("#inputcredit").val();
+            temp.is_staff = $("#chk_staff").prop('checked');
+            temp.cleared_hot = $("#chk_hot").prop('checked');
+            temp.blacklisted = $("#chk_black").prop('checked');
+            console.log(temp)
+            $.ajax({
+                type: "POST",
+                url: "/retweet-picker/edit_profile",
+                data: {data: JSON.stringify(temp)},
+                success: function (data) {
+                    console.log(data)
+                    if (data.success == true) {
+                        $('#editmodel').modal('toggle');
+                        update_user_list(temp)
+                        Swal.fire({
+                            position: 'top-end',
+                            type: 'success',
+                            title: 'Saved successfully',
+                            showConfirmButton: false,
+                            buttons: false,
+                            toast: true,
+                            timer: 1500
+                        })
+                    } else {
+                        Swal.fire({
+                            type: 'error',
+                            title: 'Failed',
+                            text: data.msg,
+                            showConfirmButton: true,
+                        })
+                    }
+                }, error: function (e) {
+                    Swal.fire({
+                        type: 'error',
+                        title: 'Oops...',
+                        text: 'Something went wrong!',
+                        showConfirmButton: true,
+                    })
+                }
+            })
+        })
+    })
+    function update_user_list(temp){
+        ind = temp.index;
+        user_list[ind].is_staff = temp.is_staff
+        user_list[ind].cleared_hot = temp.cleared_hot
+        user_list[ind].blacklisted = temp.blacklisted
+        user_list[ind].credit_amount = temp.credit_amount
+        if(temp.is_staff){
+            str1 = '<i class="mdi mdi-check-circle-outline" style="color: #26e80e;"></i><span class="back-text">staff</span>'
+        }else{
+            str1 = '<i class="mdi mdi-close-circle-outline" style="color: #4e4e4e;"></i>'
+        }
+        if(temp.cleared_hot){
+            str2 = '<i class="mdi mdi-check-circle-outline" style="color: #26e80e;"></i><span class="back-text">cleared</span>'
+        }else{
+            str2 = '<i class="mdi mdi-close-circle-outline" style="color: #4e4e4e;"></i>'
+        }
+        if(temp.blacklisted){
+            str3 = '<i class="mdi mdi-check-circle-outline" style="color:red;"></i><span class="back-text">black</span>'
+        }else{
+            str3 = '<i class="mdi mdi-close-circle-outline" style="color: #4e4e4e;"></i>'
+        }
+        if(temp.credit_amount == 0){
+            str4 = ''
+        }else{
+            str4 = numberWithCommas(temp.credit_amount);
+        }
+        tr = $("#edit_" + ind).closest('tr');
+        data_table.cell($(tr).find("td:eq(2)")).data(str1).draw();
+        data_table.cell($(tr).find("td:eq(3)")).data(str2).draw();
+        data_table.cell($(tr).find("td:eq(4)")).data(str3).draw();
+        data_table.cell($(tr).find("td:eq(5)")).data(str4).draw();
+    }
+    function numberWithCommas(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+    function load_all_entries() {
+        if (entry_table)
+            entry_table.clear();
+        $('#div_zero').show()
+        $.ajax({
+            type: "POST",
+            url: "/retweet-picker/load_all_entries",
+            data: { 'gwid': context.gwid },
+            success: function (data) {
+                if (data.success == true) {
+                    draw_table(data.participants)
+                } else {
+                }
+            }, error: function (e) {
+                swal.fire({
+                    icon: 'warning',
+                    text: "Error occured while saving",
+                    showCancelButton: true,
+                    background: '#e9ecef',
+                    confirmButtonColor: '#21c1d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, i am sure!'
+                }).then((result) => {
+                    if (result.value) {
+                    } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    }
+                })
+            }
+        })
+    }
+
+    
+    
+    function draw_winner(type, id) {
+        swal.fire({
+            title: 'Are you sure?',
+            icon: 'warning',
+            text: "You will start drawing winner now.",
+            showCancelButton: true,
+            background: '#e9ecef',
+            confirmButtonColor: '#21c1d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, i am sure!'
+        }).then((result) => {
+            if (result.value) {
+                
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
+
+            }
+        })
+    }
+    
+</script>
+{% endblock extra_scripts %}

@@ -103,7 +103,7 @@ def launch_thread():
         
         
 def initialize():
-    # History.objects.create(reason="Server restarted")
+    History.objects.create(reason="Server restarted")
     if DrawPrice.objects.all().count() == 0:
         DrawPrice.objects.create(price=1)
     if OneValue.objects.all().count() == 0:

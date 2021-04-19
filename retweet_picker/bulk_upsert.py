@@ -44,7 +44,9 @@ def populate_temp_table(cursor: CursorWrapper, retweet_users: List[ContestUserAc
                        retweet_user.user_screen_name,
                        retweet_user.location,
                        retweet_user.profile_img,
-                       str(retweet_user.account_created))
+                       str(retweet_user.account_created),
+                       retweet_user.id_str,
+                       str(retweet_user.is_quote_status))
             except Exception as e:
                 print(f'[!] Error populating table: {e}')
 
@@ -52,18 +54,18 @@ def populate_temp_table(cursor: CursorWrapper, retweet_users: List[ContestUserAc
     cursor.copy_from(
         tsv_file,
         'temp_retweet_users',
-        columns=('user_id', 'user_handle', 'user_screen_name', 'location', 'profile_img', 'account_created')
+        columns=('user_id', 'user_handle', 'user_screen_name', 'location', 'profile_img', 'account_created', 'id_str', 'is_quote_status')
     )
 
 
 def copy_from_temp_table(cursor: CursorWrapper):
     cursor.execute(
         '''
-        INSERT INTO retweet_picker_contestuseraccounts (user_id, user_handle, user_screen_name, location, profile_img, account_created)
-        SELECT tru.user_id, tru.user_handle, tru.user_screen_name, tru.location, tru.profile_img, tru.account_created
+        INSERT INTO retweet_picker_contestuseraccounts (user_id, user_handle, user_screen_name, location, profile_img, account_created, id_str, is_quote_status)
+        SELECT tru.user_id, tru.user_handle, tru.user_screen_name, tru.location, tru.profile_img, tru.account_created, tru.id_str, tru.is_quote_status
         FROM temp_retweet_users tru
         ON CONFLICT(user_id) 
-        DO UPDATE SET (user_handle, user_screen_name, location, profile_img, account_created) = (EXCLUDED.user_handle, EXCLUDED.user_screen_name, EXCLUDED.location, EXCLUDED.profile_img, EXCLUDED.account_created)
+        DO UPDATE SET (user_handle, user_screen_name, location, profile_img, account_created, id_str, is_quote_status) = (EXCLUDED.user_handle, EXCLUDED.user_screen_name, EXCLUDED.location, EXCLUDED.profile_img, EXCLUDED.account_created, EXCLUDED.id_str, EXCLUDED.is_quote_status)
         '''
     )
 

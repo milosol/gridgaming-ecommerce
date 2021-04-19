@@ -20,12 +20,19 @@
     table.dataTable tbody tr td {
         text-align: center;
     }
-
+    table.dataTable tbody tr td a{
+        color: white;
+    }
+    table.dataTable tbody tr td a:hover{
+        color: #8be415;
+    }
     table.dataTable th:nth-child(3),
+    table.dataTable tbody tr td:nth-child(4) {
+        text-align: left;
+    }
     table.dataTable tbody tr td:nth-child(3) {
         text-align: left;
     }
-
     #zero_config_filter label,
     .paginate_button,
     .dataTables_info {
@@ -344,7 +351,19 @@
                                                                 colspan="1"
                                                                 aria-label="Order ID: activate to sort column ascending"
                                                                 style="width: 0px">
+                                                                tweet_id
+                                                            </th>
+                                                            <th tabindex="0" aria-controls="zero_config" rowspan="1"
+                                                                colspan="1"
+                                                                aria-label="Order ID: activate to sort column ascending"
+                                                                style="width: 0px">
                                                                 contestants
+                                                            </th>
+                                                            <th tabindex="0" aria-controls="zero_config" rowspan="1"
+                                                                colspan="1"
+                                                                aria-label="Order ID: activate to sort column ascending"
+                                                                style="width: 50px">
+                                                                quote status
                                                             </th>
                                                             <th tabindex="0" aria-controls="zero_config" rowspan="1"
                                                                 colspan="1"
@@ -646,10 +665,18 @@
         var str = "";
         for (i = 0; i < data.length; i++) {
             str = "<img class='user_avatar' src='" + data[i].profile_img + "'>  " + data[i].screen_name
+            id_str = "<a href='https://www.twitter.com//" + data[i].screen_name  + "/status/"  + data[i].id_str + "' target='_blank'>" + data[i].id_str + "</a>"
+            if(data[i].is_quote_status == true){
+                quote_str = 'quoted'
+            }else{
+                quote_str = ''
+            }
             entry_table.row.add([
                 i + 1,
                 "twitter",
+                id_str,
                 str,
+                quote_str,
                 data[i].account_created.split('T')[0],
             ])
         }

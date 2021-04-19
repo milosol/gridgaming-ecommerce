@@ -46,7 +46,9 @@ class ContestUserAccounts(models.Model):
     location = models.CharField(max_length=200, blank=True, null=True)
     profile_img = models.URLField(max_length=500, blank=True, null=True)
     account_created = models.DateTimeField()
-
+    id_str =  models.CharField(max_length=200, blank=True, null=True)
+    is_quote_status = models.BooleanField(default=False, blank=True, null=True)
+    
     def __str__(self):
         return self.user_screen_name
 
@@ -83,6 +85,7 @@ class ContestUserParticipation(models.Model):
     contestants = models.ManyToManyField(ContestUserAccounts)
     contest = models.ForeignKey('TwitterGiveawayID', on_delete=models.CASCADE)
     kind = models.IntegerField(default=0)
+
 
     def __str__(self):
         return str(self.contest.tweet_url)

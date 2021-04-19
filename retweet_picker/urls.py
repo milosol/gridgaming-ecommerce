@@ -40,5 +40,7 @@ urlpatterns = [
     path('results/', views.contest_results, name='all_contest_results'),
     path('bubble_rescue/decoder_ring/<slug:secret_code>/', views.decoder_ring, name='decoder'),
     path('bubble_rescue/', views.bubble_rescue, name='bubble-rescue-5000'),
-    path('import/', login_required(views.pick), name='pick')
+    path('import/', login_required(views.pick), name='pick'),
+    path('user_settings/', login_required(views.user_settings), name='user_settings'),
+    path('edit_profile', views.edit_profile, name='edit_profile'),
 ]

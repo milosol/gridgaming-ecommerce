@@ -141,11 +141,9 @@ class GridGiveawayTweetRetriever(TwitterInteract):
         sinceId = None
         max_id = max_id 
         maxTweets = self.max_tweets
-        # maxTweets = 4000
         split = int(self.tweet_ratio * len(self.tweet.full_text.split()))
         tweet_text = ' '.join(self.tweet.full_text.split()[:split]).replace('-',' ')
         searchQuery = 'RT @{author} '.format(author=self.author) + tweet_text
-        # searchQuery = 'quoted_tweet_id:{tweet_id} '.format(tweet_id=self.tweet.id) + ' OR RT @{author} '.format(author=self.author) + tweet_text
         searchQuery_quote = 'quoted_tweet_id:{tweet_id} '.format(tweet_id=self.tweet.id)
         replace_urls = re.sub('http://\S+|https://\S+', '', searchQuery)
         searchQuery = replace_urls

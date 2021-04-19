@@ -29,15 +29,17 @@ class ProcessRetrievedTweets(GridGiveawayTweetRetriever):
         # Assumes all_tweets has tweets retrieved
         # print("=== photo_img :", self.all_tweets[0].user.profile_image_url)
         tweets = json_normalize(self.all_tweets)
-        filter_df = tweets[['user.id_str', 'user.name', 'user.screen_name', 'user.location', 'user.profile_image_url',
+        filter_df = tweets[['id_str', 'is_quote_status', 'user.id_str', 'user.name', 'user.screen_name', 'user.location', 'user.profile_image_url',
                             'user.created_at']]
-        filter_df.columns = ['user_id', 'user_handle', 'user_screen_name', 'location', 'profile_img', 'account_created']
+        filter_df.columns = ['id_str', 'is_quote_status', 'user_id', 'user_handle', 'user_screen_name', 'location', 'profile_img', 'account_created']
         filter_df.loc[:, 'account_created'] = pd.to_datetime(filter_df['account_created'])
-        temp_df = filter_df[['user_id', 'user_handle', 'user_screen_name', 'location']]
+        temp_df = filter_df[['id_str', 'is_quote_status', 'user_id', 'user_handle', 'user_screen_name', 'location']]
         temp_df.replace(r'\s+|\\n|\\|/|,', ' ', regex=True, inplace=True)
 
         # Merge sanitized values back to original df
-        filter_df[['user_id',
+        filter_df[['id_str', 
+                   'is_quote_status',
+                   'user_id',
                    'user_handle',
                    'user_screen_name',
                    'location']] = temp_df[temp_df.columns]
@@ -73,7 +75,10 @@ class ProcessRetrievedTweets(GridGiveawayTweetRetriever):
                              user_screen_name=row['user_screen_name'],
                              location=row['location'],
                              profile_img=row['profile_img'],
-                             account_created=row['account_created'])
+                             account_created=row['account_created'],
+                             id_str=row['id_str'],
+                             is_quote_status=row['is_quote_status']
+                             )
                      ), axis=1)
         except Exception as e:
             print(f'Could not add record obj. Reason {e}')
