@@ -222,6 +222,7 @@ class PricingPlan(models.Model):
     
 class Membership(models.Model): 
     user_id = models.IntegerField(default=0)
+    # user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
     plan = models.CharField(choices=PRICINGPLAN_CHOICES, max_length=1, default='F')
     paid_month = models.IntegerField(default=0)
     paid_time = models.DateTimeField(auto_now=False, null=True, blank=True)
@@ -234,7 +235,7 @@ class Membership(models.Model):
     ended_alert = models.IntegerField(default=0)
     freecredit_alert = models.IntegerField(default=0)
     analyzed_time = models.DateTimeField(auto_now=False, null=True, blank=True)
-     
+    temp_user_id = models.IntegerField(default=0)
     class Meta:
         ordering = ['id']
         

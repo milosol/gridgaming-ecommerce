@@ -8,7 +8,7 @@ from django.utils import timezone
 from json import dumps
 
 from django.contrib import messages
-from django.db.models import Prefetch
+from django.db.models import Prefetch, F
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.shortcuts import render
@@ -848,7 +848,10 @@ def draw_result(request, draw_id):
 def user_settings(request):
     user_list = []
     try:
-        users = User.objects.all().order_by('id')
+        Membership.objects.all().update(temp_user_id=F('user_id'))
+        # Membership.objects.all().update(user_id=F('temp_user_id'))
+        print("======= upate temp user id in membership ======")
+        users = User.objects.all().order_by('id')[:2]
         for item in users:
             temp = {}
             temp['id'] = item.id
